@@ -1,0 +1,226 @@
+
+===== Node 68:3367: десктоп =====
+Type: FRAME, Size: 1280x3681
+
+--- Colors ---
+{"hex":"#fffdfd","opacity":1}
+{"hex":"#2f2f2f","opacity":1}
+{"hex":"#2f2f2f","opacity":1,"stroke":true}
+{"hex":"#f5a2b7","opacity":1}
+{"hex":"#000000","opacity":0.2}
+{"hex":"#ffffff","opacity":1}
+{"hex":"#ffffff","opacity":1,"stroke":true}
+{"hex":"#fafafa","opacity":1}
+{"hex":"#f5a2b7","opacity":1,"stroke":true}
+
+--- Typography (unique) ---
+{"fontFamily":"Forum","fontSize":48,"fontWeight":400,"lineHeightPx":52.99199676513672,"letterSpacing":0,"textCase":"UPPER","text":"Авторские украшения из натуральных материалов"}
+{"fontFamily":"Montserrat","fontSize":20,"fontWeight":400,"lineHeightPx":24.3799991607666,"letterSpacing":0,"text":"ПЕРЕЙТИ В КАТАЛОГ"}
+{"fontFamily":"Forum","fontSize":16,"fontWeight":400,"lineHeightPx":17.663999557495117,"letterSpacing":0,"text":"О БРЕНДЕ"}
+{"fontFamily":"Forum","fontSize":46,"fontWeight":400,"lineHeightPx":30,"letterSpacing":0,"text":"КАТАЛОГ"}
+{"fontFamily":"Montserrat","fontSize":18,"fontWeight":400,"lineHeightPx":21.941999435424805,"letterSpacing":0,"textCase":"UPPER","text":"Наши украшения для любого случая \nДля офиса или отпуска, свидания или вечеринки "}
+{"fontFamily":"Forum","fontSize":24,"fontWeight":400,"lineHeightPx":30,"letterSpacing":0,"text":"ВЫБЕРИ СВОЕ"}
+{"fontFamily":"Montserrat","fontSize":22,"fontWeight":400,"lineHeightPx":26.8179988861084,"letterSpacing":0,"textCase":"UPPER","text":"КОЛЬЕ"}
+{"fontFamily":"Forum","fontSize":22,"fontWeight":400,"lineHeightPx":16,"letterSpacing":0,"textCase":"UPPER","text":"каталог"}
+{"fontFamily":"Montserrat","fontSize":12,"fontWeight":400,"lineHeightPx":14.628000259399414,"letterSpacing":0,"textCase":"UPPER","text":"колье"}
+{"fontFamily":"Montserrat","fontSize":14,"fontWeight":400,"lineHeightPx":16,"letterSpacing":0,"text":"8(909)888-88-88"}
+
+--- Spacing/Layout ---
+{"width":1280,"height":3681,"name":"десктоп","type":"FRAME"}
+{"paddingLeft":60,"paddingRight":60,"itemSpacing":32,"width":1280,"height":757,"name":"home","type":"FRAME"}
+{"cornerRadii":[0,0,0,0],"width":1160.000027625595,"height":631.9999896700538,"name":"Rectangle 3370","type":"VECTOR"}
+{"itemSpacing":12,"width":1154,"height":89,"name":"Frame 109","type":"FRAME"}
+{"width":1154,"height":53,"name":"Frame 13","type":"FRAME"}
+{"width":1156,"height":53,"name":"Авторские украшения из натуральных материалов","type":"TEXT"}
+{"paddingLeft":16,"paddingRight":16,"itemSpacing":7,"width":1154,"height":24,"name":"btn","type":"FRAME"}
+{"width":225,"height":24,"name":"ПЕРЕЙТИ В КАТАЛОГ","type":"TEXT"}
+{"width":58,"height":0.000005070521183370147,"name":"Line 1","type":"VECTOR"}
+{"paddingLeft":60,"paddingRight":60,"itemSpacing":136,"width":1280,"height":44,"name":"menu","type":"FRAME"}
+{"itemSpacing":10,"width":81,"height":44,"name":"logo","type":"FRAME"}
+{"width":61,"height":44,"name":"Vector","type":"VECTOR"}
+{"width":69,"height":18,"name":"О БРЕНДЕ","type":"TEXT"}
+{"width":62,"height":18,"name":"КАТАЛОГ","type":"TEXT"}
+{"width":105,"height":18,"name":"ПОКУПАТЕЛЯМ","type":"TEXT"}
+{"width":74,"height":18,"name":"КОНТАКТЫ","type":"TEXT"}
+{"width":88,"height":18,"name":"ПОДДЕРЖКА","type":"TEXT"}
+{"paddingLeft":60,"paddingRight":60,"itemSpacing":24,"width":1280,"height":1643,"name":"Frame 68","type":"FRAME"}
+{"itemSpacing":60,"width":1165,"height":184,"name":"body","type":"FRAME"}
+{"itemSpacing":72,"width":1165,"height":184,"name":"Frame 67","type":"FRAME"}
+{"itemSpacing":18,"width":1165,"height":184,"name":"catalog","type":"FRAME"}
+{"itemSpacing":28,"width":1165,"height":184,"name":"Frame 15","type":"FRAME"}
+{"width":1165,"height":30,"name":"КАТАЛОГ","type":"TEXT"}
+{"itemSpacing":8,"width":1165,"height":126,"name":"Frame 14","type":"FRAME"}
+{"width":879,"height":88,"name":"Наши украшения для любого случая  Для офиса или отпуска, свидания или вечеринки — у каждого повода есть своё настроение, а у нас есть то самое украшение, чтобы его подчеркнуть","type":"TEXT"}
+{"width":1165,"height":30,"name":"ВЫБЕРИ СВОЕ","type":"TEXT"}
+{"itemSpacing":41,"width":1160,"height":1399,"name":"sections","type":"FRAME"}
+{"width":1160,"height":1039,"name":"Frame 116","type":"FRAME"}
+{"itemSpacing":-71,"width":550,"height":319,"name":"section 1","type":"FRAME"}
+{"cornerRadii":[0,0,0,0],"width":550.0000139439317,"height":318.9999935236856,"name":"Rectangle 3371","type":"VECTOR"}
+{"paddingLeft":24,"paddingRight":24,"paddingTop":24,"paddingBottom":24,"itemSpacing":10,"width":129,"height":75,"name":"Frame 17","type":"FRAME"}
+{"width":81,"height":27,"name":"КОЛЬЕ","type":"TEXT"}
+{"paddingTop":24,"paddingBottom":24,"itemSpacing":10,"width":120,"height":48,"name":"Frame 18","type":"FRAME"}
+{"width":100,"height":0.000008742277714191005,"name":"Line 2","type":"VECTOR"}
+{"itemSpacing":-71,"width":550,"height":319,"name":"section 2","type":"FRAME"}
+{"cornerRadii":[0,0,0,0],"width":550.0000139439317,"height":318.9999935236856,"name":"Rectangle 3371","type":"VECTOR"}
+{"paddingLeft":24,"paddingRight":24,"paddingTop":24,"paddingBottom":24,"itemSpacing":10,"width":177,"height":75,"name":"Frame 17","type":"FRAME"}
+{"width":129,"height":27,"name":"браслеты","type":"TEXT"}
+{"paddingTop":24,"paddingBottom":24,"itemSpacing":10,"width":120,"height":48,"name":"Frame 18","type":"FRAME"}
+{"width":100,"height":0.000008742277714191005,"name":"Line 2","type":"VECTOR"}
+{"itemSpacing":-71,"width":550,"height":321,"name":"section 2","type":"FRAME"}
+{"cornerRadii":[0,0,0,0],"width":550.0000140313541,"height":320.9999935236856,"name":"Rectangle 3371","type":"VECTOR"}
+{"paddingLeft":24,"paddingRight":24,"paddingTop":24,"paddingBottom":24,"itemSpacing":10,"width":140,"height":75,"name":"Frame 17","type":"FRAME"}
+{"width":92,"height":27,"name":"серьги","type":"TEXT"}
+{"paddingTop":24,"paddingBottom":24,"itemSpacing":10,"width":120,"height":48,"name":"Frame 18","type":"FRAME"}
+{"width":100,"height":0.000008742277714191005,"name":"Line 2","type":"VECTOR"}
+{"itemSpacing":-71,"width":550,"height":321,"name":"section 4","type":"FRAME"}
+{"cornerRadii":[0,0,0,0],"width":550.0000140313541,"height":320.9999935236856,"name":"Rectangle 3371","type":"VECTOR"}
+{"paddingLeft":24,"paddingRight":24,"paddingTop":24,"paddingBottom":24,"itemSpacing":10,"width":321,"height":75,"name":"Frame 17","type":"FRAME"}
+{"width":273,"height":27,"name":"изделия из жемчуга","type":"TEXT"}
+{"paddingTop":24,"paddingBottom":24,"itemSpacing":10,"width":120,"height":48,"name":"Frame 18","type":"FRAME"}
+{"width":100,"height":0.000008742277714191005,"name":"Line 2","type":"VECTOR"}
+{"itemSpacing":-71,"width":550,"height":321,"name":"section 5","type":"FRAME"}
+{"cornerRadii":[0,0,0,0],"width":550.0000140313541,"height":320.9999935236856,"name":"Rectangle 3371","type":"VECTOR"}
+{"paddingLeft":24,"paddingRight":24,"paddingTop":24,"paddingBottom":24,"itemSpacing":10,"width":202,"height":75,"name":"Frame 17","type":"FRAME"}
+{"width":154,"height":27,"name":"комплекты","type":"TEXT"}
+{"paddingTop":24,"paddingBottom":24,"itemSpacing":10,"width":120,"height":48,"name":"Frame 18","type":"FRAME"}
+{"width":100,"height":0.000008742277714191005,"name":"Line 2","type":"VECTOR"}
+{"itemSpacing":-71,"width":550,"height":321,"name":"section 6","type":"FRAME"}
+{"cornerRadii":[0,0,0,0],"width":550.0000140313541,"height":320.9999935236856,"name":"Rectangle 3371","type":"VECTOR"}
+{"paddingLeft":24,"paddingRight":24,"paddingTop":24,"paddingBottom":24,"itemSpacing":10,"width":326,"height":75,"name":"Frame 17","type":"FRAME"}
+{"width":278,"height":27,"name":"пляжная коллекция","type":"TEXT"}
+{"paddingTop":24,"paddingBottom":24,"itemSpacing":10,"width":120,"height":48,"name":"Frame 18","type":"FRAME"}
+{"width":100,"height":0.000008742277714191005,"name":"Line 2","type":"VECTOR"}
+{"itemSpacing":-71,"width":1160,"height":319,"name":"section 7","type":"FRAME"}
+{"cornerRadii":[0,0,0,0],"width":1160.0000139439298,"height":318.99998967005376,"name":"Rectangle 3371","type":"VECTOR"}
+{"paddingLeft":24,"paddingRight":24,"paddingTop":24,"paddingBottom":24,"itemSpacing":10,"width":188,"height":75,"name":"Frame 17","type":"FRAME"}
+{"width":140,"height":27,"name":"Бохо-Этно","type":"TEXT"}
+{"paddingTop":24,"paddingBottom":24,"itemSpacing":10,"width":120,"height":48,"name":"Frame 18","type":"FRAME"}
+{"width":100,"height":0.000008742277714191005,"name":"Line 2","type":"VECTOR"}
+{"paddingLeft":60,"paddingRight":60,"paddingTop":62,"paddingBottom":62,"itemSpacing":10,"width":1280,"height":382,"name":"Frame 113","type":"FRAME"}
+{"width":1280,"height":382,"name":"Frame 112","type":"FRAME"}
+{"cornerRadii":[1,0,0,1],"width":720,"height":382,"name":"Rectangle 3400","type":"RECTANGLE"}
+{"cornerRadii":[0,1,1,0],"width":560,"height":382,"name":"Rectangle 3399","type":"RECTANGLE"}
+{"width":578,"height":258,"name":"contacts","type":"FRAME"}
+{"itemSpacing":40,"width":578,"height":258,"name":"contacts","type":"FRAME"}
+{"itemSpacing":28,"width":578,"height":158,"name":"Frame 11","type":"FRAME"}
+{"width":578,"height":30,"name":"КОНТАКТЫ","type":"TEXT"}
+{"itemSpacing":8,"width":578,"height":100,"name":"Frame 10","type":"FRAME"}
+{"width":578,"height":66,"name":"Мы стараемся, чтобы каждая покупка приносила радость. Если вы сомневаетесь в размере или хотите увидеть дополнительные фото украшения","type":"TEXT"}
+{"width":578,"height":26,"name":"НАПИШИТЕ НАМ","type":"TEXT"}
+{"paddingLeft":151,"paddingRight":150,"paddingTop":13,"paddingBottom":12,"itemSpacing":10,"cornerRadius":1,"width":300,"height":60,"name":"btn","type":"FRAME"}
+{"width":46,"height":26,"name":"MAX","type":"TEXT"}
+{"paddingLeft":60,"paddingRight":60,"paddingTop":29,"paddingBottom":100,"itemSpacing":10,"width":1280,"height":465,"name":"footer","type":"FRAME"}
+{"paddingTop":100,"paddingBottom":100,"itemSpacing":28,"width":1280,"height":465,"name":"footer","type":"FRAME"}
+{"itemSpacing":147,"width":1280,"height":265,"name":"Frame 111","type":"FRAME"}
+{"paddingLeft":60,"itemSpacing":100,"width":1280,"height":265,"name":"Frame 20","type":"FRAME"}
+{"itemSpacing":24,"width":177,"height":265,"name":"Frame 20","type":"FRAME"}
+{"width":155,"height":16,"name":"каталог","type":"TEXT"}
+{"itemSpacing":20,"width":152,"height":225,"name":"Frame 136","type":"FRAME"}
+{"width":44,"height":15,"name":"колье","type":"TEXT"}
+{"width":70,"height":15,"name":"браслеты","type":"TEXT"}
+{"width":51,"height":15,"name":"серьги","type":"TEXT"}
+{"width":149,"height":15,"name":"изделия из жемчуга","type":"TEXT"}
+{"width":84,"height":15,"name":"комплекты","type":"TEXT"}
+{"width":152,"height":15,"name":"пляжная коллекция","type":"TEXT"}
+{"width":77,"height":15,"name":"бохо-этно","type":"TEXT"}
+{"itemSpacing":24,"width":212,"height":125,"name":"Frame 19","type":"FRAME"}
+{"width":155,"height":16,"name":"ПОКУПАТЕЛЯМ","type":"TEXT"}
+{"itemSpacing":20,"width":182,"height":85,"name":"Frame 137","type":"FRAME"}
+{"width":140,"height":15,"name":"доставка и оплата","type":"TEXT"}
+{"width":143,"height":15,"name":"гарантия и возврат","type":"TEXT"}
+{"width":182,"height":15,"name":"рекомендации по уходу","type":"TEXT"}
+{"itemSpacing":47,"width":121,"height":142,"name":"Frame 135","type":"FRAME"}
+{"width":94,"height":16,"name":"О БРЕНДЕ","type":"TEXT"}
+{"width":101,"height":16,"name":"КОНТАКТЫ","type":"TEXT"}
+{"width":121,"height":16,"name":"поддержка","type":"TEXT"}
+{"itemSpacing":18,"width":327,"height":71.87879180908203,"name":"contacts","type":"FRAME"}
+{"paddingLeft":60,"paddingRight":60,"itemSpacing":29,"width":327,"height":37.878787994384766,"name":"Frame 110","type":"FRAME"}
+{"width":100,"height":37.878787994384766,"name":"icon","type":"INSTANCE"}
+{"width":37.878787994384766,"height":37.878787994384766,"name":"Group 47","type":"GROUP"}
+{"width":37.878787994384766,"height":37.878787994384766,"name":"Ellipse 14","type":"ELLIPSE"}
+{"width":20.454545974731445,"height":17.809114456176758,"name":"XMLID_496_","type":"GROUP"}
+{"width":37.878787994384766,"height":37.878787994384766,"name":"Group 46","type":"GROUP"}
+{"width":37.878787994384766,"height":37.878787994384766,"name":"Ellipse 13","type":"ELLIPSE"}
+{"width":19.696969985961914,"height":19.696969985961914,"name":"image 10","type":"RECTANGLE"}
+{"itemSpacing":10,"width":327,"height":16,"name":"Frame 119","type":"FRAME"}
+{"width":236,"height":16,"name":"8(909)888-88-88","type":"TEXT"}
+{"itemSpacing":19,"width":244,"height":134,"name":"Frame 138","type":"FRAME"}
+{"width":185,"height":16,"name":"Оферта","type":"TEXT"}
+{"width":185,"height":32,"name":"Политика обработки персональных данных","type":"TEXT"}
+{"width":244,"height":48,"name":"ИП Иванов Иван Иванович ИНН: 00000000 ОГРН: 0000000000000","type":"TEXT"}
+
+===== Node 68:3376: menu =====
+Type: FRAME, Size: 1280x44
+
+--- Colors ---
+{"hex":"#2f2f2f","opacity":1}
+{"hex":"#f5a2b7","opacity":1}
+
+--- Typography (unique) ---
+{"fontFamily":"Forum","fontSize":16,"fontWeight":400,"lineHeightPx":17.663999557495117,"letterSpacing":0,"text":"О БРЕНДЕ"}
+
+--- Spacing/Layout ---
+{"paddingLeft":60,"paddingRight":60,"itemSpacing":136,"width":1280,"height":44,"name":"menu","type":"FRAME"}
+{"itemSpacing":10,"width":81,"height":44,"name":"logo","type":"FRAME"}
+{"width":61,"height":44,"name":"Vector","type":"VECTOR"}
+{"width":69,"height":18,"name":"О БРЕНДЕ","type":"TEXT"}
+{"width":62,"height":18,"name":"КАТАЛОГ","type":"TEXT"}
+{"width":105,"height":18,"name":"ПОКУПАТЕЛЯМ","type":"TEXT"}
+{"width":74,"height":18,"name":"КОНТАКТЫ","type":"TEXT"}
+{"width":88,"height":18,"name":"ПОДДЕРЖКА","type":"TEXT"}
+
+===== Node 68:3450: footer =====
+Type: FRAME, Size: 1280x465
+
+--- Colors ---
+{"hex":"#fafafa","opacity":1}
+{"hex":"#f5a2b7","opacity":1}
+{"hex":"#2f2f2f","opacity":1}
+{"hex":"#ffffff","opacity":1}
+
+--- Typography (unique) ---
+{"fontFamily":"Forum","fontSize":22,"fontWeight":400,"lineHeightPx":16,"letterSpacing":0,"textCase":"UPPER","text":"каталог"}
+{"fontFamily":"Montserrat","fontSize":12,"fontWeight":400,"lineHeightPx":14.628000259399414,"letterSpacing":0,"textCase":"UPPER","text":"колье"}
+{"fontFamily":"Montserrat","fontSize":14,"fontWeight":400,"lineHeightPx":16,"letterSpacing":0,"text":"8(909)888-88-88"}
+
+--- Spacing/Layout ---
+{"paddingLeft":60,"paddingRight":60,"paddingTop":29,"paddingBottom":100,"itemSpacing":10,"width":1280,"height":465,"name":"footer","type":"FRAME"}
+{"paddingTop":100,"paddingBottom":100,"itemSpacing":28,"width":1280,"height":465,"name":"footer","type":"FRAME"}
+{"itemSpacing":147,"width":1280,"height":265,"name":"Frame 111","type":"FRAME"}
+{"paddingLeft":60,"itemSpacing":100,"width":1280,"height":265,"name":"Frame 20","type":"FRAME"}
+{"itemSpacing":24,"width":177,"height":265,"name":"Frame 20","type":"FRAME"}
+{"width":155,"height":16,"name":"каталог","type":"TEXT"}
+{"itemSpacing":20,"width":152,"height":225,"name":"Frame 136","type":"FRAME"}
+{"width":44,"height":15,"name":"колье","type":"TEXT"}
+{"width":70,"height":15,"name":"браслеты","type":"TEXT"}
+{"width":51,"height":15,"name":"серьги","type":"TEXT"}
+{"width":149,"height":15,"name":"изделия из жемчуга","type":"TEXT"}
+{"width":84,"height":15,"name":"комплекты","type":"TEXT"}
+{"width":152,"height":15,"name":"пляжная коллекция","type":"TEXT"}
+{"width":77,"height":15,"name":"бохо-этно","type":"TEXT"}
+{"itemSpacing":24,"width":212,"height":125,"name":"Frame 19","type":"FRAME"}
+{"width":155,"height":16,"name":"ПОКУПАТЕЛЯМ","type":"TEXT"}
+{"itemSpacing":20,"width":182,"height":85,"name":"Frame 137","type":"FRAME"}
+{"width":140,"height":15,"name":"доставка и оплата","type":"TEXT"}
+{"width":143,"height":15,"name":"гарантия и возврат","type":"TEXT"}
+{"width":182,"height":15,"name":"рекомендации по уходу","type":"TEXT"}
+{"itemSpacing":47,"width":121,"height":142,"name":"Frame 135","type":"FRAME"}
+{"width":94,"height":16,"name":"О БРЕНДЕ","type":"TEXT"}
+{"width":101,"height":16,"name":"КОНТАКТЫ","type":"TEXT"}
+{"width":121,"height":16,"name":"поддержка","type":"TEXT"}
+{"itemSpacing":18,"width":327,"height":71.87879180908203,"name":"contacts","type":"FRAME"}
+{"paddingLeft":60,"paddingRight":60,"itemSpacing":29,"width":327,"height":37.878787994384766,"name":"Frame 110","type":"FRAME"}
+{"width":100,"height":37.878787994384766,"name":"icon","type":"INSTANCE"}
+{"width":37.878787994384766,"height":37.878787994384766,"name":"Group 47","type":"GROUP"}
+{"width":37.878787994384766,"height":37.878787994384766,"name":"Ellipse 14","type":"ELLIPSE"}
+{"width":20.454545974731445,"height":17.809114456176758,"name":"XMLID_496_","type":"GROUP"}
+{"width":20.454545974731445,"height":17.809114456176758,"name":"XMLID_497_","type":"VECTOR"}
+{"width":37.878787994384766,"height":37.878787994384766,"name":"Group 46","type":"GROUP"}
+{"width":37.878787994384766,"height":37.878787994384766,"name":"Ellipse 13","type":"ELLIPSE"}
+{"width":19.696969985961914,"height":19.696969985961914,"name":"image 10","type":"RECTANGLE"}
+{"itemSpacing":10,"width":327,"height":16,"name":"Frame 119","type":"FRAME"}
+{"width":236,"height":16,"name":"8(909)888-88-88","type":"TEXT"}
+{"itemSpacing":19,"width":244,"height":134,"name":"Frame 138","type":"FRAME"}
+{"width":185,"height":16,"name":"Оферта","type":"TEXT"}
+{"width":185,"height":32,"name":"Политика обработки персональных данных","type":"TEXT"}
+{"width":244,"height":48,"name":"ИП Иванов Иван Иванович ИНН: 00000000 ОГРН: 0000000000000","type":"TEXT"}

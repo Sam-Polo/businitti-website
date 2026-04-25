@@ -1,0 +1,114 @@
+/*
+ * Design System Variables
+ * Extracted from Figma: businitti-сайт
+ * Source frames: Main Page Desktop (68-3367), Header (68-3376), Footer (68-3450)
+ *
+ * Fonts: Forum (display/headings), Montserrat (body/UI)
+ * All text uses weight 400 (regular). Uppercase is achieved via text-transform.
+ */
+
+:root {
+  /* ===== Colors ===== */
+
+  /* Backgrounds */
+  --color-bg-primary: #fffdfd;       /* Main page background — warm near-white */
+  --color-bg-secondary: #fafafa;     /* Footer & alternate sections — light gray */
+  --color-bg-white: #ffffff;         /* Cards, overlays, pure white surfaces */
+
+  /* Text */
+  --color-text-primary: #2f2f2f;     /* Primary text & headings */
+  --color-text-inverse: #ffffff;     /* Text on dark/accent backgrounds */
+
+  /* Accent / Brand */
+  --color-accent: #f5a2b7;          /* Brand pink — logo highlight, buttons, links */
+  --color-accent-hover: #f08da5;    /* Slightly darker pink for hover states */
+
+  /* Borders & Strokes */
+  --color-border: #2f2f2f;          /* Default border color (matches text) */
+  --color-border-accent: #f5a2b7;   /* Accent border — highlighted elements */
+  --color-border-light: #ffffff;    /* White border on dark backgrounds */
+
+  /* Overlays & Shadows */
+  --color-overlay: rgba(0, 0, 0, 0.2);  /* Modal/image overlay */
+
+
+  /* ===== Typography ===== */
+
+  /* Font Families */
+  --font-display: 'Forum', serif;           /* Headings, section titles, logo text */
+  --font-body: 'Montserrat', sans-serif;    /* Body text, buttons, captions */
+
+  /* Font Sizes — Display (Forum) */
+  --font-size-hero: 48px;           /* Hero banner heading */
+  --font-size-section-title: 46px;  /* Large section titles (e.g. "КАТАЛОГ") */
+  --font-size-subtitle: 24px;       /* Subsection headings (e.g. "ВЫБЕРИ СВОЕ") */
+  --font-size-card-title: 22px;     /* Category card titles, footer column headers */
+  --font-size-nav: 16px;            /* Header navigation links */
+
+  /* Font Sizes — Body (Montserrat) */
+  --font-size-category-label: 22px; /* Category overlay labels */
+  --font-size-button: 20px;         /* CTA button text */
+  --font-size-body: 18px;           /* Body/description text */
+  --font-size-contact: 14px;        /* Phone numbers, small info text */
+  --font-size-caption: 12px;        /* Captions, footer links */
+
+  /* Font Weight — the design uses a single weight throughout */
+  --font-weight-regular: 400;
+
+  /* Line Heights */
+  --line-height-hero: 53px;         /* Hero heading */
+  --line-height-section-title: 30px;/* Section titles */
+  --line-height-body: 22px;         /* Body text */
+  --line-height-nav: 18px;          /* Navigation */
+  --line-height-caption: 15px;      /* Captions, small text */
+  --line-height-tight: 16px;        /* Compact elements (cards, footer headers) */
+
+
+  /* ===== Spacing ===== */
+
+  /* Page-level */
+  --page-padding-x: 60px;           /* Horizontal page padding (left & right) */
+  --page-max-width: 1280px;         /* Max layout width */
+  --content-max-width: 1160px;      /* Inner content max width (1280 - 2*60) */
+
+  /* Section spacing */
+  --spacing-section-xl: 100px;      /* Footer top/bottom padding */
+  --spacing-section-lg: 72px;       /* Large gap between major sections */
+  --spacing-section-md: 60px;       /* Medium section gap */
+  --spacing-section-sm: 40px;       /* Contacts block inner gap */
+
+  /* Component spacing */
+  --spacing-xl: 41px;               /* Gap between category grid items */
+  --spacing-lg: 28px;               /* Gap within section header blocks */
+  --spacing-md: 24px;               /* Card padding, column gaps, section inner */
+  --spacing-sm: 18px;               /* Catalog header to content */
+  --spacing-xs: 12px;               /* Small element gaps */
+  --spacing-2xs: 10px;              /* Tight element gaps (logo, icons) */
+  --spacing-3xs: 8px;               /* Minimal gaps (text blocks) */
+
+  /* Specific spacing */
+  --header-height: 44px;            /* Header bar height */
+  --header-nav-gap: 136px;          /* Gap between logo and nav items in header */
+  --footer-column-gap: 100px;       /* Gap between footer columns */
+  --footer-link-gap: 20px;          /* Gap between footer links */
+
+  /* Button padding */
+  --button-padding-x: 16px;         /* Button horizontal padding (inline CTA) */
+  --button-padding-y: 13px;         /* Button vertical padding (block CTA) */
+  --button-padding-x-lg: 150px;     /* Large button horizontal padding */
+
+  /* Category card */
+  --card-padding: 24px;             /* Category card inner padding */
+  --card-overlap: 71px;             /* Negative margin for category card labels */
+
+
+  /* ===== Borders & Radius ===== */
+
+  --border-radius-sm: 1px;          /* Subtle rounding on buttons & rectangles */
+  --border-radius-none: 0;          /* Most elements use sharp corners */
+
+
+  /* ===== Breakpoints (for reference) ===== */
+  --breakpoint-desktop: 1280px;
+  /* Mobile breakpoint to be determined from mobile frames */
+}
