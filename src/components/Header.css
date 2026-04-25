@@ -1,0 +1,135 @@
+.header {
+  width: 100%;
+}
+
+.header__inner {
+  display: flex;
+  align-items: center;
+  gap: 136px;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 0 var(--page-padding-x);
+}
+
+.header__logo {
+  flex-shrink: 0;
+}
+
+.header__logo img {
+  width: 81px;
+  height: 44px;
+}
+
+.header__nav {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  width: 100%;
+}
+
+.header__link {
+  font-family: var(--font-display);
+  font-size: var(--font-size-nav);
+  font-weight: var(--font-weight-regular);
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+
+.header__link:hover,
+.header__link.active {
+  color: var(--color-accent);
+}
+
+.header__link--accent {
+  color: var(--color-accent);
+  margin-left: auto;
+}
+
+.header__link--accent:hover {
+  color: var(--color-accent-hover);
+}
+
+/* Burger — hidden on desktop */
+.header__burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 101;
+}
+
+.header__burger span {
+  display: block;
+  width: 100%;
+  height: 1.5px;
+  background-color: var(--color-text-primary);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.header__burger--open span:nth-child(1) {
+  transform: translateY(7.5px) rotate(45deg);
+}
+
+.header__burger--open span:nth-child(2) {
+  opacity: 0;
+}
+
+.header__burger--open span:nth-child(3) {
+  transform: translateY(-7.5px) rotate(-45deg);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .header__inner {
+    padding: 12px 16px;
+    gap: 0;
+    justify-content: space-between;
+  }
+
+  .header__logo img {
+    width: 52px;
+    height: auto;
+  }
+
+  .header__burger {
+    display: flex;
+  }
+
+  .header__nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 32px;
+    background-color: var(--color-bg-primary);
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .header__nav--open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .header__link {
+    font-size: 24px;
+  }
+
+  .header__link--accent {
+    margin-left: 0;
+  }
+}
