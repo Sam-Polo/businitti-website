@@ -1,11 +1,14 @@
 /* ===== Hero ===== */
 
 .hero {
-  padding: 32px 0;
+  padding-top: 48px;
 }
 
 .hero__inner {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
 }
 
 .hero__image-wrapper {
@@ -23,17 +26,14 @@
 }
 
 .hero__content {
-  position: absolute;
-  bottom: 40px;
-  left: 40px;
-  right: 40px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  width: 100%;
 }
 
 .hero__title {
-  color: var(--color-text-inverse);
+  color: var(--color-text-primary);
   font-family: var(--font-display);
   font-size: var(--font-size-hero);
   line-height: var(--line-height-hero);
@@ -42,34 +42,28 @@
 }
 
 .hero__btn {
-  color: var(--color-text-inverse);
-  border-bottom-color: var(--color-text-inverse);
+  align-self: flex-end;
   font-size: var(--font-size-button);
   text-transform: uppercase;
-}
-
-.hero__btn:hover {
-  color: var(--color-accent);
-  border-bottom-color: var(--color-accent);
 }
 
 /* ===== Catalog ===== */
 
 .catalog {
-  padding: 60px 0;
+  padding-top: 24px;
 }
 
 .catalog__header {
   display: flex;
   flex-direction: column;
   gap: 18px;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: 60px;
 }
 
 .catalog__titles {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
+  gap: 28px;
 }
 
 .catalog__title {
@@ -99,7 +93,8 @@
 .catalog__grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-xl);
+  column-gap: 60px;
+  row-gap: 41px;
 }
 
 .catalog__card {
@@ -143,8 +138,11 @@
 .catalog__card-line {
   position: relative;
   z-index: 1;
-  padding: 0 var(--card-padding) var(--card-padding);
+  padding: 0 0 var(--card-padding);
   margin-top: auto;
+  margin-left: auto;
+  width: 120px;
+  text-align: center;
 }
 
 /* ===== Home Contacts ===== */
@@ -212,14 +210,11 @@
 
 @media (max-width: 768px) {
   .hero {
-    padding: 16px 0;
+    padding-top: 24px;
   }
 
-  .hero__content {
-    bottom: 24px;
-    left: 16px;
-    right: 16px;
-    gap: 8px;
+  .hero__inner {
+    gap: 16px;
   }
 
   .hero__title {
@@ -232,7 +227,11 @@
   }
 
   .catalog {
-    padding: 40px 0;
+    padding-top: 24px;
+  }
+
+  .catalog__header {
+    margin-bottom: 32px;
   }
 
   .catalog__title {
@@ -251,7 +250,8 @@
 
   .catalog__grid {
     grid-template-columns: 1fr;
-    gap: 24px;
+    column-gap: 0;
+    row-gap: 24px;
   }
 
   .catalog__card {
