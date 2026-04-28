@@ -68,8 +68,8 @@
 
   /* Page-level */
   --page-padding-x: 60px;           /* Horizontal page padding (left & right) */
-  --page-max-width: 1440px;         /* Max layout width */
-  --content-max-width: 1320px;      /* Inner content max width (1440 - 2*60) */
+  --page-max-width: 1560px;         /* Max layout width */
+  --content-max-width: 1440px;      /* Inner content max width (1560 - 2*60) */
 
   /* Section spacing */
   --spacing-section-xl: 100px;      /* Footer top/bottom padding */
