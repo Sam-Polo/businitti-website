@@ -17,6 +17,7 @@
   background-color: #e0d5d0;
   position: relative;
   overflow: hidden;
+  border-radius: 0 12px 0 12px;
 }
 
 .hero__overlay {
@@ -103,6 +104,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  border-radius: 0 12px 0 12px;
 }
 
 .catalog__card--wide {
@@ -154,12 +156,16 @@
 .home-contacts__inner {
   display: grid;
   grid-template-columns: 720fr 560fr;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding-left: var(--page-padding-x);
+  padding-right: 0;
 }
 
 .home-contacts__image {
-  aspect-ratio: 720 / 382;
+  aspect-ratio: 560 / 382;
   background-color: #d5cec9;
-  border-radius: 1px 0 0 1px;
+  border-radius: 0;
 }
 
 .home-contacts__content {
@@ -170,7 +176,7 @@
   gap: var(--spacing-section-sm);
   padding: 40px;
   background-color: var(--color-bg-secondary);
-  border-radius: 0 1px 1px 0;
+  border-radius: 1px 0 0 1px;
 }
 
 .home-contacts__text {
@@ -273,17 +279,20 @@
 
   .home-contacts__inner {
     grid-template-columns: 1fr;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .home-contacts__content {
+    border-radius: 1px 1px 0 0;
+    padding: 24px 16px;
+    gap: 24px;
+    order: -1;
   }
 
   .home-contacts__image {
     aspect-ratio: 16 / 9;
-    border-radius: 1px 1px 0 0;
-  }
-
-  .home-contacts__content {
     border-radius: 0 0 1px 1px;
-    padding: 24px 16px;
-    gap: 24px;
   }
 
   .home-contacts__title {

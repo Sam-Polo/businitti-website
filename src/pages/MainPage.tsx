@@ -71,8 +71,7 @@ export default function MainPage() {
 
       {/* Contacts */}
       <section className="home-contacts">
-        <div className="home-contacts__inner container">
-          <div className="home-contacts__image" />
+        <div className="home-contacts__inner">
           <div className="home-contacts__content">
             <div className="home-contacts__text">
               <h2 className="home-contacts__title">Контакты</h2>
@@ -94,6 +93,7 @@ export default function MainPage() {
               MAX
             </a>
           </div>
+          <div className="home-contacts__image" />
         </div>
       </section>
     </main>
