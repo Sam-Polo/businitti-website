@@ -1,0 +1,80 @@
+name: Deploy Admin Panel to Timeweb
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'admin-panel/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            admin-panel/frontend/package-lock.json
+            admin-panel/backend/package-lock.json
+
+      # --- Frontend ---
+      - name: Install frontend dependencies
+        working-directory: admin-panel/frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: admin-panel/frontend
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ secrets.ADMIN_API_URL }}
+
+      # --- Backend ---
+      - name: Install backend dependencies
+        working-directory: admin-panel/backend
+        run: npm ci
+
+      - name: Build backend
+        working-directory: admin-panel/backend
+        run: npm run build
+
+      # --- Deploy frontend (static files) ---
+      - name: Deploy frontend to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          source: admin-panel/frontend/dist/*
+          target: ${{ secrets.ADMIN_DEPLOY_PATH }}/frontend
+          strip_components: 3
+
+      # --- Deploy backend ---
+      - name: Deploy backend to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          source: admin-panel/backend/dist/*,admin-panel/backend/package.json,admin-panel/backend/package-lock.json
+          target: ${{ secrets.ADMIN_DEPLOY_PATH }}/backend
+          strip_components: 2
+
+      # --- Install backend deps & restart ---
+      - name: Setup backend on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script: |
+            cd ${{ secrets.ADMIN_DEPLOY_PATH }}/backend
+            npm ci --omit=dev
+            pm2 restart businitti-admin || pm2 start dist/server.js --name businitti-admin
+            sudo systemctl reload nginx

@@ -35,23 +35,12 @@ const EditIcon = () => (
   </svg>
 )
 
-const TrashIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="3 6 5 6 21 6" />
-    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-    <line x1="10" y1="11" x2="10" y2="17" />
-    <line x1="14" y1="11" x2="14" y2="17" />
-  </svg>
-)
-
 function SortableCategoryRow({
   category,
-  onEdit,
-  onDelete
+  onEdit
 }: {
   category: Category
   onEdit: () => void
-  onDelete: () => void
 }) {
   const {
     attributes,
@@ -87,7 +76,6 @@ function SortableCategoryRow({
       <td>{category.description || '—'}</td>
       <td>
         <button type="button" className="btn-icon btn-edit" onClick={onEdit} title="Редактировать"><EditIcon /></button>
-        <button type="button" className="btn-icon btn-delete" onClick={onDelete} title="Убрать из мини-приложения"><TrashIcon /></button>
       </td>
     </tr>
   )
@@ -96,12 +84,11 @@ function SortableCategoryRow({
 function CategoriesPage({
   onNavigate
 }: {
-  onNavigate?: (page: 'products' | 'promocodes' | 'categories') => void
+  onNavigate?: (page: 'products' | 'categories') => void
 }) {
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
-  const [deleteConfirm, setDeleteConfirm] = useState<Category | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [formData, setFormData] = useState<{ key: string; title: string; description: string; image: string }>({
@@ -139,17 +126,6 @@ function CategoriesPage({
     window.location.reload()
   }
 
-  const handleAdd = () => {
-    setEditingCategory(null)
-    setFormData({
-      key: '',
-      title: '',
-      description: '',
-      image: ''
-    })
-    setIsModalOpen(true)
-  }
-
   const handleEdit = (c: Category) => {
     setEditingCategory(c)
     setFormData({
@@ -159,18 +135,6 @@ function CategoriesPage({
       image: c.image || ''
     })
     setIsModalOpen(true)
-  }
-
-  const handleDeleteClick = (c: Category) => {
-    setDeleteConfirm(c)
-  }
-
-  const handleDeleteConfirm = async () => {
-    if (!deleteConfirm) return
-    const key = deleteConfirm.key
-    setDeleteConfirm(null)
-    const next = categories.filter((c) => c.key !== key).map((c, i) => ({ ...c, order: i }))
-    await saveCategories(next)
   }
 
   const saveCategories = async (list: Category[]) => {
@@ -274,22 +238,16 @@ function CategoriesPage({
   return (
     <div className="admin-container">
       <header className="admin-header">
-        <h1>Админ-панель - KOSHEK JEWERLY</h1>
+        <h1>Админ-панель - BUSINITTI</h1>
         <div className="header-nav">
           <button className="nav-btn" onClick={() => onNavigate?.('products')}>
             Товары
-          </button>
-          <button className="nav-btn" onClick={() => onNavigate?.('promocodes')}>
-            Промокоды
           </button>
           <button className="nav-btn active" onClick={() => onNavigate?.('categories')}>
             Категории
           </button>
         </div>
         <div className="header-actions">
-          <button className="btn btn-add" onClick={handleAdd}>
-            + Добавить категорию
-          </button>
           <button onClick={handleLogout} className="logout-btn">
             Выйти
           </button>
@@ -298,28 +256,28 @@ function CategoriesPage({
 
       <div className="categories-content">
         <p className="categories-hint">
-          Категории отображаются в мини-приложении. Ключ — имя листа в Google Таблице с товарами. Удаление убирает только строку из листа categories, лист с товарами категории остаётся без изменений.
+          Категории фиксированы на сайте. Здесь можно редактировать описание и фото для каждой категории. Ключ — имя листа в Google Таблице с товарами.
         </p>
         {categories.length === 0 ? (
           <div className="empty-state">
-            <p>Нет категорий. Добавьте вручную или создайте из стандартных листов.</p>
+            <p>Нет категорий. Создайте стандартные категории Businitti.</p>
             <button
               type="button"
               className="btn btn-add"
               onClick={async () => {
                 const seed: Category[] = [
-                  { key: 'ягоды', title: 'Ягоды', description: '', image: '', image_position: '50% 50%', order: 0 },
-                  { key: 'выпечка', title: 'Выпечка', description: '', image: '', image_position: '50% 50%', order: 1 },
-                  { key: 'pets', title: 'FOR PETS', description: 'Украшения для ваших питомцев.', image: '', image_position: '50% 50%', order: 2 },
-                  { key: 'шея', title: 'Шея', description: 'Чокеры, колье, подвески', image: '', image_position: '50% 50%', order: 3 },
-                  { key: 'руки', title: 'Руки', description: 'Браслеты, кольца', image: '', image_position: '50% 50%', order: 4 },
-                  { key: 'уши', title: 'Уши', description: 'Серьги, каффы', image: '', image_position: '50% 50%', order: 5 },
-                  { key: 'сертификаты', title: 'Сертификаты', description: '', image: '', image_position: '50% 50%', order: 6 }
+                  { key: 'necklaces', title: 'Колье', description: 'Элегантные колье ручной работы из натуральных камней', image: '', image_position: '50% 50%', order: 0 },
+                  { key: 'bracelets', title: 'Браслеты', description: 'Изящные браслеты из натуральных камней', image: '', image_position: '50% 50%', order: 1 },
+                  { key: 'earrings', title: 'Серьги', description: 'Утончённые серьги из натуральных камней', image: '', image_position: '50% 50%', order: 2 },
+                  { key: 'pearl', title: 'Изделия из жемчуга', description: 'Украшения из натурального жемчуга', image: '', image_position: '50% 50%', order: 3 },
+                  { key: 'sets', title: 'Комплекты', description: 'Готовые комплекты украшений', image: '', image_position: '50% 50%', order: 4 },
+                  { key: 'beach', title: 'Пляжная коллекция', description: 'Украшения для пляжного сезона', image: '', image_position: '50% 50%', order: 5 },
+                  { key: 'boho', title: 'Бохо-Этно', description: 'Украшения в стиле бохо и этно', image: '', image_position: '50% 50%', order: 6 }
                 ]
                 await saveCategories(seed)
               }}
             >
-              Создать из стандартных листов
+              Создать стандартные категории
             </button>
           </div>
         ) : (
@@ -343,7 +301,6 @@ function CategoriesPage({
                         key={category.key}
                         category={category}
                         onEdit={() => handleEdit(category)}
-                        onDelete={() => handleDeleteClick(category)}
                       />
                     ))}
                   </SortableContext>
@@ -361,26 +318,11 @@ function CategoriesPage({
         </div>
       )}
 
-      {deleteConfirm && (
-        <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
-          <div className="modal-content confirm-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Убрать категорию из приложения?</h3>
-            <p>
-              Категория «{deleteConfirm.title}» перестанет отображаться в мини-приложении. Лист «{deleteConfirm.key}» в Google Таблице не удаляется.
-            </p>
-            <div className="confirm-actions">
-              <button className="btn btn-cancel" onClick={() => setDeleteConfirm(null)}>Отмена</button>
-              <button className="btn btn-confirm" onClick={handleDeleteConfirm}>Убрать</button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {isModalOpen && (
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="modal-content modal-form" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setIsModalOpen(false)}>×</button>
-            <h2>{editingCategory ? 'Редактировать категорию' : 'Добавить категорию'}</h2>
+            <h2>Редактировать категорию</h2>
             <div className="form-group">
               <label>Ключ (имя листа в Google Таблице) *</label>
               <input

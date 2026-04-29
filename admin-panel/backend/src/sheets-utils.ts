@@ -49,7 +49,7 @@ export function normalizeSheetName(category: string): string {
 }
 
 // колонки листа товаров категории
-const PRODUCT_SHEET_HEADERS = ['slug', 'title', 'description', 'price_rub', 'discount_price_rub', 'badge_text', 'images', 'active', 'stock', 'article']
+const PRODUCT_SHEET_HEADERS = ['id', 'slug', 'title', 'description', 'price_rub', 'discount_price_rub', 'badge_text', 'images', 'active', 'stock', 'article']
 
 // проверка/создание листа товаров для категории (с заголовками)
 export async function ensureProductSheet(
@@ -75,7 +75,7 @@ export async function ensureProductSheet(
     })
     await sheets.spreadsheets.values.update({
       spreadsheetId: sheetId,
-      range: `${sheetName}!A1:J1`,
+      range: `${sheetName}!A1:K1`,
       valueInputOption: 'USER_ENTERED',
       requestBody: {
         values: [PRODUCT_SHEET_HEADERS]

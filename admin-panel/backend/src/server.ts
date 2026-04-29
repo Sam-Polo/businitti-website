@@ -22,6 +22,8 @@ app.use(cors({
 
 // ограничение размера JSON body для защиты от DoS
 app.use(express.json({ limit: '1mb' }))
+// для Робокассы (Result URL приходит как form-urlencoded)
+app.use(express.urlencoded({ extended: true, limit: '1mb' }))
 
 // health check
 app.get('/health', (req: express.Request, res: express.Response) => {
@@ -35,6 +37,7 @@ import uploadRoutes from './routes/upload.js'
 import promocodeRoutes from './routes/promocodes.js'
 import settingsRoutes from './routes/settings.js'
 import categoriesRoutes from './routes/categories.js'
+import paymentRoutes from './routes/payment.js'
 
 app.use('/api/auth', authRoutes)
 app.use('/api/products', productRoutes)
@@ -42,6 +45,7 @@ app.use('/api/upload', uploadRoutes)
 app.use('/api/promocodes', promocodeRoutes)
 app.use('/api/settings', settingsRoutes)
 app.use('/api/categories', categoriesRoutes)
+app.use('/api/payment', paymentRoutes)
 
 app.listen(PORT, () => {
   logger.info(`Админ-панель бэкенд запущен на порту ${PORT}`)

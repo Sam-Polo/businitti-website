@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { api, getToken, saveToken, removeToken } from './api'
 import { generateSlug, formatArticle, parseArticle, normalizeArticle } from './utils'
-import PromocodesPage from './PromocodesPage'
 import CategoriesPage from './CategoriesPage'
 import {
   DndContext,
@@ -145,7 +144,7 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
     <div className="login-container">
       <div className="login-box">
         <h1>Админ-панель</h1>
-        <h2>KOSHEK JEWERLY</h2>
+        <h2>BUSINITTI</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Логин</label>
@@ -178,7 +177,7 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
 
 type CategoryOption = { key: string; title: string }
 
-function ProductsList({ onNavigate }: { onNavigate?: (page: 'products' | 'promocodes' | 'categories') => void }) {
+function ProductsList({ onNavigate }: { onNavigate?: (page: 'products' | 'categories') => void }) {
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<CategoryOption[]>([])
   const [loading, setLoading] = useState(true)
@@ -561,21 +560,15 @@ function ProductsList({ onNavigate }: { onNavigate?: (page: 'products' | 'promoc
   return (
     <div className="admin-container">
       <header className="admin-header">
-        <h1>Админ-панель - KOSHEK JEWERLY</h1>
+        <h1>Админ-панель - BUSINITTI</h1>
         <div className="header-nav">
-          <button 
+          <button
             className="nav-btn active"
             onClick={() => onNavigate?.('products')}
           >
             Товары
           </button>
-          <button 
-            className="nav-btn"
-            onClick={() => onNavigate?.('promocodes')}
-          >
-            Промокоды
-          </button>
-          <button 
+          <button
             className="nav-btn"
             onClick={() => onNavigate?.('categories')}
           >
@@ -784,14 +777,7 @@ function ProductsList({ onNavigate }: { onNavigate?: (page: 'products' | 'promoc
                         >
                         <div className="product-images">
                           {product.images.length > 0 ? (
-                            <>
-                              <img src={product.images[0]} alt={product.title} />
-                              {product.badge_text && (
-                                <div className="product-card-badge">
-                                  {product.badge_text}
-                                </div>
-                              )}
-                            </>
+                            <img src={product.images[0]} alt={product.title} />
                           ) : (
                             <div className="no-image">Нет фото</div>
                           )}
@@ -1257,25 +1243,6 @@ function ProductModal({
                 </span>
               </div>
               
-              {product.badge_text && (
-                <div className="detail-row">
-                  <span className="detail-label">Бейдж:</span>
-                  <span className="detail-value">
-                    <span style={{ 
-                      background: '#5e6623', 
-                      color: 'white', 
-                      padding: '2px 12px', /* вертикальный отступ (сверху и снизу) между границей текста и бейджем */
-                      borderRadius: '20px', 
-                      fontSize: '12px', 
-                      fontWeight: 600,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px'
-                    }}>
-                      {product.badge_text}
-                    </span>
-                  </span>
-                </div>
-              )}
               
               {product.stock !== undefined && (
                 <div className="detail-row">
@@ -1451,14 +1418,7 @@ function SortableProductCard({
       >
         <div className="product-images">
           {product.images.length > 0 ? (
-            <>
-              <img src={product.images[0]} alt={product.title} />
-              {product.badge_text && (
-                <div className="product-card-badge">
-                  {product.badge_text}
-                </div>
-              )}
-            </>
+            <img src={product.images[0]} alt={product.title} />
           ) : (
             <div className="no-image">Нет фото</div>
           )}
@@ -2013,19 +1973,6 @@ function ProductFormModal({
               )}
             </div>
             
-            <div className="form-group">
-              <label>Текст бейджа</label>
-              <input
-                type="text"
-                value={formData.badge_text || ''}
-                onChange={(e) => handleChange('badge_text', e.target.value || undefined)}
-                placeholder="Оставь пустым, чтобы убрать бейдж"
-                maxLength={50}
-              />
-              {formData.badge_text && (
-                <small style={{ color: '#666' }}>Бейдж будет отображаться сверху карточки товара</small>
-              )}
-            </div>
           </div>
 
           <div className="form-row">
@@ -2034,8 +1981,8 @@ function ProductFormModal({
               <input
                 type="number"
                 min="0"
-                value={formData.stock || ''}
-                onChange={(e) => handleChange('stock', e.target.value ? parseInt(e.target.value) : undefined)}
+                value={formData.stock !== undefined && formData.stock !== null ? formData.stock : ''}
+                onChange={(e) => handleChange('stock', e.target.value !== '' ? parseInt(e.target.value) : undefined)}
                 placeholder="Количество товара в наличии"
               />
             </div>
@@ -2171,7 +2118,7 @@ function ProductFormModal({
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [checking, setChecking] = useState(true)
-  const [currentPage, setCurrentPage] = useState<'products' | 'promocodes' | 'categories'>('products')
+  const [currentPage, setCurrentPage] = useState<'products' | 'categories'>('products')
   const [isPageLoading, setIsPageLoading] = useState(false)
 
   useEffect(() => {
@@ -2183,7 +2130,7 @@ export default function App() {
     setChecking(false)
   }, [])
 
-  const handlePageChange = (page: 'products' | 'promocodes' | 'categories') => {
+  const handlePageChange = (page: 'products' | 'categories') => {
     if (page !== currentPage) {
       setIsPageLoading(true)
       // небольшая задержка для плавной анимации
@@ -2210,9 +2157,7 @@ export default function App() {
         </div>
       )}
       <div className={`admin-content-wrapper ${isPageLoading ? 'fade-out' : 'fade-in'}`}>
-        {currentPage === 'promocodes' ? (
-          <PromocodesPage onNavigate={handlePageChange} />
-        ) : currentPage === 'categories' ? (
+        {currentPage === 'categories' ? (
           <CategoriesPage onNavigate={handlePageChange} />
         ) : (
           <ProductsList onNavigate={handlePageChange} />

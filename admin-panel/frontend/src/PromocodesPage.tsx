@@ -91,7 +91,7 @@ function PromocodesPage({ onNavigate }: { onNavigate?: (page: 'products' | 'prom
   return (
     <div className="admin-container">
       <header className="admin-header">
-        <h1>Админ-панель - KOSHEK JEWERLY</h1>
+        <h1>Админ-панель - BUSINITTI</h1>
         <div className="header-nav">
           <button 
             className="nav-btn"
