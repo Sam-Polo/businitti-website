@@ -71,12 +71,16 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_PORT || 22 }}
           script: |
+            set -e
             tar -xzf /tmp/deploy.tar.gz -C /tmp/
-            rsync -a --delete /tmp/deploy/frontend/ /opt/businitti-admin/frontend/
-            rsync -a --delete /tmp/deploy/backend/ /opt/businitti-admin/backend/
+            rm -rf /opt/businitti-admin/frontend
+            cp -r /tmp/deploy/frontend /opt/businitti-admin/frontend
+            rm -rf /opt/businitti-admin/backend/dist
+            cp -r /tmp/deploy/backend/dist /opt/businitti-admin/backend/dist
+            cp /tmp/deploy/backend/package.json /opt/businitti-admin/backend/package.json
+            cp /tmp/deploy/backend/package-lock.json /opt/businitti-admin/backend/package-lock.json
             rm -rf /tmp/deploy /tmp/deploy.tar.gz
             cd /opt/businitti-admin/backend
             npm ci --omit=dev
             pm2 restart businitti-admin || pm2 start dist/server.js --name businitti-admin
             pm2 save
-            nginx -t && systemctl reload nginx
