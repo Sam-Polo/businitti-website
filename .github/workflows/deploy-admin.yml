@@ -41,32 +41,29 @@ jobs:
         working-directory: admin-panel/backend
         run: npm run build
 
-      # --- Deploy frontend (static files) ---
-      - name: Deploy frontend to server
+      # --- Упаковываем всё в один архив ---
+      - name: Package artifacts
+        run: |
+          mkdir -p deploy/frontend deploy/backend
+          cp -r admin-panel/frontend/dist/. deploy/frontend/
+          cp -r admin-panel/backend/dist/. deploy/backend/dist/
+          cp admin-panel/backend/package.json deploy/backend/
+          cp admin-panel/backend/package-lock.json deploy/backend/
+          tar -czf deploy.tar.gz deploy/
+
+      # --- Копируем архив на сервер ---
+      - name: Upload archive to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_PORT || 22 }}
-          source: admin-panel/frontend/dist/*
-          target: ${{ secrets.ADMIN_DEPLOY_PATH }}/frontend
-          strip_components: 3
+          source: deploy.tar.gz
+          target: /tmp/
 
-      # --- Deploy backend ---
-      - name: Deploy backend to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: ${{ secrets.SERVER_PORT || 22 }}
-          source: admin-panel/backend/dist/*,admin-panel/backend/package.json,admin-panel/backend/package-lock.json
-          target: ${{ secrets.ADMIN_DEPLOY_PATH }}/backend
-          strip_components: 2
-
-      # --- Install backend deps & restart ---
-      - name: Setup backend on server
+      # --- Распаковываем и запускаем ---
+      - name: Deploy and restart on server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -74,7 +71,12 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_PORT || 22 }}
           script: |
-            cd ${{ secrets.ADMIN_DEPLOY_PATH }}/backend
+            tar -xzf /tmp/deploy.tar.gz -C /tmp/
+            rsync -a --delete /tmp/deploy/frontend/ /opt/businitti-admin/frontend/
+            rsync -a --delete /tmp/deploy/backend/ /opt/businitti-admin/backend/
+            rm -rf /tmp/deploy /tmp/deploy.tar.gz
+            cd /opt/businitti-admin/backend
             npm ci --omit=dev
             pm2 restart businitti-admin || pm2 start dist/server.js --name businitti-admin
-            sudo systemctl reload nginx
+            pm2 save
+            nginx -t && systemctl reload nginx
