@@ -19,7 +19,7 @@ server {
     ssl_certificate_key /etc/letsencrypt/live/admin.businitti.ru/privkey.pem;
 
     # Frontend (SPA) — статические файлы
-    root /var/www/businitti-admin/frontend;
+    root /opt/businitti-admin/frontend;
     index index.html;
 
     location / {

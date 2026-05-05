@@ -84,5 +84,5 @@ jobs:
             rm -rf /tmp/deploy /tmp/deploy.tar.gz
             cd /opt/businitti-admin/backend
             npm ci --omit=dev
-            pm2 restart businitti-admin || pm2 start dist/server.js --name businitti-admin
+            NODE_ENV=production pm2 restart businitti-admin --update-env || NODE_ENV=production pm2 start dist/server.js --name businitti-admin
             pm2 save
