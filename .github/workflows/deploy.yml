@@ -1,4 +1,4 @@
-name: Deploy to Timeweb
+name: Deploy Site to RegRu Cloud
 
 on:
   push:

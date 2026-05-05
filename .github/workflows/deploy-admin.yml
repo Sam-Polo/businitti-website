@@ -1,4 +1,4 @@
-name: Deploy Admin Panel to Timeweb
+name: Deploy Admin Panel to RegRu Cloud
 
 on:
   push:
