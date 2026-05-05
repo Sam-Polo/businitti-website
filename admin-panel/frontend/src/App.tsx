@@ -55,7 +55,7 @@ function ConfirmModal({
   const getCategoryTitle = (key: string) => categories.find((c) => c.key === key)?.title || key
 
   return (
-    <div className="modal-overlay" onClick={onCancel}>
+    <div className="modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && onCancel()}>
       <div className="modal-content confirm-modal" onClick={(e) => e.stopPropagation()}>
         <h3>Подтверждение</h3>
         <p>
@@ -952,7 +952,7 @@ function OrdersSettingsModal({
   // если заказы закрыты - показываем простое подтверждающее окно для открытия
   if (ordersClosed) {
     return (
-      <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
         <div className="modal-content" onClick={e => e.stopPropagation()}>
           <button className="modal-close" onClick={onClose}>&times;</button>
           <h2>Открыть заказы</h2>
@@ -972,7 +972,7 @@ function OrdersSettingsModal({
 
   // если заказы открыты - показываем модальное окно с полем для даты закрытия
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose}>&times;</button>
         <h2>Закрыть заказы</h2>
@@ -1148,7 +1148,7 @@ function ProductModal({
 
   return (
     <>
-      <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
           <button className="modal-close" onClick={onClose}>&times;</button>
           
@@ -1525,7 +1525,7 @@ function ImageFullscreen({
   productTitle: string
 }) {
   return (
-    <div className="fullscreen-overlay" onClick={onClose}>
+    <div className="fullscreen-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <button className="fullscreen-close" onClick={onClose}>&times;</button>
       <button className="fullscreen-nav fullscreen-nav-prev" onClick={(e) => { e.stopPropagation(); onPrev(); }}>
         ‹
@@ -1901,7 +1901,7 @@ function ProductFormModal({
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal-content modal-form" onClick={(e) => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose}>&times;</button>
         

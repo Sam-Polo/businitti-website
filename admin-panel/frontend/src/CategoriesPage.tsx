@@ -319,7 +319,7 @@ function CategoriesPage({
       )}
 
       {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+        <div className="modal-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setIsModalOpen(false) }}>
           <div className="modal-content modal-form" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setIsModalOpen(false)}>×</button>
             <h2>Редактировать категорию</h2>

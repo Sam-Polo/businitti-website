@@ -209,7 +209,7 @@ function PromocodesPage({ onNavigate }: { onNavigate?: (page: 'products' | 'prom
       )}
 
       {deleteConfirm && (
-        <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
+        <div className="modal-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setDeleteConfirm(null) }}>
           <div className="modal-content confirm-modal" onClick={(e) => e.stopPropagation()}>
             <h3>Подтверждение</h3>
             <p>Удалить промокод <strong>{deleteConfirm.code}</strong>?</p>
@@ -370,7 +370,7 @@ function PromocodeFormModal({
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
         <h2>{isEditMode ? 'Редактировать промокод' : 'Добавить промокод'}</h2>
         <form onSubmit={handleSubmit}>
@@ -478,7 +478,7 @@ function PromocodeFormModal({
       </div>
 
       {isProductSelectorOpen && (
-        <div className="modal-overlay" onClick={() => setIsProductSelectorOpen(false)} style={{ zIndex: 10001 }}>
+        <div className="modal-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setIsProductSelectorOpen(false) }} style={{ zIndex: 10001 }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
             <h2>Выбор товаров</h2>
             
