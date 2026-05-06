@@ -7,15 +7,15 @@
 
 export const externalLinks = {
   // Main Telegram channel/account
-  telegram: 'https://t.me/',
+  telegram: 'https://t.me/businitti',
   // Direct message link for MAX and "Поддержка"
-  max: 'https://t.me/',
+  max: 'https://max.ru/join/RlegUdqmUh_wtK8TzeX0DiMp2GWy24KsfGBQzzpZurY',
   // Support link — opens direct Telegram conversation
-  support: 'https://t.me/',
+  support: 'https://t.me/aalyabeva',
 
   // Phone — `display` is shown to the user, `tel` is the dial-link
-  phoneDisplay: '8(909)888-88-88',
-  phoneTel: 'tel:+79098888888',
+  phoneDisplay: '8(903)009-46-55',
+  phoneTel: 'tel:+79030094655',
 
   // Legal documents (Google Docs links)
   offer: 'https://docs.google.com/document/d/1OcVT6PUUYYsxfYnuevi5C-HkD1KTaHlLULyfEryycEw/edit?usp=sharing',
