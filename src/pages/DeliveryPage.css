@@ -66,6 +66,9 @@
   width: 500px;
   height: 560px;
   background-color: #d5cec9;
+  background-image: url('../assets/img/delivery-header__image.jpg');
+  background-size: cover;
+  background-position: center;
   border-radius: var(--border-radius-sm);
 }
 
@@ -145,6 +148,9 @@
   width: 400px;
   height: 230px;
   background-color: #d5cec9;
+  background-image: url('../assets/img/payment-section__image.png');
+  background-size: cover;
+  background-position: center;
   border-radius: var(--border-radius-sm);
 }
 

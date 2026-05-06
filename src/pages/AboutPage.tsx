@@ -28,8 +28,8 @@ export default function AboutPage() {
             </p>
           </div>
           <div className="about-hero__img" />
-          <div className="about-gallery__img" />
-          <div className="about-gallery__img" />
+          <div className="about-gallery__img about-gallery__img--1" />
+          <div className="about-gallery__img about-gallery__img--2" />
         </div>
 
         <div className="about-closing-block">

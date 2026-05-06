@@ -55,7 +55,21 @@
   width: 100%;
   aspect-ratio: 560 / 240;
   background-color: #d5cec9;
+  background-size: cover;
+  background-position: center;
   border-radius: var(--border-radius-sm);
+}
+
+.about-hero__img {
+  background-image: url('../assets/img/about-hero__img.jpg');
+}
+
+.about-gallery__img--1 {
+  background-image: url('../assets/img/about-gallery__img1.jpg');
+}
+
+.about-gallery__img--2 {
+  background-image: url('../assets/img/about-gallery__img2.jpg');
 }
 
 /* ===== Closing block ===== */
