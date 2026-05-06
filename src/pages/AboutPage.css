@@ -32,7 +32,8 @@
 .about-hero__buddy {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  justify-content: space-between;
+  text-align: center;
 }
 
 .about-hero__buddy p {
