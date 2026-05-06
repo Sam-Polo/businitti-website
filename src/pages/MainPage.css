@@ -40,11 +40,7 @@
   line-height: var(--line-height-hero);
   font-weight: var(--font-weight-regular);
   text-transform: uppercase;
-  white-space: nowrap;
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 0.5em;
+  text-align: left;
 }
 
 .hero__title-accent {
@@ -55,6 +51,11 @@
   align-self: flex-end;
   font-size: var(--font-size-button);
   text-transform: uppercase;
+  border-bottom: none;
+}
+
+.hero__btn:hover {
+  border-bottom-color: transparent;
 }
 
 /* ===== Catalog ===== */
@@ -238,8 +239,6 @@
   .hero__title {
     font-size: 24px;
     line-height: 28px;
-    display: block;
-    white-space: normal;
   }
 
   .hero__btn {

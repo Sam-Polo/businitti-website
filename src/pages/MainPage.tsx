@@ -1,16 +1,7 @@
 import { Link } from 'react-router-dom'
 import { externalLinks } from '../config/links'
+import { categories } from '../data/categories'
 import './MainPage.css'
-
-const categories = [
-  { slug: 'necklaces', label: 'Колье' },
-  { slug: 'bracelets', label: 'Браслеты' },
-  { slug: 'earrings', label: 'Серьги' },
-  { slug: 'pearl', label: 'Изделия из жемчуга' },
-  { slug: 'sets', label: 'Комплекты' },
-  { slug: 'beach', label: 'Пляжная коллекция' },
-  { slug: 'boho', label: 'Бохо-Этно' },
-]
 
 export default function MainPage() {
   return (
@@ -25,7 +16,7 @@ export default function MainPage() {
             <h1 className="hero__title">
               Авторские украшения <span className="hero__title-accent">из натуральных материалов</span>
             </h1>
-            <Link to="/category/necklaces" className="btn btn--outline hero__btn">
+            <Link to="/catalog" className="btn btn--outline hero__btn">
               <span>Перейти в каталог</span>
               <svg width="58" height="1" viewBox="0 0 58 1" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <line y1="0.5" x2="58" y2="0.5" stroke="currentColor" />

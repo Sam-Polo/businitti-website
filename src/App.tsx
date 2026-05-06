@@ -6,6 +6,7 @@ import DeliveryPage from './pages/DeliveryPage'
 import GuaranteePage from './pages/GuaranteePage'
 import RecommendationsPage from './pages/RecommendationsPage'
 import ContactsPage from './pages/ContactsPage'
+import CatalogPage from './pages/CatalogPage'
 import CategoryPage from './pages/CategoryPage'
 
 export default function App() {
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="/guarantee" element={<GuaranteePage />} />
           <Route path="/recommendations" element={<RecommendationsPage />} />
           <Route path="/contacts" element={<ContactsPage />} />
+          <Route path="/catalog" element={<CatalogPage />} />
           <Route path="/category/:slug" element={<CategoryPage />} />
         </Route>
       </Routes>

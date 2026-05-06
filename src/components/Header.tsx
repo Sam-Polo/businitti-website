@@ -28,7 +28,7 @@ export default function Header() {
 
         <nav className={`header__nav ${menuOpen ? 'header__nav--open' : ''}`}>
           <NavLink to="/about" className="header__link" onClick={closeMenu}>О бренде</NavLink>
-          <NavLink to="/category/necklaces" className="header__link" onClick={closeMenu}>Каталог</NavLink>
+          <NavLink to="/catalog" className="header__link" onClick={closeMenu}>Каталог</NavLink>
           <NavLink to="/delivery" className="header__link" onClick={closeMenu}>Покупателям</NavLink>
           <NavLink to="/contacts" className="header__link" onClick={closeMenu}>Контакты</NavLink>
           <NavLink to="/support" className="header__link header__link--accent" onClick={closeMenu}>Поддержка</NavLink>

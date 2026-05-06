@@ -1,16 +1,12 @@
 import { Link } from 'react-router-dom'
 import { externalLinks } from '../config/links'
+import { categories } from '../data/categories'
 import './Footer.css'
 
-const catalogLinks = [
-  { to: '/category/necklaces', label: 'Колье' },
-  { to: '/category/bracelets', label: 'Браслеты' },
-  { to: '/category/earrings', label: 'Серьги' },
-  { to: '/category/pearl', label: 'Изделия из жемчуга' },
-  { to: '/category/sets', label: 'Комплекты' },
-  { to: '/category/beach', label: 'Пляжная коллекция' },
-  { to: '/category/boho', label: 'Бохо-этно' },
-]
+const catalogLinks = categories.map((cat) => ({
+  to: `/category/${cat.slug}`,
+  label: cat.label,
+}))
 
 const customerLinks = [
   { to: '/delivery', label: 'Доставка и оплата' },
