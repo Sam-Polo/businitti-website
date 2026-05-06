@@ -6,16 +6,18 @@
  */
 
 export const externalLinks = {
-  // Messenger / social — set the full account URL once known
+  // Main Telegram channel/account
   telegram: 'https://t.me/',
-  whatsapp: 'https://wa.me/',
+  // Direct message link for MAX and "Поддержка"
   max: 'https://t.me/',
+  // Support link — opens direct Telegram conversation
+  support: 'https://t.me/',
 
   // Phone — `display` is shown to the user, `tel` is the dial-link
   phoneDisplay: '8(909)888-88-88',
   phoneTel: 'tel:+79098888888',
 
-  // Legal documents (Google Docs links — to be filled in by the owner)
+  // Legal documents (Google Docs links)
   offer: 'https://docs.google.com/document/d/1OcVT6PUUYYsxfYnuevi5C-HkD1KTaHlLULyfEryycEw/edit?usp=sharing',
   privacy: 'https://docs.google.com/document/d/1c8xVypvY3bue7uR5wYtYNz-S7g-tpFAXnSdlrwjCi_g/edit?usp=sharing',
 } as const

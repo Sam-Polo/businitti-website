@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
+import { externalLinks } from '../config/links'
 import logo from '../assets/logo.svg'
 import './Header.css'
 
@@ -31,7 +32,7 @@ export default function Header() {
           <NavLink to="/catalog" className="header__link" onClick={closeMenu}>Каталог</NavLink>
           <NavLink to="/delivery" className="header__link" onClick={closeMenu}>Покупателям</NavLink>
           <NavLink to="/contacts" className="header__link" onClick={closeMenu}>Контакты</NavLink>
-          <NavLink to="/support" className="header__link header__link--accent" onClick={closeMenu}>Поддержка</NavLink>
+          <a href={externalLinks.support} target="_blank" rel="noopener noreferrer" className="header__link header__link--accent" onClick={closeMenu}>Поддержка</a>
         </nav>
       </div>
     </header>
