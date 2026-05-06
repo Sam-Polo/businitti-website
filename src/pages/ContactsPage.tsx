@@ -1,3 +1,4 @@
+import { externalLinks } from '../config/links'
 import './ContactsPage.css'
 
 export default function ContactsPage() {
@@ -22,7 +23,7 @@ export default function ContactsPage() {
             </div>
           </div>
           <a
-            href="https://t.me/"
+            href={externalLinks.max}
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn--primary"

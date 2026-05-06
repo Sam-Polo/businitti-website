@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { externalLinks } from '../config/links'
 import './MainPage.css'
 
 const categories = [
@@ -22,7 +23,7 @@ export default function MainPage() {
           </div>
           <div className="hero__content">
             <h1 className="hero__title">
-              Авторские украшения<br />из натуральных материалов
+              Авторские украшения <span className="hero__title-accent">из натуральных материалов</span>
             </h1>
             <Link to="/category/necklaces" className="btn btn--outline hero__btn">
               <span>Перейти в каталог</span>
@@ -85,7 +86,7 @@ export default function MainPage() {
               </div>
             </div>
             <a
-              href="https://t.me/"
+              href={externalLinks.max}
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn--primary"

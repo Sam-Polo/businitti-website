@@ -106,7 +106,7 @@
   max-width: var(--page-max-width);
   margin: 0 auto;
   padding-left: var(--page-padding-x);
-  padding-right: 0;
+  padding-right: var(--page-padding-x);
 }
 
 .category-contacts__content {

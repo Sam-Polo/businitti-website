@@ -1,4 +1,5 @@
 import { useParams } from 'react-router-dom'
+import { externalLinks } from '../config/links'
 import './CategoryPage.css'
 
 const categoryData: Record<string, { title: string; description: string }> = {
@@ -99,7 +100,7 @@ export default function CategoryPage() {
               </div>
             </div>
             <a
-              href="https://t.me/"
+              href={externalLinks.max}
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn--primary"
