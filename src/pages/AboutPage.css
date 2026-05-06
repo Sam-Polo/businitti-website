@@ -32,7 +32,7 @@
 .about-hero__buddy {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 16px;
   text-align: left;
 }
 
@@ -53,7 +53,7 @@
 .about-hero__img,
 .about-gallery__img {
   width: 100%;
-  aspect-ratio: 560 / 300;
+  aspect-ratio: 560 / 240;
   background-color: #d5cec9;
   border-radius: var(--border-radius-sm);
 }
