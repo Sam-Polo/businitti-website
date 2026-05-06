@@ -4,5 +4,4 @@ dist
 .env
 .env.*
 !.env.example
-sa.json
-src/config/links.ts
+sa.json 
