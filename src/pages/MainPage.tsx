@@ -10,7 +10,6 @@ export default function MainPage() {
       <section className="hero">
         <div className="hero__inner container">
           <div className="hero__image-wrapper">
-            <div className="hero__overlay" />
           </div>
           <div className="hero__content">
             <h1 className="hero__title">
