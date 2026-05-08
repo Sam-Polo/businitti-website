@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { externalLinks } from '../config/links'
 import { categories } from '../data/categories'
+import maxIcon from '../assets/max-icon.svg'
 import './Footer.css'
 
 const catalogLinks = categories.map((cat) => ({
@@ -57,10 +58,7 @@ export default function Footer() {
               </svg>
             </a>
             <a href={externalLinks.max} target="_blank" rel="noopener noreferrer" aria-label="MAX" className="footer__social-link">
-              <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12.5" cy="12.5" r="12.5" fill="#F5A2B7"/>
-                <path d="M17.5 8L15.8 17.1C15.8 17.1 15.6 17.6 15 17.3L11.2 14.4L9.8 13.7L7.2 12.9C7.2 12.9 6.8 12.7 6.8 12.4C6.8 12 7.2 11.9 7.2 11.9L16.7 8.2C16.7 8.2 17.5 7.8 17.5 8Z" fill="white"/>
-              </svg>
+              <img src={maxIcon} alt="MAX" width="25" height="25" />
             </a>
           </div>
           <a href={externalLinks.phoneTel} className="footer__phone">{externalLinks.phoneDisplay}</a>
