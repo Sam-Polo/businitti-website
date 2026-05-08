@@ -14,9 +14,16 @@ app.use((req: express.Request, _res: express.Response, next: express.NextFunctio
 })
 
 // CORS настройка
-const frontendUrl = process.env.ADMIN_FRONTEND_URL || 'http://localhost:5174'
+const adminFrontendUrl = process.env.ADMIN_FRONTEND_URL || 'http://localhost:5174'
+const publicSiteUrls = (process.env.PUBLIC_SITE_URLS || 'https://businitti.ru,https://www.businitti.ru,http://localhost:5173')
+  .split(',').map((s) => s.trim()).filter(Boolean)
+const allowedOrigins = new Set<string>([adminFrontendUrl, ...publicSiteUrls])
 app.use(cors({
-  origin: frontendUrl,
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true) // same-origin / curl
+    if (allowedOrigins.has(origin)) return cb(null, true)
+    cb(new Error('Not allowed by CORS'))
+  },
   credentials: true
 }))
 
@@ -38,7 +45,9 @@ import promocodeRoutes from './routes/promocodes.js'
 import settingsRoutes from './routes/settings.js'
 import categoriesRoutes from './routes/categories.js'
 import paymentRoutes from './routes/payment.js'
+import publicRoutes from './routes/public.js'
 
+app.use('/api/public', publicRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/upload', uploadRoutes)

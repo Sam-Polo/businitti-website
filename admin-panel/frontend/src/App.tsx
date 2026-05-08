@@ -726,9 +726,11 @@ function ProductsList({ onNavigate }: { onNavigate?: (page: 'products' | 'catego
           <div className="loading">Загрузка товаров...</div>
         ) : (
           <div className="products-list">
-            {Object.entries(isReorderProductsMode ? reorderedProductsByCategory : groupedProducts).map(([category, categoryProducts]) => (
+            {Object.entries(isReorderProductsMode ? reorderedProductsByCategory : groupedProducts).map(([category, categoryProducts]) => {
+              const categoryTitle = categories.find((c) => c.key === category)?.title || category
+              return (
               <div key={category} className="category-section">
-                <h2>{category.charAt(0).toUpperCase() + category.slice(1)}</h2>
+                <h2>{categoryTitle}</h2>
                 {isReorderProductsMode ? (
                   <DndContext
                     sensors={productsSensors}
@@ -814,7 +816,8 @@ function ProductsList({ onNavigate }: { onNavigate?: (page: 'products' | 'catego
                   </div>
                 )}
               </div>
-            ))}
+              )
+            })}
           </div>
          )}
 
@@ -854,6 +857,7 @@ function ProductsList({ onNavigate }: { onNavigate?: (page: 'products' | 'catego
       {selectedProduct && !isEditModalOpen && (
         <ProductModal
           product={selectedProduct}
+          categories={categories}
           onClose={() => setSelectedProduct(null)}
           onEdit={() => {
             loadCategories()
@@ -1003,12 +1007,14 @@ function OrdersSettingsModal({
 
 function ProductModal({
   product,
+  categories,
   onClose,
   onEdit,
   onDelete,
   onProductUpdate
 }: {
   product: Product
+  categories: Array<{ key: string; title: string }>
   onClose: () => void
   onEdit: () => void
   onDelete: () => void
@@ -1222,7 +1228,11 @@ function ProductModal({
               
               <div className="detail-row">
                 <span className="detail-label">Категория:</span>
-                <span className="detail-value">{product.category}</span>
+                <span className="detail-value">
+                  {(product.categories && product.categories.length > 0 ? product.categories : [product.category])
+                    .map((key) => categories.find((c) => c.key === key)?.title || key)
+                    .join(', ')}
+                </span>
               </div>
               
               <div className="detail-row">
@@ -1654,7 +1664,6 @@ function ProductFormModal({
     return formatArticle(maxArticle + 1)
   }
 
-  const defaultDescription = '• материал...\n• длина...'
   const nextArticle = !isEdit ? getNextArticle() : ''
   
   const [formData, setFormData] = useState<Partial<Product> & { categories?: string[] }>(() => {
@@ -1665,7 +1674,7 @@ function ProductFormModal({
     return {
       title: initialTitle,
       slug: initialSlug,
-      description: product?.description || (isEdit ? '' : defaultDescription),
+      description: product?.description || '',
       category: product?.category || '',
       categories: initialCategories,
       price_rub: product?.price_rub || 0,

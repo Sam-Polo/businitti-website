@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { externalLinks } from '../config/links'
+import { fetchProductsByCategory, formatPrice, type Product } from '../api/products'
 import './CategoryPage.css'
 
 const categoryData: Record<string, { title: string; description: string }> = {
@@ -40,22 +42,25 @@ const categoryData: Record<string, { title: string; description: string }> = {
   },
 }
 
-const placeholderProducts = [
-  { id: 1, name: 'Колье из натурального малахита с подвеской', price: '4 990 ₽' },
-  { id: 2, name: 'Колье из лабрадорита с подвеской', price: '5 490 ₽' },
-  { id: 3, name: 'Колье из розового кварца', price: '3 990 ₽' },
-  { id: 4, name: 'Колье из аметиста с подвеской', price: '4 490 ₽' },
-  { id: 5, name: 'Колье из тигрового глаза', price: '4 290 ₽' },
-  { id: 6, name: 'Колье из лунного камня', price: '5 990 ₽' },
-  { id: 7, name: 'Колье из бирюзы с подвеской', price: '4 790 ₽' },
-  { id: 8, name: 'Колье из граната с подвеской', price: '5 290 ₽' },
-]
-
 export default function CategoryPage() {
   const { slug } = useParams<{ slug: string }>()
   const data = slug ? categoryData[slug] : undefined
   const title = data?.title ?? slug ?? 'Категория'
   const description = data?.description ?? ''
+
+  const [products, setProducts] = useState<Product[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!slug) return
+    let cancelled = false
+    setProducts(null)
+    setError(null)
+    fetchProductsByCategory(slug)
+      .then((items) => { if (!cancelled) setProducts(items) })
+      .catch((e) => { if (!cancelled) setError(e?.message || 'load_failed') })
+    return () => { cancelled = true }
+  }, [slug])
 
   return (
     <main className="category-page">
@@ -70,17 +75,35 @@ export default function CategoryPage() {
           </div>
 
           {/* Product grid */}
-          <div className="category-grid">
-            {placeholderProducts.map((product) => (
-              <div key={product.id} className="product-card">
-                <div className="product-card__image" />
-                <div className="product-card__info">
-                  <p className="product-card__name">{product.name}</p>
-                  <p className="product-card__price">{product.price}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          {products === null && !error && (
+            <div className="category-grid category-grid--loading" />
+          )}
+          {error && (
+            <p className="category-grid__error">Не удалось загрузить товары</p>
+          )}
+          {products && products.length === 0 && (
+            <p className="category-grid__empty">В этой категории пока нет товаров</p>
+          )}
+          {products && products.length > 0 && (
+            <div className="category-grid">
+              {products.map((product) => {
+                const price = product.discount_price_rub ?? product.price_rub
+                const image = product.images[0]
+                return (
+                  <div key={product.slug} className="product-card">
+                    <div
+                      className="product-card__image"
+                      style={image ? { backgroundImage: `url(${image})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
+                    />
+                    <div className="product-card__info">
+                      <p className="product-card__name">{product.title}</p>
+                      <p className="product-card__price">{formatPrice(price)}</p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </section>
       </div>
 
