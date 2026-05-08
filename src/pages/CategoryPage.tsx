@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { externalLinks } from '../config/links'
 import { fetchProductsByCategory, formatPrice, type Product } from '../api/products'
+import { useCart } from '../contexts/CartContext'
 import './CategoryPage.css'
 
 const categoryData: Record<string, { title: string; description: string }> = {
@@ -48,6 +49,8 @@ export default function CategoryPage() {
   const title = data?.title ?? slug ?? 'Категория'
   const description = data?.description ?? ''
 
+  const { openItem, openCart, totalCount } = useCart()
+
   const [products, setProducts] = useState<Product[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -90,7 +93,12 @@ export default function CategoryPage() {
                 const price = product.discount_price_rub ?? product.price_rub
                 const image = product.images[0]
                 return (
-                  <div key={product.slug} className="product-card">
+                  <button
+                    key={product.slug}
+                    type="button"
+                    className="product-card"
+                    onClick={() => openItem(product)}
+                  >
                     <div
                       className="product-card__image"
                       style={image ? { backgroundImage: `url(${image})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
@@ -99,7 +107,7 @@ export default function CategoryPage() {
                       <p className="product-card__name">{product.title}</p>
                       <p className="product-card__price">{formatPrice(price)}</p>
                     </div>
-                  </div>
+                  </button>
                 )
               })}
             </div>
@@ -136,14 +144,14 @@ export default function CategoryPage() {
       </section>
 
       {/* Cart floating button */}
-      <div className="cart-button">
+      <button type="button" className="cart-button" onClick={openCart} aria-label="Открыть корзину">
         <svg width="31" height="34" viewBox="0 0 31 34" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M1 1H5.8L9.4 20.4H25L29 7H7" stroke="#2F2F2F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           <circle cx="11" cy="29" r="3" fill="#2F2F2F" />
           <circle cx="23" cy="29" r="3" fill="#2F2F2F" />
         </svg>
-        <span className="cart-button__badge">2</span>
-      </div>
+        {totalCount > 0 && <span className="cart-button__badge">{totalCount}</span>}
+      </button>
     </main>
   )
 }

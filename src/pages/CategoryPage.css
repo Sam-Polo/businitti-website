@@ -57,6 +57,13 @@
   flex-direction: column;
   gap: 12px;
   width: calc((100% - 60px) / 2);
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
 }
 
 .product-card__image {
@@ -170,6 +177,8 @@
   width: 84px;
   height: 84px;
   background-color: #dadada;
+  border: none;
+  padding: 0;
   border-radius: 42px;
   display: flex;
   align-items: center;

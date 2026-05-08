@@ -1,0 +1,251 @@
+/* ===== Item Card Modal ===== */
+
+.item-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background-color: var(--color-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  overflow-y: auto;
+}
+
+.item-modal__card {
+  position: relative;
+  width: 100%;
+  max-width: 1040px;
+  background-color: #fffdfd;
+  border-radius: var(--border-radius-sm);
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 60px;
+  padding: 80px 60px;
+}
+
+.item-modal__close {
+  position: absolute;
+  top: 28px;
+  right: 28px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.item-modal__close svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Gallery */
+.item-modal__gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.item-modal__photo {
+  width: 100%;
+  height: 300px;
+  background-color: #d5cec9;
+  background-size: cover;
+  background-position: center;
+  border-radius: var(--border-radius-sm);
+}
+
+.item-modal__thumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.item-modal__thumb {
+  flex: 1;
+  height: 60px;
+  background-color: #d5cec9;
+  background-size: cover;
+  background-position: center;
+  border: none;
+  padding: 0;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.item-modal__thumb--active,
+.item-modal__thumb:hover {
+  opacity: 1;
+}
+
+/* Info */
+.item-modal__info {
+  display: flex;
+  flex-direction: column;
+  gap: 29px;
+}
+
+.item-modal__head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.item-modal__title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  line-height: 28px;
+  font-weight: var(--font-weight-regular);
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+}
+
+.item-modal__article {
+  font-family: var(--font-display);
+  font-size: 14px;
+  text-transform: uppercase;
+  color: #DADADA;
+}
+
+.item-modal__desc {
+  font-family: var(--font-display);
+  font-size: 16px;
+  line-height: 22px;
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+}
+
+.item-modal__purchase {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.item-modal__qty {
+  display: flex;
+  align-items: center;
+  gap: 23px;
+}
+
+.item-modal__qty-btn,
+.item-modal__qty-value {
+  font-family: var(--font-display);
+  font-size: 22px;
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.item-modal__qty-value {
+  cursor: default;
+  min-width: 14px;
+  text-align: center;
+}
+
+.item-modal__price {
+  font-family: var(--font-body);
+  font-size: 26px;
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+}
+
+.item-modal__add {
+  height: 60px;
+  width: 100%;
+  max-width: 340px;
+  background-color: var(--color-accent);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-display);
+  font-size: 22px;
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.item-modal__add:hover {
+  background-color: var(--color-accent-hover);
+}
+
+/* ===== Mobile ===== */
+
+@media (max-width: 768px) {
+  .item-modal {
+    padding: 0;
+    align-items: flex-start;
+  }
+
+  .item-modal__card {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 45px 16px 40px;
+    max-width: 328px;
+    margin: 26px 16px;
+    min-height: auto;
+  }
+
+  .item-modal__close {
+    top: 6px;
+    right: 6px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .item-modal__close svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .item-modal__photo {
+    height: 300px;
+  }
+
+  .item-modal__thumb {
+    height: 44px;
+  }
+
+  .item-modal__info {
+    gap: 24px;
+  }
+
+  .item-modal__title {
+    font-size: 18px;
+    line-height: 20px;
+  }
+
+  .item-modal__article {
+    font-size: 12px;
+  }
+
+  .item-modal__desc {
+    font-size: 10px;
+    line-height: 14px;
+  }
+
+  .item-modal__qty-btn,
+  .item-modal__qty-value {
+    font-size: 18px;
+  }
+
+  .item-modal__price {
+    font-size: 22px;
+  }
+
+  .item-modal__add {
+    height: 40px;
+    font-size: 12px;
+    max-width: 100%;
+  }
+}
