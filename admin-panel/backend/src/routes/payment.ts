@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express'
 import { createPaymentUrl, verifyResultSignature, verifySuccessSignature, buildReceipt } from '../robokassa.js'
+import { findOrderByInvId, updateOrderStatus, getAuth } from '../orders-utils.js'
 import { logger } from '../logger.js'
 
 const router = Router()
@@ -43,7 +44,7 @@ router.post('/create', (req: Request, res: Response) => {
  * Result URL — серверное уведомление от Робокассы об успешной оплате.
  * Робокасса ожидает ответ OK{InvId}
  */
-router.post('/result', (req: Request, res: Response) => {
+router.post('/result', async (req: Request, res: Response) => {
   try {
     const { OutSum, InvId, SignatureValue, ...rest } = req.body
 
@@ -74,8 +75,28 @@ router.post('/result', (req: Request, res: Response) => {
       return
     }
 
-    // --- Здесь логика обработки успешной оплаты ---
-    // Например: обновление статуса заказа в Google Sheets
+    // ищем заказ по inv_id и переводим в статус "new" (оплачен)
+    const sheetId = process.env.GOOGLE_SHEET_ID
+    if (sheetId) {
+      try {
+        const auth = getAuth()
+        const invIdNum = Number(InvId)
+        const order = await findOrderByInvId(auth, sheetId, invIdNum)
+        if (order) {
+          if (order.status === 'pending_payment') {
+            await updateOrderStatus(auth, sheetId, order.id, 'new')
+            logger.info({ orderId: order.id, InvId }, 'заказ переведён в new (оплачен)')
+          } else {
+            logger.warn({ orderId: order.id, status: order.status, InvId }, 'заказ уже не в pending_payment, статус не меняем')
+          }
+        } else {
+          logger.warn({ InvId }, 'заказ по inv_id не найден')
+        }
+      } catch (e: any) {
+        logger.error({ err: e?.message, InvId }, 'не удалось обновить статус заказа')
+      }
+    }
+
     logger.info({ InvId, OutSum }, 'оплата подтверждена Робокассой')
 
     // Робокасса ожидает именно такой формат ответа

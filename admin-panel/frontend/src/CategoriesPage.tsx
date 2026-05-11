@@ -82,9 +82,11 @@ function SortableCategoryRow({
 }
 
 function CategoriesPage({
-  onNavigate
+  onNavigate,
+  newOrdersCount
 }: {
-  onNavigate?: (page: 'products' | 'categories') => void
+  onNavigate?: (page: 'products' | 'categories' | 'orders' | 'stats') => void
+  newOrdersCount?: number
 }) {
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
@@ -245,6 +247,15 @@ function CategoriesPage({
           </button>
           <button className="nav-btn active" onClick={() => onNavigate?.('categories')}>
             Категории
+          </button>
+          <button className="nav-btn" onClick={() => onNavigate?.('orders')}>
+            Заказы
+            {!!newOrdersCount && newOrdersCount > 0 && (
+              <span className="nav-badge" style={{ marginLeft: 6 }}>{newOrdersCount}</span>
+            )}
+          </button>
+          <button className="nav-btn" onClick={() => onNavigate?.('stats')}>
+            Статистика
           </button>
         </div>
         <div className="header-actions">

@@ -1,6 +1,8 @@
 import express from 'express'
 import { fetchProductsFromSheet, type SheetProduct } from '../sheets.js'
 import { logger } from '../logger.js'
+import { createOrder, getAuth, type DeliveryService } from '../orders-utils.js'
+import { createPaymentUrl } from '../robokassa.js'
 
 const router = express.Router()
 
@@ -103,6 +105,93 @@ router.get('/products/:slug', async (req, res) => {
   } catch (error: any) {
     logger.error({ error: error?.message }, 'ошибка публичной загрузки товара')
     res.status(500).json({ error: 'failed_to_load_product' })
+  }
+})
+
+// POST /api/public/orders — создание заказа с сайта
+// body: { customer_name, customer_phone, customer_email, delivery_service, delivery_address, items: [{ slug, quantity }] }
+router.post('/orders', async (req, res) => {
+  try {
+    const body = req.body || {}
+    const customer_name = String(body.customer_name || '').trim()
+    const customer_phone = String(body.customer_phone || '').trim()
+    const customer_email = String(body.customer_email || '').trim()
+    const delivery_service = String(body.delivery_service || '').trim() as DeliveryService
+    const delivery_address = String(body.delivery_address || '').trim()
+    const itemsInput = Array.isArray(body.items) ? body.items : []
+
+    if (!customer_name || !customer_phone || !customer_email) {
+      return res.status(400).json({ error: 'customer_fields_required' })
+    }
+    if (delivery_service !== 'cdek' && delivery_service !== 'yandex_market') {
+      return res.status(400).json({ error: 'invalid_delivery_service' })
+    }
+    if (!delivery_address) return res.status(400).json({ error: 'delivery_address_required' })
+    if (itemsInput.length === 0) return res.status(400).json({ error: 'no_items' })
+
+    // загружаем актуальные товары
+    const sheetId = process.env.GOOGLE_SHEET_ID
+    if (!sheetId) return res.status(500).json({ error: 'GOOGLE_SHEET_ID not configured' })
+
+    const all = await getProductsCached()
+
+    // валидация позиций + снапшот цен на сервере (не доверяем клиенту)
+    const snapshotItems = []
+    for (const raw of itemsInput) {
+      const slug = String(raw?.slug || '').trim()
+      const quantity = Math.max(1, parseInt(String(raw?.quantity ?? 1), 10) || 1)
+      if (!slug) return res.status(400).json({ error: 'invalid_item_slug' })
+
+      const product = all.find((p) => p.slug === slug)
+      if (!product) return res.status(400).json({ error: 'product_not_found', slug })
+      if (!product.active) return res.status(400).json({ error: 'product_inactive', slug })
+      if (typeof product.stock === 'number' && product.stock < quantity) {
+        return res.status(400).json({ error: 'insufficient_stock', slug })
+      }
+
+      const finalPrice = product.discount_price_rub && product.discount_price_rub > 0
+        ? product.discount_price_rub
+        : product.price_rub
+
+      snapshotItems.push({
+        product_slug: product.slug,
+        product_title: product.title,
+        product_article: product.article,
+        product_image: product.images[0],
+        price_rub: finalPrice,
+        quantity,
+        subtotal_rub: finalPrice * quantity,
+      })
+    }
+
+    const auth = getAuth()
+    const order = await createOrder(auth, sheetId, {
+      customer_name,
+      customer_phone,
+      customer_email,
+      delivery_service,
+      delivery_address,
+      items: snapshotItems,
+    })
+
+    // строим URL Робокассы
+    const payment = createPaymentUrl({
+      outSum: order.total_rub,
+      invId: order.inv_id,
+      description: `Заказ #${order.display_id}`,
+      email: customer_email,
+    })
+
+    res.json({
+      order_id: order.id,
+      display_id: order.display_id,
+      inv_id: order.inv_id,
+      total_rub: order.total_rub,
+      payment_url: payment.paymentUrl,
+    })
+  } catch (error: any) {
+    logger.error({ error: error?.message }, 'ошибка создания заказа')
+    res.status(500).json({ error: 'failed_to_create_order' })
   }
 })
 

@@ -46,9 +46,11 @@ import settingsRoutes from './routes/settings.js'
 import categoriesRoutes from './routes/categories.js'
 import paymentRoutes from './routes/payment.js'
 import publicRoutes from './routes/public.js'
+import ordersRoutes from './routes/orders.js'
 
 app.use('/api/public', publicRoutes)
 app.use('/api/auth', authRoutes)
+app.use('/api/orders', ordersRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/upload', uploadRoutes)
 app.use('/api/promocodes', promocodeRoutes)

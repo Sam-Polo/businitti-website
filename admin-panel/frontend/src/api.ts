@@ -223,6 +223,83 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ categories })
     })
+  },
+
+  // заказы
+  async getOrders(filters: { status?: string; search?: string; from?: string; to?: string } = {}) {
+    const params = new URLSearchParams()
+    if (filters.status) params.set('status', filters.status)
+    if (filters.search) params.set('search', filters.search)
+    if (filters.from) params.set('from', filters.from)
+    if (filters.to) params.set('to', filters.to)
+    const qs = params.toString()
+    return fetchWithAuth(`/api/orders${qs ? '?' + qs : ''}`)
+  },
+
+  async getOrder(id: string) {
+    return fetchWithAuth(`/api/orders/${encodeURIComponent(id)}`)
+  },
+
+  async getOrdersCount(status = 'new') {
+    return fetchWithAuth(`/api/orders/count?status=${encodeURIComponent(status)}`)
+  },
+
+  async getOrdersStats(period: 'day' | 'week' | 'month' | 'all' = 'all') {
+    return fetchWithAuth(`/api/orders/stats?period=${period}`)
+  },
+
+  async updateOrderStatus(id: string, status: string) {
+    return fetchWithAuth(`/api/orders/${encodeURIComponent(id)}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    })
+  },
+
+  async deleteOrder(id: string) {
+    return fetchWithAuth(`/api/orders/${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    })
   }
+}
+
+// типы заказов
+export type OrderStatus = 'pending_payment' | 'new' | 'shipped' | 'cancelled' | 'refunded'
+export type DeliveryService = 'cdek' | 'yandex_market'
+
+export type Order = {
+  id: string
+  display_id: number
+  inv_id: number
+  created_at: string
+  updated_at: string
+  status: OrderStatus
+  customer_name: string
+  customer_phone: string
+  customer_email: string
+  delivery_service: DeliveryService
+  delivery_address: string
+  total_rub: number
+}
+
+export type OrderItem = {
+  order_id: string
+  product_slug: string
+  product_title: string
+  product_article?: string
+  product_image?: string
+  price_rub: number
+  quantity: number
+  subtotal_rub: number
+}
+
+export type OrderWithItems = Order & { items: OrderItem[] }
+
+export type OrderStats = {
+  period: string
+  total_orders: number
+  revenue: number
+  avg_check: number
+  by_status: Record<OrderStatus, number>
 }
 

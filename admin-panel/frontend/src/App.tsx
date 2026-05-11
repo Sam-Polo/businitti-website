@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { api, getToken, saveToken, removeToken } from './api'
 import { generateSlug, formatArticle, parseArticle, normalizeArticle } from './utils'
 import CategoriesPage from './CategoriesPage'
+import OrdersPage from './OrdersPage'
+import StatsPage from './StatsPage'
 import {
   DndContext,
   closestCenter,
@@ -177,7 +179,7 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
 
 type CategoryOption = { key: string; title: string }
 
-function ProductsList({ onNavigate }: { onNavigate?: (page: 'products' | 'categories') => void }) {
+function ProductsList({ onNavigate, newOrdersCount }: { onNavigate?: (page: 'products' | 'categories' | 'orders' | 'stats') => void; newOrdersCount?: number }) {
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<CategoryOption[]>([])
   const [loading, setLoading] = useState(true)
@@ -573,6 +575,21 @@ function ProductsList({ onNavigate }: { onNavigate?: (page: 'products' | 'catego
             onClick={() => onNavigate?.('categories')}
           >
             Категории
+          </button>
+          <button
+            className="nav-btn"
+            onClick={() => onNavigate?.('orders')}
+          >
+            Заказы
+            {!!newOrdersCount && newOrdersCount > 0 && (
+              <span className="nav-badge" style={{ marginLeft: 6 }}>{newOrdersCount}</span>
+            )}
+          </button>
+          <button
+            className="nav-btn"
+            onClick={() => onNavigate?.('stats')}
+          >
+            Статистика
           </button>
         </div>
         <button onClick={handleLogout} className="logout-btn">
@@ -2124,11 +2141,14 @@ function ProductFormModal({
   )
 }
 
+type AdminPage = 'products' | 'categories' | 'orders' | 'stats'
+
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [checking, setChecking] = useState(true)
-  const [currentPage, setCurrentPage] = useState<'products' | 'categories'>('products')
+  const [currentPage, setCurrentPage] = useState<AdminPage>('products')
   const [isPageLoading, setIsPageLoading] = useState(false)
+  const [newOrdersCount, setNewOrdersCount] = useState<number>(0)
 
   useEffect(() => {
     // проверяем наличие токена
@@ -2139,10 +2159,23 @@ export default function App() {
     setChecking(false)
   }, [])
 
-  const handlePageChange = (page: 'products' | 'categories') => {
+  // подгружаем счётчик новых заказов каждые 30 секунд
+  useEffect(() => {
+    if (!isAuthenticated) return
+    let cancelled = false
+    const load = () => {
+      api.getOrdersCount('new')
+        .then((data) => { if (!cancelled) setNewOrdersCount(data.count || 0) })
+        .catch(() => { /* молча, чтобы не спамить ошибками */ })
+    }
+    load()
+    const id = setInterval(load, 30_000)
+    return () => { cancelled = true; clearInterval(id) }
+  }, [isAuthenticated, currentPage])
+
+  const handlePageChange = (page: AdminPage) => {
     if (page !== currentPage) {
       setIsPageLoading(true)
-      // небольшая задержка для плавной анимации
       setTimeout(() => {
         setCurrentPage(page)
         setIsPageLoading(false)
@@ -2167,9 +2200,13 @@ export default function App() {
       )}
       <div className={`admin-content-wrapper ${isPageLoading ? 'fade-out' : 'fade-in'}`}>
         {currentPage === 'categories' ? (
-          <CategoriesPage onNavigate={handlePageChange} />
+          <CategoriesPage onNavigate={handlePageChange} newOrdersCount={newOrdersCount} />
+        ) : currentPage === 'orders' ? (
+          <OrdersPage onNavigate={handlePageChange} newCount={newOrdersCount} />
+        ) : currentPage === 'stats' ? (
+          <StatsPage onNavigate={handlePageChange} newCount={newOrdersCount} />
         ) : (
-          <ProductsList onNavigate={handlePageChange} />
+          <ProductsList onNavigate={handlePageChange} newOrdersCount={newOrdersCount} />
         )}
       </div>
     </div>
