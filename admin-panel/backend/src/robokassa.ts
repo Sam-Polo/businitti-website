@@ -33,14 +33,27 @@ export type PaymentResult = {
 
 // ─── Конфигурация ────────────────────────────────────────
 
+/**
+ * При TEST_MODE=1 используются ТЕСТОВЫЕ пароли из вкладки "Тестовые пароли"
+ * в личном кабинете Робокассы. При TEST_MODE=0 — боевые пароли.
+ * URL для оплаты у тестового и боевого режимов одинаковый — отличается только IsTest=1
+ * и набор паролей. Боевые пароли в тестовом режиме вызовут ошибку 29.
+ */
 function getConfig() {
   const login = process.env.ROBOKASSA_LOGIN
-  const password1 = process.env.ROBOKASSA_PASSWORD1
-  const password2 = process.env.ROBOKASSA_PASSWORD2
   const isTest = process.env.ROBOKASSA_TEST_MODE === '1'
 
-  if (!login || !password1 || !password2) {
-    throw new Error('ROBOKASSA_LOGIN, ROBOKASSA_PASSWORD1, ROBOKASSA_PASSWORD2 обязательны в .env')
+  const password1 = isTest
+    ? process.env.ROBOKASSA_TEST_PASSWORD1
+    : process.env.ROBOKASSA_PASSWORD1
+  const password2 = isTest
+    ? process.env.ROBOKASSA_TEST_PASSWORD2
+    : process.env.ROBOKASSA_PASSWORD2
+
+  if (!login) throw new Error('ROBOKASSA_LOGIN обязателен в .env')
+  if (!password1 || !password2) {
+    const suffix = isTest ? 'TEST_PASSWORD1/TEST_PASSWORD2' : 'PASSWORD1/PASSWORD2'
+    throw new Error(`ROBOKASSA_${suffix} обязательны в .env (TEST_MODE=${isTest ? '1' : '0'})`)
   }
 
   return { login, password1, password2, isTest }
@@ -179,17 +192,32 @@ export function verifySuccessSignature(
 // ─── Формирование чека для самозанятого ─────────────────
 
 /**
- * Создаёт Receipt для товара (самозанятость — tax: "none", без sno)
+ * Создаёт Receipt для самозанятого (tax: "none", без sno).
+ * delivery — отдельная позиция чека (payment_object: 'service').
  */
-export function buildReceipt(items: { name: string; quantity: number; price: number }[]): Receipt {
-  return {
-    items: items.map(item => ({
-      name: item.name.slice(0, 128),
-      quantity: item.quantity,
-      sum: +(item.price * item.quantity).toFixed(2),
+export function buildReceipt(
+  items: { name: string; quantity: number; price: number }[],
+  delivery?: { name: string; price: number }
+): Receipt {
+  const positions: ReceiptItem[] = items.map(item => ({
+    name: item.name.slice(0, 128),
+    quantity: item.quantity,
+    sum: +(item.price * item.quantity).toFixed(2),
+    tax: 'none',
+    payment_method: 'full_payment',
+    payment_object: 'commodity',
+  }))
+
+  if (delivery && delivery.price > 0) {
+    positions.push({
+      name: delivery.name.slice(0, 128),
+      quantity: 1,
+      sum: +delivery.price.toFixed(2),
       tax: 'none',
       payment_method: 'full_payment',
-      payment_object: 'commodity',
-    })),
+      payment_object: 'service',
+    })
   }
+
+  return { items: positions }
 }

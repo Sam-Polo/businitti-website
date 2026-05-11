@@ -8,6 +8,7 @@ import RecommendationsPage from './pages/RecommendationsPage'
 import ContactsPage from './pages/ContactsPage'
 import CatalogPage from './pages/CatalogPage'
 import CategoryPage from './pages/CategoryPage'
+import PaymentResultPage from './pages/PaymentResultPage'
 
 export default function App() {
   return (
@@ -22,6 +23,8 @@ export default function App() {
           <Route path="/contacts" element={<ContactsPage />} />
           <Route path="/catalog" element={<CatalogPage />} />
           <Route path="/category/:slug" element={<CategoryPage />} />
+          <Route path="/payment/success" element={<PaymentResultPage variant="success" />} />
+          <Route path="/payment/fail" element={<PaymentResultPage variant="fail" />} />
         </Route>
       </Routes>
     </BrowserRouter>

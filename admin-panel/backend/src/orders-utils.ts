@@ -5,6 +5,17 @@ import { logger } from './logger.js'
 export type OrderStatus = 'pending_payment' | 'new' | 'shipped' | 'cancelled' | 'refunded'
 export type DeliveryService = 'cdek' | 'yandex_market'
 
+// Цены доставки (источник истины — бэк, чтобы клиент не подменил)
+export const DELIVERY_PRICES: Record<DeliveryService, number> = {
+  cdek: 650,
+  yandex_market: 300,
+}
+
+export const DELIVERY_LABELS: Record<DeliveryService, string> = {
+  cdek: 'Доставка СДЭК',
+  yandex_market: 'Доставка Яндекс Маркет',
+}
+
 export type OrderItem = {
   order_id: string
   product_slug: string
@@ -28,6 +39,7 @@ export type Order = {
   customer_email: string
   delivery_service: DeliveryService
   delivery_address: string
+  delivery_rub: number
   total_rub: number
 }
 
@@ -39,7 +51,7 @@ const ORDER_ITEMS_SHEET = 'order_items'
 const ORDERS_HEADERS = [
   'id', 'display_id', 'inv_id', 'created_at', 'updated_at', 'status',
   'customer_name', 'customer_phone', 'customer_email',
-  'delivery_service', 'delivery_address', 'total_rub'
+  'delivery_service', 'delivery_address', 'delivery_rub', 'total_rub'
 ]
 
 const ORDER_ITEMS_HEADERS = [
@@ -79,6 +91,24 @@ export async function ensureOrdersSheets(auth: any, sheetId: string): Promise<vo
     })
     logger.info('лист order_items создан')
   }
+
+  // миграция: если в существующем листе orders нет колонки delivery_rub — добавляем
+  if (existing.has(ORDERS_SHEET)) {
+    const headerRes = await sheets.spreadsheets.values.get({
+      spreadsheetId: sheetId,
+      range: `${ORDERS_SHEET}!A1:Z1`
+    })
+    const currentHeaders = (headerRes.data.values?.[0] || []).map((h: string) => String(h).trim().toLowerCase())
+    if (currentHeaders.length > 0 && !currentHeaders.includes('delivery_rub')) {
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: sheetId,
+        range: `${ORDERS_SHEET}!A1`,
+        valueInputOption: 'USER_ENTERED',
+        requestBody: { values: [ORDERS_HEADERS] }
+      })
+      logger.info('лист orders: добавлена колонка delivery_rub')
+    }
+  }
 }
 
 function parseOrderRow(row: any[], idx: Record<string, number>): Order | null {
@@ -96,6 +126,7 @@ function parseOrderRow(row: any[], idx: Record<string, number>): Order | null {
     customer_email: String(row[idx.customer_email] ?? ''),
     delivery_service: (String(row[idx.delivery_service] ?? 'cdek') as DeliveryService),
     delivery_address: String(row[idx.delivery_address] ?? ''),
+    delivery_rub: Number(row[idx.delivery_rub]) || 0,
     total_rub: Number(row[idx.total_rub]) || 0,
   }
 }
@@ -203,7 +234,9 @@ export async function createOrder(
   const { display_id, inv_id } = await nextIds(auth, sheetId)
   const id = `ord_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
   const now = new Date().toISOString()
-  const total_rub = data.items.reduce((s, it) => s + it.subtotal_rub, 0)
+  const delivery_rub = DELIVERY_PRICES[data.delivery_service]
+  const items_sum = data.items.reduce((s, it) => s + it.subtotal_rub, 0)
+  const total_rub = items_sum + delivery_rub
 
   const order: Order = {
     id,
@@ -217,6 +250,7 @@ export async function createOrder(
     customer_email: data.customer_email,
     delivery_service: data.delivery_service,
     delivery_address: data.delivery_address,
+    delivery_rub,
     total_rub,
   }
 
@@ -361,4 +395,62 @@ export async function deleteOrder(auth: any, sheetId: string, orderId: string): 
 // удобный единый вход
 export function getAuth() {
   return getAuthFromEnv()
+}
+
+/**
+ * Уменьшает stock у всех товаров заказа во всех листах (категориях), где они есть.
+ * Если у товара stock пустой (вручную собирается) — пропускаем.
+ * Ошибки по отдельным товарам не валят весь процесс — логируем и продолжаем.
+ */
+export async function decrementStockForOrder(
+  auth: any,
+  sheetId: string,
+  orderId: string
+): Promise<void> {
+  const items = await fetchOrderItems(auth, sheetId, orderId)
+  if (items.length === 0) return
+
+  const { fetchCategoriesFromSheet } = await import('./categories-utils.js')
+  const categories = await fetchCategoriesFromSheet(sheetId)
+  const sheetNames = categories.length > 0
+    ? categories.map((c) => c.key)
+    : (process.env.SHEET_NAMES?.split(',') || []).map((s) => s.trim()).filter(Boolean)
+
+  const sheets = google.sheets({ version: 'v4', auth })
+
+  for (const item of items) {
+    for (const sheetName of sheetNames) {
+      try {
+        const range = `${sheetName}!A:Z`
+        const res = await sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range })
+        const rows = res.data.values || []
+        if (rows.length < 2) continue
+
+        const headers = rows[0].map((h: string) => String(h).trim().toLowerCase())
+        const slugIdx = headers.indexOf('slug')
+        const stockIdx = headers.indexOf('stock')
+        if (slugIdx === -1 || stockIdx === -1) continue
+
+        for (let i = 1; i < rows.length; i++) {
+          if (String(rows[i][slugIdx] ?? '').trim() !== item.product_slug) continue
+          const stockRaw = String(rows[i][stockIdx] ?? '').trim()
+          if (stockRaw === '') break // ручная сборка — не трогаем
+          const stockNum = Number(stockRaw.replace(',', '.'))
+          if (!Number.isFinite(stockNum)) break
+          const newStock = Math.max(0, stockNum - item.quantity)
+          const colLetter = String.fromCharCode(65 + stockIdx)
+          await sheets.spreadsheets.values.update({
+            spreadsheetId: sheetId,
+            range: `${sheetName}!${colLetter}${i + 1}`,
+            valueInputOption: 'USER_ENTERED',
+            requestBody: { values: [[newStock]] }
+          })
+          logger.info({ slug: item.product_slug, sheetName, was: stockNum, now: newStock }, 'stock уменьшен')
+          break
+        }
+      } catch (e: any) {
+        logger.warn({ slug: item.product_slug, sheetName, error: e?.message }, 'не удалось обновить stock')
+      }
+    }
+  }
 }

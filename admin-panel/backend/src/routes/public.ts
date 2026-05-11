@@ -1,8 +1,8 @@
 import express from 'express'
 import { fetchProductsFromSheet, type SheetProduct } from '../sheets.js'
 import { logger } from '../logger.js'
-import { createOrder, getAuth, type DeliveryService } from '../orders-utils.js'
-import { createPaymentUrl } from '../robokassa.js'
+import { createOrder, getAuth, DELIVERY_PRICES, DELIVERY_LABELS, type DeliveryService } from '../orders-utils.js'
+import { buildReceipt, createPaymentUrl } from '../robokassa.js'
 
 const router = express.Router()
 
@@ -65,6 +65,14 @@ function sortByOrder(category: string) {
     return oa - ob
   }
 }
+
+// GET /api/public/delivery-prices — цены доставки для отображения на сайте
+router.get('/delivery-prices', (_req, res) => {
+  res.json({
+    cdek: { price: DELIVERY_PRICES.cdek, label: DELIVERY_LABELS.cdek },
+    yandex_market: { price: DELIVERY_PRICES.yandex_market, label: DELIVERY_LABELS.yandex_market },
+  })
+})
 
 // GET /api/public/products?category=necklaces — товары категории, отфильтрованные и в правильном порядке
 // без category вернёт все доступные товары
@@ -174,18 +182,32 @@ router.post('/orders', async (req, res) => {
       items: snapshotItems,
     })
 
+    // формируем чек для самозанятого (tax: "none") — товары + доставка
+    const receipt = buildReceipt(
+      snapshotItems.map((it) => ({
+        name: it.product_title,
+        quantity: it.quantity,
+        price: it.price_rub,
+      })),
+      order.delivery_rub > 0
+        ? { name: DELIVERY_LABELS[delivery_service], price: order.delivery_rub }
+        : undefined
+    )
+
     // строим URL Робокассы
     const payment = createPaymentUrl({
       outSum: order.total_rub,
       invId: order.inv_id,
       description: `Заказ #${order.display_id}`,
       email: customer_email,
+      receipt,
     })
 
     res.json({
       order_id: order.id,
       display_id: order.display_id,
       inv_id: order.inv_id,
+      delivery_rub: order.delivery_rub,
       total_rub: order.total_rub,
       payment_url: payment.paymentUrl,
     })

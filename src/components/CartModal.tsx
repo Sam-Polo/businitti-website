@@ -2,18 +2,14 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useCart } from '../contexts/CartContext'
 import { externalLinks } from '../config/links'
 import { formatPrice } from '../api/products'
+import { createOrder, fetchDeliveryPrices, type DeliveryPrices, type DeliveryService } from '../api/orders'
 import './CartModal.css'
 
-type DeliveryMethod = 'cdek' | 'yandex'
-
-const DELIVERY_PRICES: Record<DeliveryMethod, number> = {
-  cdek: 500,
-  yandex: 300,
-}
-
-const DELIVERY_LABELS: Record<DeliveryMethod, string> = {
-  cdek: 'СДЭК',
-  yandex: 'Яндекс Маркет',
+// дефолтные цены доставки — синхронизированы с бэком (DELIVERY_PRICES в orders-utils.ts).
+// при открытии корзины подтягиваем актуальные с /api/public/delivery-prices.
+const DEFAULT_DELIVERY: DeliveryPrices = {
+  cdek: { price: 650, label: 'СДЭК' },
+  yandex_market: { price: 300, label: 'Яндекс Маркет' },
 }
 
 export default function CartModal() {
@@ -22,9 +18,16 @@ export default function CartModal() {
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
-  const [delivery, setDelivery] = useState<DeliveryMethod>('cdek')
+  const [delivery, setDelivery] = useState<DeliveryService>('cdek')
   const [address, setAddress] = useState('')
   const [agreed, setAgreed] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [deliveryPrices, setDeliveryPrices] = useState<DeliveryPrices>(DEFAULT_DELIVERY)
+
+  useEffect(() => {
+    fetchDeliveryPrices().then(setDeliveryPrices).catch(() => {/* остаёмся на DEFAULT */})
+  }, [])
 
   useEffect(() => {
     if (!isCartOpen) return
@@ -40,35 +43,35 @@ export default function CartModal() {
 
   if (!isCartOpen) return null
 
-  const deliveryPrice = DELIVERY_PRICES[delivery]
+  const deliveryPrice = deliveryPrices[delivery].price
   const grandTotal = totalPrice + (items.length > 0 ? deliveryPrice : 0)
-  const canSubmit = items.length > 0 && agreed && name.trim() && phone.trim() && email.trim() && address.trim()
+  const canSubmit = !submitting && items.length > 0 && agreed && name.trim() && phone.trim() && email.trim() && address.trim()
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (!canSubmit) return
-    const lines = items.map((it) => `• ${it.title} ×${it.quantity} — ${formatPrice(it.price_rub * it.quantity)}`).join('\n')
-    const text = [
-      'Новый заказ Businitti',
-      '',
-      `Имя: ${name}`,
-      `Телефон: ${phone}`,
-      `Email: ${email}`,
-      `Доставка: ${DELIVERY_LABELS[delivery]} (${formatPrice(deliveryPrice)})`,
-      `Адрес: ${address}`,
-      '',
-      'Состав заказа:',
-      lines,
-      '',
-      `Товары: ${formatPrice(totalPrice)}`,
-      `Доставка: ${formatPrice(deliveryPrice)}`,
-      `Итого: ${formatPrice(grandTotal)}`,
-    ].join('\n')
 
-    const url = `${externalLinks.support}?text=${encodeURIComponent(text)}`
-    window.open(url, '_blank', 'noopener,noreferrer')
-    clear()
-    closeCart()
+    setSubmitting(true)
+    setSubmitError(null)
+
+    try {
+      const result = await createOrder({
+        customer_name: name.trim(),
+        customer_phone: phone.trim(),
+        customer_email: email.trim(),
+        delivery_service: delivery,
+        delivery_address: address.trim(),
+        items: items.map((it) => ({ slug: it.slug, quantity: it.quantity })),
+      })
+      clear()
+      closeCart()
+      // редирект на страницу оплаты Робокассы
+      window.location.href = result.payment_url
+    } catch (err: any) {
+      setSubmitError(err?.message || 'Не удалось создать заказ. Попробуйте ещё раз.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -171,17 +174,17 @@ export default function CartModal() {
                   onChange={() => setDelivery('cdek')}
                 />
                 <span className="cart-modal__radio-mark" />
-                <span className="cart-modal__radio-text">СДЭК — 500 ₽</span>
+                <span className="cart-modal__radio-text">СДЭК — {formatPrice(deliveryPrices.cdek.price)}</span>
               </label>
               <label className="cart-modal__radio">
                 <input
                   type="radio"
                   name="delivery"
-                  checked={delivery === 'yandex'}
-                  onChange={() => setDelivery('yandex')}
+                  checked={delivery === 'yandex_market'}
+                  onChange={() => setDelivery('yandex_market')}
                 />
                 <span className="cart-modal__radio-mark" />
-                <span className="cart-modal__radio-text">Яндекс Маркет — 300 ₽</span>
+                <span className="cart-modal__radio-text">Яндекс Маркет — {formatPrice(deliveryPrices.yandex_market.price)}</span>
               </label>
             </fieldset>
 
@@ -217,16 +220,20 @@ export default function CartModal() {
 
           <div className="cart-modal__totals">
             <p className="cart-modal__sub">Сумма: {formatPrice(totalPrice)}</p>
-            <p className="cart-modal__sub">{DELIVERY_LABELS[delivery]}: {formatPrice(deliveryPrice)}</p>
+            <p className="cart-modal__sub">{deliveryPrices[delivery].label}: {formatPrice(deliveryPrice)}</p>
             <p className="cart-modal__total">Итоговая сумма: {formatPrice(grandTotal)}</p>
           </div>
+
+          {submitError && (
+            <p className="cart-modal__error" role="alert">{submitError}</p>
+          )}
 
           <button
             type="submit"
             className="cart-modal__submit"
             disabled={!canSubmit}
           >
-            Оформить заказ
+            {submitting ? 'Создаём заказ…' : 'Оформить заказ'}
           </button>
         </form>
       </div>

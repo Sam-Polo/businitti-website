@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express'
 import { createPaymentUrl, verifyResultSignature, verifySuccessSignature, buildReceipt } from '../robokassa.js'
-import { findOrderByInvId, updateOrderStatus, getAuth } from '../orders-utils.js'
+import { findOrderByInvId, updateOrderStatus, decrementStockForOrder, getAuth } from '../orders-utils.js'
 import { logger } from '../logger.js'
 
 const router = Router()
@@ -86,6 +86,12 @@ router.post('/result', async (req: Request, res: Response) => {
           if (order.status === 'pending_payment') {
             await updateOrderStatus(auth, sheetId, order.id, 'new')
             logger.info({ orderId: order.id, InvId }, 'заказ переведён в new (оплачен)')
+            // уменьшаем остатки только один раз — при переходе pending_payment → new
+            try {
+              await decrementStockForOrder(auth, sheetId, order.id)
+            } catch (stockErr: any) {
+              logger.error({ err: stockErr?.message, orderId: order.id }, 'не удалось уменьшить stock')
+            }
           } else {
             logger.warn({ orderId: order.id, status: order.status, InvId }, 'заказ уже не в pending_payment, статус не меняем')
           }
