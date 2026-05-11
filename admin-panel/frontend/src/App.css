@@ -2434,6 +2434,11 @@
   line-height: 1;
 }
 
+.orders-list {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .orders-table {
   width: 100%;
   border-collapse: collapse;
@@ -2463,6 +2468,87 @@
 
 .orders-row:hover {
   background: #f9fafb;
+}
+
+/* Адаптация таблицы заказов под мобилку: строки → карточки */
+@media (max-width: 768px) {
+  .orders-list {
+    overflow: visible;
+  }
+
+  .orders-table,
+  .orders-table thead,
+  .orders-table tbody,
+  .orders-table tr,
+  .orders-table td {
+    display: block;
+  }
+
+  .orders-table {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .orders-table thead {
+    display: none;
+  }
+
+  .orders-table tr.orders-row {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    margin-bottom: 0.75rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .orders-table td {
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #f1f1f1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    text-align: right;
+  }
+
+  .orders-table td:last-child {
+    border-bottom: none;
+  }
+
+  .orders-table td::before {
+    content: attr(data-label);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #6b7280;
+    text-align: left;
+    flex-shrink: 0;
+  }
+
+  /* Адаптация деталей заказа */
+  .order-item-row {
+    flex-wrap: wrap;
+  }
+
+  .order-item-row img {
+    width: 56px !important;
+    height: 56px !important;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .modal-actions .btn {
+    margin-left: 0 !important;
+    width: 100%;
+  }
+
+  /* Статистика — карточки шире */
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 .empty-state {

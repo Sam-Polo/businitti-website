@@ -159,15 +159,15 @@ export default function OrdersPage({ onNavigate, newCount }: {
                     className="orders-row"
                     style={{ cursor: 'pointer' }}
                   >
-                    <td><strong>#{order.display_id}</strong></td>
-                    <td><StatusBadge status={order.status} /></td>
-                    <td>{formatDate(order.created_at)}</td>
-                    <td>{order.customer_name}</td>
-                    <td>
+                    <td data-label="№"><strong>#{order.display_id}</strong></td>
+                    <td data-label="Статус"><StatusBadge status={order.status} /></td>
+                    <td data-label="Дата">{formatDate(order.created_at)}</td>
+                    <td data-label="Клиент">{order.customer_name}</td>
+                    <td data-label="Контакты">
                       <div style={{ fontSize: '0.9em' }}>{order.customer_phone}</div>
                       <div style={{ fontSize: '0.85em', opacity: 0.7 }}>{order.customer_email}</div>
                     </td>
-                    <td><strong>{formatPrice(order.total_rub)}</strong></td>
+                    <td data-label="Сумма"><strong>{formatPrice(order.total_rub)}</strong></td>
                   </tr>
                 ))}
               </tbody>
