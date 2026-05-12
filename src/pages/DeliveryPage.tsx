@@ -9,7 +9,7 @@ export default function DeliveryPage() {
         {/* Delivery Section */}
         <section className="delivery-section">
           <div className="delivery-top">
-            {/* Header with image */}
+            {/* Header with image and delivery services */}
             <div className="delivery-header">
               <div className="delivery-header__info">
                 <h1 className="delivery-header__title">Доставка и оплата</h1>
@@ -28,28 +28,29 @@ export default function DeliveryPage() {
                   </p>
                 </div>
               </div>
-              <div className="delivery-header__image" />
-            </div>
 
-            {/* Delivery services (Frame 26) */}
-            <div className="delivery-services">
-              <h2 className="delivery-services__title">Службы доставки:</h2>
-              <div className="delivery-services__rows">
-                <hr className="delivery-services__line" />
-                <div className="delivery-services__row">
-                  <span className="delivery-services__text">Яндекс доставка в пункт выдачи 300 р.</span>
-                  <img src={yandexIcon} alt="" className="delivery-services__icon delivery-services__icon--yandex" />
+              {/* Delivery services (Frame 26) — bottom-aligned with photo */}
+              <div className="delivery-services">
+                <h2 className="delivery-services__title">Службы доставки:</h2>
+                <div className="delivery-services__rows">
+                  <hr className="delivery-services__line" />
+                  <div className="delivery-services__row">
+                    <span className="delivery-services__text">Яндекс доставка в пункт выдачи 300 р.</span>
+                    <img src={yandexIcon} alt="" className="delivery-services__icon delivery-services__icon--yandex" />
+                  </div>
+                  <hr className="delivery-services__line" />
+                  <div className="delivery-services__row">
+                    <span className="delivery-services__text">СДЭК в пункт выдачи 650 р.</span>
+                    <img src={sdekIcon} alt="" className="delivery-services__icon delivery-services__icon--sdek" />
+                  </div>
+                  <hr className="delivery-services__line" />
                 </div>
-                <hr className="delivery-services__line" />
-                <div className="delivery-services__row">
-                  <span className="delivery-services__text">СДЭК в пункт выдачи 650 р.</span>
-                  <img src={sdekIcon} alt="" className="delivery-services__icon delivery-services__icon--sdek" />
-                </div>
-                <hr className="delivery-services__line" />
+                <p className="delivery-services__note">
+                  После отправки заказа на ваши контактные данные, указанные при оформлении заказа, приходит трек-номер посылки.
+                </p>
               </div>
-              <p className="delivery-services__note">
-                После отправки заказа на ваши контактные данные, указанные при оформлении заказа, приходит трек-номер посылки.
-              </p>
+
+              <div className="delivery-header__image" />
             </div>
           </div>
 
