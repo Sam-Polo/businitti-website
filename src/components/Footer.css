@@ -67,6 +67,12 @@
 }
 
 /* Right section */
+.footer__side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
 .footer__right {
   display: flex;
   flex-direction: column;
@@ -156,13 +162,16 @@
     gap: 22px;
   }
 
-  .footer__col-group .footer__col--nav {
-    order: -1;
-    gap: 22px;
+  .footer__col--nav {
+    display: contents;
   }
 
-  .footer__col--nav {
-    gap: 22px;
+  .footer__nav--about {
+    order: -1;
+  }
+
+  .footer__side {
+    display: contents;
   }
 
   .footer__heading {
