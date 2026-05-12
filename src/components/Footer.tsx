@@ -31,21 +31,23 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div className="footer__col">
-            <h4 className="footer__heading">Покупателям</h4>
-            <ul className="footer__links">
-              {customerLinks.map(link => (
-                <li key={link.to}>
-                  <Link to={link.to} className="footer__link">{link.label}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <div className="footer__col-group">
+            <div className="footer__col">
+              <h4 className="footer__heading">Покупателям</h4>
+              <ul className="footer__links">
+                {customerLinks.map(link => (
+                  <li key={link.to}>
+                    <Link to={link.to} className="footer__link">{link.label}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-          <div className="footer__col footer__col--nav">
-            <Link to="/about" className="footer__heading footer__heading--link">О бренде</Link>
-            <Link to="/contacts" className="footer__heading footer__heading--link">Контакты</Link>
-            <a href={externalLinks.support} target="_blank" rel="noopener noreferrer" className="footer__heading footer__heading--link">Поддержка</a>
+            <div className="footer__col footer__col--nav">
+              <Link to="/about" className="footer__heading footer__heading--link">О бренде</Link>
+              <Link to="/contacts" className="footer__heading footer__heading--link">Контакты</Link>
+              <a href={externalLinks.support} target="_blank" rel="noopener noreferrer" className="footer__heading footer__heading--link">Поддержка</a>
+            </div>
           </div>
         </div>
 

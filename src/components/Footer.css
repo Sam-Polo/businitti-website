@@ -22,6 +22,11 @@
   gap: 24px;
 }
 
+.footer__col-group {
+  display: flex;
+  gap: 100px;
+}
+
 .footer__col--nav {
   gap: 47px;
 }
@@ -146,6 +151,16 @@
     gap: 20px;
   }
 
+  .footer__col-group {
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .footer__col-group .footer__col--nav {
+    order: -1;
+    gap: 22px;
+  }
+
   .footer__col--nav {
     gap: 22px;
   }
@@ -166,8 +181,8 @@
   }
 
   .footer__social svg {
-    width: 20px;
-    height: 20px;
+    width: 25px;
+    height: 25px;
   }
 
   .footer__phone {
