@@ -904,9 +904,9 @@ function ProductsList({ onNavigate, newOrdersCount }: { onNavigate?: (page: 'pro
             try {
               await api.updateProduct(selectedProduct.slug, updatedProduct)
               showToast('Товар успешно обновлен', 'success')
+              await loadProducts()
               setIsEditModalOpen(false)
               setSelectedProduct(null)
-              await loadProducts()
             } catch (err: any) {
               const errorMsg = err.message || 'Ошибка сохранения товара'
               setError(errorMsg)
@@ -927,8 +927,11 @@ function ProductsList({ onNavigate, newOrdersCount }: { onNavigate?: (page: 'pro
             try {
               await api.createProduct(newProduct)
               showToast('Товар успешно добавлен', 'success')
-              setIsAddModalOpen(false)
+              // сначала обновляем список товаров, потом закрываем модалку —
+              // иначе пользователь успеет открыть Add ещё раз со старыми данными
+              // и nextArticle посчитается без только что добавленного
               await loadProducts()
+              setIsAddModalOpen(false)
             } catch (err: any) {
               const errorMsg = err.message || 'Ошибка добавления товара'
               setError(errorMsg)

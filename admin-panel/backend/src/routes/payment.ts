@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express'
 import { createPaymentUrl, verifyResultSignature, verifySuccessSignature, buildReceipt } from '../robokassa.js'
-import { findOrderByInvId, updateOrderStatus, decrementStockForOrder, getAuth } from '../orders-utils.js'
+import { findOrderByInvId, fetchOrderWithItems, updateOrderStatus, decrementStockForOrder, getAuth } from '../orders-utils.js'
+import { sendEmail } from '../unisender.js'
+import { buildOrderEmailHtml, buildOrderEmailSubject } from '../order-email.js'
 import { logger } from '../logger.js'
 
 const router = Router()
@@ -91,6 +93,22 @@ router.post('/result', async (req: Request, res: Response) => {
               await decrementStockForOrder(auth, sheetId, order.id)
             } catch (stockErr: any) {
               logger.error({ err: stockErr?.message, orderId: order.id }, 'не удалось уменьшить stock')
+            }
+
+            // отправляем письмо клиенту (не блокирует ответ Робокассе при ошибке)
+            try {
+              const full = await fetchOrderWithItems(auth, sheetId, order.id)
+              if (full && full.customer_email) {
+                await sendEmail({
+                  to: full.customer_email,
+                  toName: full.customer_name,
+                  subject: buildOrderEmailSubject(full),
+                  html: buildOrderEmailHtml(full),
+                  replyTo: process.env.SUPPORT_EMAIL,
+                })
+              }
+            } catch (mailErr: any) {
+              logger.error({ err: mailErr?.message, orderId: order.id }, 'не удалось отправить письмо клиенту')
             }
           } else {
             logger.warn({ orderId: order.id, status: order.status, InvId }, 'заказ уже не в pending_payment, статус не меняем')
