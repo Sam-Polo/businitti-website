@@ -1,3 +1,5 @@
+import yandexIcon from '../assets/yandex-delivery-icon.svg'
+import sdekIcon from '../assets/sdek-icon.svg'
 import './DeliveryPage.css'
 
 export default function DeliveryPage() {
@@ -29,21 +31,25 @@ export default function DeliveryPage() {
               <div className="delivery-header__image" />
             </div>
 
-            {/* Delivery details */}
-            <div className="delivery-details">
-              <div className="delivery-methods">
-                <h2 className="delivery-methods__title">Способы доставки</h2>
-                <div className="delivery-methods__list">
-                  <p>СДЭК до пункта выдачи</p>
-                  <p>СДЭК курьером до двери</p>
-                  <p>Почта России</p>
+            {/* Delivery services (Frame 26) */}
+            <div className="delivery-services">
+              <h2 className="delivery-services__title">Службы доставки:</h2>
+              <div className="delivery-services__rows">
+                <hr className="delivery-services__line" />
+                <div className="delivery-services__row">
+                  <span className="delivery-services__text">Яндекс доставка в пункт выдачи 300 р.</span>
+                  <img src={yandexIcon} alt="" className="delivery-services__icon delivery-services__icon--yandex" />
                 </div>
+                <hr className="delivery-services__line" />
+                <div className="delivery-services__row">
+                  <span className="delivery-services__text">СДЭК в пункт выдачи 650 р.</span>
+                  <img src={sdekIcon} alt="" className="delivery-services__icon delivery-services__icon--sdek" />
+                </div>
+                <hr className="delivery-services__line" />
               </div>
-              <div className="delivery-methods__row">
-                <p className="delivery-methods__list">
-                  Все заказы тщательно упаковываются в фирменную упаковку.
-                </p>
-              </div>
+              <p className="delivery-services__note">
+                После отправки заказа на ваши контактные данные, указанные при оформлении заказа, приходит трек-номер посылки.
+              </p>
             </div>
           </div>
 

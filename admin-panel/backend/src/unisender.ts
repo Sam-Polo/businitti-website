@@ -1,5 +1,13 @@
 import { logger } from './logger.js'
 
+/**
+ * Клиент для Unisender Go — отдельного сервиса транзакционных писем.
+ * Документация: https://godocs.unisender.ru/web-api-ref
+ *
+ * Не путать с классическим Unisender (api.unisender.com) — это другой продукт
+ * с другим API и другим личным кабинетом.
+ */
+
 // ─── Типы ────────────────────────────────────────────────
 
 export type SendEmailParams = {
@@ -10,131 +18,79 @@ export type SendEmailParams = {
   replyTo?: string            // адрес для ответа
 }
 
-type UnisenderListsResponse = {
-  result?: Array<{ id: number; title: string }>
-  error?: string
-  code?: string
-}
-
-type UnisenderSendEmailResponse = {
-  result?: { index: number; id?: string; email?: string; errors?: any[] }
-  error?: string
-  code?: string
-  warnings?: any[]
+type SendResponse = {
+  status?: 'success' | 'error'
+  job_id?: string
+  emails?: string[]
+  failed_emails?: Record<string, string>
+  message?: string
+  code?: number
 }
 
 // ─── Конфигурация ────────────────────────────────────────
 
-const API_BASE = 'https://api.unisender.com/ru/api'
+const API_BASE = 'https://goapi.unisender.ru/ru/transactional/api/v1'
 
 function getConfig() {
-  const apiKey = process.env.UNISENDER_API_KEY
+  const apiKey = process.env.UNISENDER_GO_KEY
   const senderEmail = process.env.UNISENDER_SENDER_EMAIL
   const senderName = process.env.UNISENDER_SENDER_NAME || 'Businitti'
 
-  if (!apiKey) throw new Error('UNISENDER_API_KEY обязателен в .env')
-  if (!senderEmail) throw new Error('UNISENDER_SENDER_EMAIL обязателен в .env (подтверждённый адрес в Unisender)')
+  if (!apiKey) throw new Error('UNISENDER_GO_KEY обязателен в .env')
+  if (!senderEmail) throw new Error('UNISENDER_SENDER_EMAIL обязателен в .env (подтверждённый адрес в Unisender Go)')
 
   return { apiKey, senderEmail, senderName }
-}
-
-// ─── Низкоуровневый HTTP ────────────────────────────────
-
-async function callApi<T>(method: string, params: Record<string, string>): Promise<T> {
-  const { apiKey } = getConfig()
-  const body = new URLSearchParams({
-    format: 'json',
-    api_key: apiKey,
-    ...params,
-  })
-
-  const url = `${API_BASE}/${method}`
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: body.toString(),
-  })
-
-  if (!res.ok) {
-    throw new Error(`Unisender HTTP ${res.status}: ${await res.text().catch(() => '')}`)
-  }
-
-  const data = (await res.json()) as T
-  return data
-}
-
-// ─── Получение list_id (кэшируется в памяти процесса) ────
-
-let cachedListId: number | null = null
-
-/**
- * Возвращает id дефолтного списка (на бесплатном тарифе он один при регистрации).
- * Параметр list_id обязателен в sendEmail для функционала отписки.
- */
-export async function getDefaultListId(): Promise<number> {
-  if (cachedListId !== null) return cachedListId
-
-  // Если list_id указан в .env — используем его без обращения к API
-  const fromEnv = process.env.UNISENDER_LIST_ID
-  if (fromEnv) {
-    const parsed = parseInt(fromEnv, 10)
-    if (Number.isFinite(parsed) && parsed > 0) {
-      cachedListId = parsed
-      return parsed
-    }
-  }
-
-  const data = await callApi<UnisenderListsResponse>('getLists', {})
-  if (data.error || !data.result || data.result.length === 0) {
-    throw new Error(`Unisender getLists failed: ${data.error || 'no lists in account'}`)
-  }
-
-  cachedListId = data.result[0].id
-  logger.info({ listId: cachedListId, title: data.result[0].title }, 'Unisender: используется список')
-  return cachedListId
 }
 
 // ─── Отправка письма ────────────────────────────────────
 
 /**
- * Отправляет одиночное транзакционное письмо через метод sendEmail.
- * Ограничения: 1000 писем/день для новых аккаунтов, 60 запросов/мин,
- * минимум 60 сек между письмами одному получателю.
+ * Отправляет одиночное транзакционное письмо через Unisender Go.
+ * Бесплатный тариф: 1500 писем/мес на 100 контактов.
  */
-export async function sendEmail(params: SendEmailParams): Promise<{ id?: string }> {
-  const { senderEmail, senderName } = getConfig()
-  const listId = await getDefaultListId()
+export async function sendEmail(params: SendEmailParams): Promise<{ jobId?: string }> {
+  const { apiKey, senderEmail, senderName } = getConfig()
 
-  const to = params.toName ? `${params.toName} <${params.to}>` : params.to
-
-  // Reply-To передаётся через параметр headers в MIME-формате
-  const headers = params.replyTo ? `Reply-To: ${params.replyTo}` : undefined
-
-  const requestParams: Record<string, string> = {
-    email: to,
-    sender_name: senderName,
-    sender_email: senderEmail,
-    subject: params.subject,
-    body: params.html,
-    list_id: String(listId),
-    lang: 'ru',
-    error_checking: '1',
-  }
-  if (headers) requestParams.headers = headers
-
-  const data = await callApi<UnisenderSendEmailResponse>('sendEmail', requestParams)
-
-  if (data.error) {
-    logger.error({ to: params.to, error: data.error, code: data.code }, 'Unisender: ошибка отправки')
-    throw new Error(`Unisender sendEmail failed: ${data.error} (${data.code || 'unknown'})`)
+  const payload: Record<string, any> = {
+    message: {
+      recipients: [
+        {
+          email: params.to,
+          ...(params.toName ? { substitutions: { to_name: params.toName } } : {}),
+        },
+      ],
+      body: {
+        html: params.html,
+      },
+      subject: params.subject,
+      from_email: senderEmail,
+      from_name: senderName,
+      ...(params.replyTo ? { reply_to: params.replyTo } : {}),
+    },
   }
 
-  const errors = data.result?.errors
-  if (Array.isArray(errors) && errors.length > 0) {
-    logger.error({ to: params.to, errors }, 'Unisender: ошибки в result')
-    throw new Error(`Unisender sendEmail errors: ${JSON.stringify(errors)}`)
+  const res = await fetch(`${API_BASE}/email/send.json`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-KEY': apiKey,
+    },
+    body: JSON.stringify(payload),
+  })
+
+  const data = (await res.json().catch(() => ({}))) as SendResponse
+
+  if (!res.ok || data.status === 'error') {
+    logger.error({ to: params.to, status: res.status, response: data }, 'Unisender Go: ошибка отправки')
+    throw new Error(`Unisender Go sendEmail failed (HTTP ${res.status}): ${data.message || 'unknown'} ${data.code ? `[${data.code}]` : ''}`)
   }
 
-  logger.info({ to: params.to, id: data.result?.id }, 'Unisender: письмо отправлено')
-  return { id: data.result?.id }
+  if (data.failed_emails && Object.keys(data.failed_emails).length > 0) {
+    logger.error({ to: params.to, failed: data.failed_emails }, 'Unisender Go: failed_emails в ответе')
+    const reasons = Object.entries(data.failed_emails).map(([email, reason]) => `${email}: ${reason}`).join('; ')
+    throw new Error(`Unisender Go failed_emails: ${reasons}`)
+  }
+
+  logger.info({ to: params.to, jobId: data.job_id }, 'Unisender Go: письмо принято в отправку')
+  return { jobId: data.job_id }
 }
