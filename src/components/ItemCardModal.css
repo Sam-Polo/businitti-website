@@ -153,11 +153,27 @@
   text-align: center;
 }
 
+.item-modal__price-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
 .item-modal__price {
   font-family: var(--font-body);
   font-size: 26px;
   font-weight: var(--font-weight-regular);
   color: var(--color-text-primary);
+}
+
+.item-modal__price--new {
+  color: var(--color-accent);
+}
+
+.item-modal__price--old {
+  text-decoration: line-through;
+  color: rgba(47, 47, 47, 0.4);
+  font-size: 18px;
 }
 
 .item-modal__add {

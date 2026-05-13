@@ -175,19 +175,66 @@ export function buildOrderEmailSubject(order: OrderWithItems): string {
 
 // ─── Письмо об отправке заказа ───────────────────────────
 
-const TRACKING_URLS: Record<string, (n: string) => string> = {
-  cdek: (n) => `https://www.cdek.ru/ru/tracking?order_id=${encodeURIComponent(n)}`,
-  yandex_market: (n) => `https://market.yandex.ru/my/orders?text=${encodeURIComponent(n)}`,
+function isTrackingUrl(v: string): boolean {
+  return /^https?:\/\//i.test(v.trim())
+}
+
+function isOurOrderRef(v: string): boolean {
+  return v.trim().startsWith('#')
+}
+
+function buildTrackingSection(order: OrderWithItems, trackingValue: string): string {
+  const value = trackingValue.trim()
+  const deliveryLabel = DELIVERY_LABELS[order.delivery_service] ?? order.delivery_service
+
+  const buttonHtml = (url: string) =>
+    `<a href="${escapeHtml(url)}" style="display:inline-block;margin-top:16px;padding:10px 24px;background:#f5a2b7;color:#fff;text-decoration:none;font-size:14px;border-radius:3px;">Отследить посылку</a>`
+
+  let title = 'Трек-номер'
+  let displayValue = value
+  let buttonBlock = ''
+  let helperText = ''
+
+  if (order.delivery_service === 'cdek') {
+    const url = `https://www.cdek.ru/ru/tracking?order_id=${encodeURIComponent(value)}`
+    buttonBlock = buttonHtml(url)
+  } else if (order.delivery_service === 'yandex_market') {
+    if (isTrackingUrl(value)) {
+      title = 'Отслеживание'
+      displayValue = ''
+      buttonBlock = buttonHtml(value)
+      helperText = 'Перейдите по ссылке, чтобы отследить статус доставки.'
+    } else if (isOurOrderRef(value)) {
+      title = 'Номер заказа Businitti'
+      displayValue = value
+      helperText = 'Посылка отправлена через Яндекс Маркет. Отследить её можно в приложении Яндекс Go или по ссылке из SMS от Яндекса. Этот номер сообщите нам, если возникнут вопросы.'
+    } else {
+      title = 'Номер заказа Яндекса'
+      displayValue = value
+      helperText = 'Отследить посылку можно в приложении Яндекс Go или по ссылке из SMS от Яндекса.'
+    }
+  }
+
+  const displayBlock = displayValue
+    ? `<div style="font-size: 22px; font-weight: 600; letter-spacing: 0.06em; color: #2f2f2f;">${escapeHtml(displayValue)}</div>`
+    : ''
+
+  const helperBlock = helperText
+    ? `<div style="font-size: 13px; color: #888; margin-top: 10px; line-height: 19px;">${escapeHtml(helperText)}</div>`
+    : ''
+
+  return `
+    <div style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: #888; margin-bottom: 10px;">${escapeHtml(title)}</div>
+    ${displayBlock}
+    <div style="font-size: 13px; color: #888; margin-top: 4px;">${escapeHtml(deliveryLabel)}</div>
+    ${buttonBlock}
+    ${helperBlock}
+  `
 }
 
 export function buildShippingEmailHtml(order: OrderWithItems, trackingNumber: string): string {
   const contacts = getContacts()
-  const deliveryLabel = DELIVERY_LABELS[order.delivery_service] ?? order.delivery_service
-  const trackingUrl = TRACKING_URLS[order.delivery_service]?.(trackingNumber)
-
-  const trackingBlock = trackingUrl
-    ? `<a href="${escapeHtml(trackingUrl)}" style="display:inline-block;margin-top:12px;padding:10px 24px;background:#f5a2b7;color:#fff;text-decoration:none;font-size:14px;border-radius:3px;">Отследить посылку</a>`
-    : ''
+  const trackingSection = buildTrackingSection(order, trackingNumber)
 
   const contactsBlock = [
     contacts.supportPhone ? `<a href="tel:${escapeHtml(contacts.supportPhone.replace(/\s+/g, ''))}" style="color: #2f2f2f; text-decoration: none;">${escapeHtml(contacts.supportPhone)}</a>` : '',
@@ -226,10 +273,7 @@ export function buildShippingEmailHtml(order: OrderWithItems, trackingNumber: st
           <!-- tracking -->
           <tr>
             <td style="padding: 32px 40px 0; text-align: center;">
-              <div style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: #888; margin-bottom: 10px;">Трек-номер</div>
-              <div style="font-size: 22px; font-weight: 600; letter-spacing: 0.06em; color: #2f2f2f;">${escapeHtml(trackingNumber)}</div>
-              <div style="font-size: 13px; color: #888; margin-top: 4px;">${escapeHtml(deliveryLabel)}</div>
-              ${trackingBlock}
+              ${trackingSection}
             </td>
           </tr>
 
@@ -245,7 +289,7 @@ export function buildShippingEmailHtml(order: OrderWithItems, trackingNumber: st
           <tr>
             <td style="padding: 32px 40px 0;">
               <div style="background-color: rgba(245, 162, 183, 0.10); border-left: 3px solid #f5a2b7; padding: 16px 18px; font-size: 14px; line-height: 21px; color: #2f2f2f;">
-                Обычно посылки доставляются в течение <strong>2&ndash;7 рабочих дней</strong> с момента отправки. Следите за статусом по трек-номеру выше.
+                Обычно посылки доставляются в течение <strong>2&ndash;7 рабочих дней</strong> с момента отправки.
               </div>
             </td>
           </tr>

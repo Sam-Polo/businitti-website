@@ -94,7 +94,14 @@ export default function ItemCardModal() {
                 aria-label="Увеличить"
               >+</button>
             </div>
-            <p className="item-modal__price">{formatPrice(price * quantity)}</p>
+            <div className="item-modal__price-wrap">
+              <p className={`item-modal__price${product.discount_price_rub ? ' item-modal__price--new' : ''}`}>
+                {formatPrice(price * quantity)}
+              </p>
+              {product.discount_price_rub && (
+                <p className="item-modal__price item-modal__price--old">{formatPrice(product.price_rub * quantity)}</p>
+              )}
+            </div>
           </div>
 
           <button className="item-modal__add" onClick={handleAdd}>

@@ -105,7 +105,14 @@ export default function CategoryPage() {
                     />
                     <div className="product-card__info">
                       <p className="product-card__name">{product.title}</p>
-                      <p className="product-card__price">{formatPrice(price)}</p>
+                      <div className="product-card__price-wrap">
+                        <p className={`product-card__price${product.discount_price_rub ? ' product-card__price--new' : ''}`}>
+                          {formatPrice(price)}
+                        </p>
+                        {product.discount_price_rub && (
+                          <p className="product-card__price product-card__price--old">{formatPrice(product.price_rub)}</p>
+                        )}
+                      </div>
                     </div>
                   </button>
                 )

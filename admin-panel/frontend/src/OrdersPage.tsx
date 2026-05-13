@@ -387,27 +387,55 @@ function OrderDetailModal({ orderId, onClose, onChanged }: {
               </button>
             </div>
 
-            {shipDialog && (
-              <div className="modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && setShipDialog(false)}>
-                <div className="modal-content confirm-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 420 }}>
-                  <h3>Отметить заказ #{order.display_id} отправленным</h3>
-                  <p style={{ fontSize: '0.9em', color: '#666' }}>Клиенту будет отправлено письмо с трек-номером.</p>
-                  <input
-                    type="text"
-                    placeholder="Введите трек-номер"
-                    value={trackingInput}
-                    onChange={(e) => setTrackingInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleShip()}
-                    autoFocus
-                    style={{ width: '100%', padding: '10px 12px', fontSize: '1em', border: '1px solid #ddd', borderRadius: 4, boxSizing: 'border-box', marginBottom: 16 }}
-                  />
-                  <div className="confirm-actions">
-                    <button className="btn btn-cancel" disabled={saving} onClick={() => { setShipDialog(false); setTrackingInput('') }}>Отмена</button>
-                    <button className="btn btn-confirm" disabled={saving || !trackingInput.trim()} onClick={handleShip}>Отправить</button>
+            {shipDialog && (() => {
+              const isYandex = order.delivery_service === 'yandex_market'
+              const trimmed = trackingInput.trim()
+              const isUrl = /^https?:\/\//i.test(trimmed)
+              const looksLikeUrlAttempt = !isUrl && /^(www\.|http|https)/i.test(trimmed)
+              const urlError = looksLikeUrlAttempt ? 'Ссылка должна начинаться с http:// или https://' : ''
+              const canSubmit = trimmed.length > 0 && !urlError
+              const useOurNumber = () => {
+                setTrackingInput(`#${order.display_id}`)
+              }
+              return (
+                <div className="modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && setShipDialog(false)}>
+                  <div className="modal-content confirm-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 460 }}>
+                    <h3>Отметить заказ #{order.display_id} отправленным</h3>
+                    <p style={{ fontSize: '0.9em', color: '#666' }}>
+                      {isYandex
+                        ? 'Введите ссылку из SMS Яндекса или номер заказа Яндекса. Либо нажмите кнопку ниже, чтобы отправить клиенту наш номер заказа.'
+                        : 'Введите трек-номер СДЭК. Клиенту придёт письмо со ссылкой на отслеживание.'}
+                    </p>
+                    <input
+                      type="text"
+                      placeholder={isYandex ? 'https://... или номер заказа Яндекса' : 'Трек-номер СДЭК'}
+                      value={trackingInput}
+                      onChange={(e) => setTrackingInput(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && canSubmit && handleShip()}
+                      autoFocus
+                      style={{ width: '100%', padding: '10px 12px', fontSize: '1em', border: `1px solid ${urlError ? '#ef4444' : '#ddd'}`, borderRadius: 4, boxSizing: 'border-box', marginBottom: urlError ? 4 : 12 }}
+                    />
+                    {urlError && (
+                      <div style={{ color: '#ef4444', fontSize: '0.85em', marginBottom: 12 }}>{urlError}</div>
+                    )}
+                    {isYandex && (
+                      <button
+                        type="button"
+                        onClick={useOurNumber}
+                        disabled={saving}
+                        style={{ width: '100%', padding: '10px 12px', marginBottom: 12, background: '#f5f5f5', border: '1px solid #ddd', borderRadius: 4, cursor: 'pointer', fontSize: '0.9em' }}
+                      >
+                        Использовать наш номер заказа #{order.display_id}
+                      </button>
+                    )}
+                    <div className="confirm-actions">
+                      <button className="btn btn-cancel" disabled={saving} onClick={() => { setShipDialog(false); setTrackingInput('') }}>Отмена</button>
+                      <button className="btn btn-confirm" disabled={saving || !canSubmit} onClick={handleShip}>Отправить</button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )
+            })()}
 
             {confirmDelete && (
               <div className="modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && setConfirmDelete(false)}>

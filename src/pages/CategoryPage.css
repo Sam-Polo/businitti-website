@@ -94,11 +94,27 @@
   color: var(--color-text-primary);
 }
 
+.product-card__price-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
 .product-card__price {
   font-family: var(--font-body);
   font-size: var(--font-size-button);
   font-weight: var(--font-weight-regular);
   color: var(--color-text-primary);
+}
+
+.product-card__price--new {
+  color: var(--color-accent);
+}
+
+.product-card__price--old {
+  text-decoration: line-through;
+  color: rgba(47, 47, 47, 0.4);
+  font-size: var(--font-size-caption);
 }
 
 /* ===== Category Contacts ===== */
