@@ -40,17 +40,13 @@
   text-transform: uppercase;
 }
 
-.recommendations-header__desc {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.recommendations-header__desc p {
-  font-family: var(--font-body);
-  font-size: var(--font-size-body);
-  line-height: var(--line-height-body);
+.recommendations-header__subtitle {
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 26px;
+  font-weight: var(--font-weight-regular);
   text-transform: uppercase;
+  color: var(--color-accent);
 }
 
 /* ===== Tips List ===== */
@@ -58,45 +54,23 @@
 .recommendations-tips {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 14px;
 }
 
-.recommendations-tips__group {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.recommendations-tips__subtitle {
-  font-family: var(--font-display);
-  font-size: var(--font-size-subtitle);
-  font-weight: var(--font-weight-regular);
-  text-transform: uppercase;
-  color: var(--color-accent);
-}
-
-.recommendations-tips__list {
-  display: flex;
-  flex-direction: column;
+.recommendations-tips__line {
+  width: 100%;
+  height: 0;
+  border: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.2);
+  margin: 0;
 }
 
 .recommendations-tips__item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 0;
-  border-top: 1px solid rgba(47, 47, 47, 0.2);
-}
-
-.recommendations-tips__item:last-child {
-  border-bottom: 1px solid rgba(47, 47, 47, 0.2);
-}
-
-.recommendations-tips__item p {
   font-family: var(--font-body);
-  font-size: var(--font-size-body);
-  line-height: var(--line-height-body);
+  font-size: 18px;
+  line-height: 22px;
   text-transform: uppercase;
+  color: var(--color-text-primary);
 }
 
 /* ===== Bottom Image ===== */
@@ -122,22 +96,42 @@
     gap: 32px;
   }
 
+  .recommendations-section {
+    gap: 15px;
+  }
+
+  .recommendations-header {
+    gap: 16px;
+  }
+
+  .recommendations-header__top {
+    gap: 28px;
+  }
+
   .recommendations-header__title {
     font-size: 28px;
-    line-height: 28px;
+    line-height: 30px;
   }
 
-  .recommendations-header__desc p {
-    font-size: 14px;
-    line-height: 18px;
+  .recommendations-header__subtitle {
+    font-size: 16px;
+    line-height: 14px;
   }
 
-  .recommendations-tips__item p {
-    font-size: 14px;
-    line-height: 18px;
+  /* Разделители выходят за края page-padding, текст остаётся с 16px отступом */
+  .recommendations-tips {
+    margin-left: -16px;
+    margin-right: -16px;
+  }
+
+  .recommendations-tips__item {
+    font-size: 10px;
+    line-height: 14px;
+    padding-left: 16px;
+    padding-right: 16px;
   }
 
   .recommendations-image {
-    height: 250px;
+    height: 202px;
   }
 }

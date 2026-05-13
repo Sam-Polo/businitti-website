@@ -151,14 +151,14 @@ export default function CategoryPage() {
       </section>
 
       {/* Cart floating button */}
-      <button type="button" className="cart-button" onClick={openCart} aria-label="Открыть корзину">
+      {totalCount > 0 && <button type="button" className="cart-button" onClick={openCart} aria-label="Открыть корзину">
         <svg width="31" height="34" viewBox="0 0 31 34" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M1 1H5.8L9.4 20.4H25L29 7H7" stroke="#2F2F2F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           <circle cx="11" cy="29" r="3" fill="#2F2F2F" />
           <circle cx="23" cy="29" r="3" fill="#2F2F2F" />
         </svg>
-        {totalCount > 0 && <span className="cart-button__badge">{totalCount}</span>}
-      </button>
+        <span className="cart-button__badge">{totalCount}</span>
+      </button>}
     </main>
   )
 }
