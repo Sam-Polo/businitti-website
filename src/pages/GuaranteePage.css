@@ -30,9 +30,6 @@
 
 .guarantee-header {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
 }
 
 .guarantee-header__text {
@@ -44,22 +41,9 @@
 
 .guarantee-header__title {
   font-family: var(--font-display);
-  font-size: var(--font-size-section-title);
+  font-size: 48px;
   line-height: 30px;
   font-weight: var(--font-weight-regular);
-  text-transform: uppercase;
-}
-
-.guarantee-header__desc {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.guarantee-header__desc p {
-  font-family: var(--font-body);
-  font-size: var(--font-size-body);
-  line-height: var(--line-height-body);
   text-transform: uppercase;
 }
 
@@ -76,13 +60,15 @@
   border-radius: var(--border-radius-sm);
 }
 
-/* Return info — right-aligned */
+/* Return info */
 
 .guarantee-return {
   display: flex;
   flex-direction: column;
   gap: 28px;
   padding-left: 460px;
+  min-height: 360px;
+  justify-content: center;
 }
 
 .guarantee-return__text {
@@ -117,12 +103,6 @@
 .guarantee-exclusions {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-}
-
-.guarantee-exclusions__header {
-  display: flex;
-  flex-direction: column;
   gap: 24px;
 }
 
@@ -137,25 +117,24 @@
 .guarantee-exclusions__list {
   display: flex;
   flex-direction: column;
+  gap: 14px;
+}
+
+.guarantee-exclusions__line {
+  width: 100%;
+  height: 0;
+  border: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.2);
+  margin: 0;
 }
 
 .guarantee-exclusions__item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 0;
-  border-top: 1px solid rgba(47, 47, 47, 0.2);
-}
-
-.guarantee-exclusions__item:last-child {
-  border-bottom: 1px solid rgba(47, 47, 47, 0.2);
-}
-
-.guarantee-exclusions__item p {
   font-family: var(--font-body);
-  font-size: var(--font-size-body);
-  line-height: var(--line-height-body);
+  font-size: 18px;
+  line-height: 22px;
   text-transform: uppercase;
+  color: var(--color-text-primary);
+  padding-bottom: 14px;
 }
 
 /* ===== Mobile ===== */
@@ -174,11 +153,6 @@
     line-height: 28px;
   }
 
-  .guarantee-header__desc p {
-    font-size: 14px;
-    line-height: 18px;
-  }
-
   .guarantee-header__image {
     position: relative;
     left: auto;
@@ -189,6 +163,8 @@
 
   .guarantee-return {
     padding-left: 0;
+    min-height: 0;
+    justify-content: flex-start;
   }
 
   .guarantee-return__text p {
@@ -196,8 +172,8 @@
     line-height: 18px;
   }
 
-  .guarantee-exclusions__item p {
-    font-size: 14px;
-    line-height: 18px;
+  .guarantee-exclusions__item {
+    font-size: 10px;
+    line-height: 14px;
   }
 }
