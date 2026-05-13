@@ -256,6 +256,14 @@ export const api = {
     })
   },
 
+  async shipOrder(id: string, trackingNumber: string) {
+    return fetchWithAuth(`/api/orders/${encodeURIComponent(id)}/ship`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tracking_number: trackingNumber })
+    })
+  },
+
   async deleteOrder(id: string) {
     return fetchWithAuth(`/api/orders/${encodeURIComponent(id)}`, {
       method: 'DELETE'
@@ -280,6 +288,7 @@ export type Order = {
   delivery_service: DeliveryService
   delivery_address: string
   total_rub: number
+  tracking_number?: string
 }
 
 export type OrderItem = {

@@ -41,6 +41,7 @@ export type Order = {
   delivery_address: string
   delivery_rub: number
   total_rub: number
+  tracking_number?: string
 }
 
 export type OrderWithItems = Order & { items: OrderItem[] }
@@ -51,7 +52,7 @@ const ORDER_ITEMS_SHEET = 'order_items'
 const ORDERS_HEADERS = [
   'id', 'display_id', 'inv_id', 'created_at', 'updated_at', 'status',
   'customer_name', 'customer_phone', 'customer_email',
-  'delivery_service', 'delivery_address', 'delivery_rub', 'total_rub'
+  'delivery_service', 'delivery_address', 'delivery_rub', 'total_rub', 'tracking_number'
 ]
 
 const ORDER_ITEMS_HEADERS = [
@@ -92,21 +93,23 @@ export async function ensureOrdersSheets(auth: any, sheetId: string): Promise<vo
     logger.info('лист order_items создан')
   }
 
-  // миграция: если в существующем листе orders нет колонки delivery_rub — добавляем
+  // миграция: обновляем заголовки если не хватает колонок
   if (existing.has(ORDERS_SHEET)) {
     const headerRes = await sheets.spreadsheets.values.get({
       spreadsheetId: sheetId,
       range: `${ORDERS_SHEET}!A1:Z1`
     })
     const currentHeaders = (headerRes.data.values?.[0] || []).map((h: string) => String(h).trim().toLowerCase())
-    if (currentHeaders.length > 0 && !currentHeaders.includes('delivery_rub')) {
+    const needsMigration = currentHeaders.length > 0 &&
+      ORDERS_HEADERS.some((h) => !currentHeaders.includes(h))
+    if (needsMigration) {
       await sheets.spreadsheets.values.update({
         spreadsheetId: sheetId,
         range: `${ORDERS_SHEET}!A1`,
         valueInputOption: 'USER_ENTERED',
         requestBody: { values: [ORDERS_HEADERS] }
       })
-      logger.info('лист orders: добавлена колонка delivery_rub')
+      logger.info('лист orders: заголовки обновлены')
     }
   }
 }
@@ -128,6 +131,7 @@ function parseOrderRow(row: any[], idx: Record<string, number>): Order | null {
     delivery_address: String(row[idx.delivery_address] ?? ''),
     delivery_rub: Number(row[idx.delivery_rub]) || 0,
     total_rub: Number(row[idx.total_rub]) || 0,
+    tracking_number: String(row[idx.tracking_number] ?? '') || undefined,
   }
 }
 
@@ -390,6 +394,40 @@ export async function deleteOrder(auth: any, sheetId: string, orderId: string): 
   }
 
   logger.info({ orderId }, 'заказ удалён')
+}
+
+// смена статуса на shipped + запись трек-номера
+export async function shipOrder(
+  auth: any,
+  sheetId: string,
+  orderId: string,
+  trackingNumber: string
+): Promise<void> {
+  const sheets = google.sheets({ version: 'v4', auth })
+  const rowNumber = await findOrderRowNumber(auth, sheetId, orderId)
+  if (!rowNumber) throw new Error(`Заказ "${orderId}" не найден`)
+
+  const headerRes = await sheets.spreadsheets.values.get({
+    spreadsheetId: sheetId,
+    range: `${ORDERS_SHEET}!A1:Z1`
+  })
+  const idx = buildHeaderIndex(headerRes.data.values?.[0] || [])
+  const colLetter = (i: number) => String.fromCharCode(65 + i)
+  const now = new Date().toISOString()
+
+  const updates: any[] = [
+    { range: `${ORDERS_SHEET}!${colLetter(idx.status)}${rowNumber}`, values: [['shipped']] },
+    { range: `${ORDERS_SHEET}!${colLetter(idx.updated_at)}${rowNumber}`, values: [[now]] },
+  ]
+  if (idx.tracking_number !== undefined) {
+    updates.push({ range: `${ORDERS_SHEET}!${colLetter(idx.tracking_number)}${rowNumber}`, values: [[trackingNumber]] })
+  }
+
+  await sheets.spreadsheets.values.batchUpdate({
+    spreadsheetId: sheetId,
+    requestBody: { valueInputOption: 'USER_ENTERED', data: updates }
+  })
+  logger.info({ orderId, trackingNumber }, 'заказ отмечен отправленным')
 }
 
 // удобный единый вход

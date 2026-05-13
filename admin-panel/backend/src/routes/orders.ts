@@ -5,10 +5,13 @@ import {
   fetchOrders,
   fetchOrderWithItems,
   updateOrderStatus,
+  shipOrder,
   deleteOrder,
   getAuth,
   type OrderStatus,
 } from '../orders-utils.js'
+import { sendEmail } from '../unisender.js'
+import { buildShippingEmailHtml, buildShippingEmailSubject } from '../order-email.js'
 
 const router = express.Router()
 
@@ -143,6 +146,40 @@ router.patch('/:id/status', async (req, res) => {
   } catch (error: any) {
     logger.error({ error: error?.message }, 'ошибка смены статуса')
     res.status(500).json({ error: 'failed_to_update_status' })
+  }
+})
+
+// POST /api/orders/:id/ship — отметить отправленным + трек-номер + email клиенту
+router.post('/:id/ship', async (req, res) => {
+  try {
+    const sheetId = getSheetId(res); if (!sheetId) return
+    const trackingNumber = String(req.body?.tracking_number || '').trim()
+    if (!trackingNumber) {
+      return res.status(400).json({ error: 'tracking_number обязателен' })
+    }
+    const auth = getAuth()
+    await shipOrder(auth, sheetId, req.params.id, trackingNumber)
+
+    // отправляем письмо клиенту (ошибка не блокирует ответ)
+    try {
+      const order = await fetchOrderWithItems(auth, sheetId, req.params.id)
+      if (order?.customer_email) {
+        await sendEmail({
+          to: order.customer_email,
+          toName: order.customer_name,
+          subject: buildShippingEmailSubject(order),
+          html: buildShippingEmailHtml(order, trackingNumber),
+          replyTo: process.env.SUPPORT_EMAIL,
+        })
+      }
+    } catch (mailErr: any) {
+      logger.error({ err: mailErr?.message, orderId: req.params.id }, 'не удалось отправить письмо об отправке')
+    }
+
+    res.json({ ok: true })
+  } catch (error: any) {
+    logger.error({ error: error?.message }, 'ошибка при отметке отправки')
+    res.status(500).json({ error: 'failed_to_ship_order' })
   }
 })
 

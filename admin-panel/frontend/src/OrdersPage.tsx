@@ -197,6 +197,8 @@ function OrderDetailModal({ orderId, onClose, onChanged }: {
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [shipDialog, setShipDialog] = useState(false)
+  const [trackingInput, setTrackingInput] = useState('')
 
   useEffect(() => {
     setLoading(true)
@@ -212,10 +214,25 @@ function OrderDetailModal({ orderId, onClose, onChanged }: {
     try {
       await api.updateOrderStatus(order.id, status)
       onChanged()
-      // обновляем локально
       setOrder({ ...order, status, updated_at: new Date().toISOString() })
     } catch (e: any) {
       setError(e?.message || 'Ошибка смены статуса')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleShip = async () => {
+    if (!order || !trackingInput.trim()) return
+    setSaving(true)
+    try {
+      await api.shipOrder(order.id, trackingInput.trim())
+      onChanged()
+      setOrder({ ...order, status: 'shipped', tracking_number: trackingInput.trim(), updated_at: new Date().toISOString() })
+      setShipDialog(false)
+      setTrackingInput('')
+    } catch (e: any) {
+      setError(e?.message || 'Ошибка отметки отправки')
     } finally {
       setSaving(false)
     }
@@ -288,6 +305,12 @@ function OrderDetailModal({ orderId, onClose, onChanged }: {
               <span className="detail-label">Адрес пункта выдачи:</span>
               <span className="detail-value">{order.delivery_address}</span>
             </div>
+            {order.tracking_number && (
+              <div className="detail-row">
+                <span className="detail-label">Трек-номер:</span>
+                <span className="detail-value" style={{ fontWeight: 600 }}>{order.tracking_number}</span>
+              </div>
+            )}
 
             <h3 style={{ marginTop: 20 }}>Позиции</h3>
             <div className="order-items-list">
@@ -322,7 +345,7 @@ function OrderDetailModal({ orderId, onClose, onChanged }: {
                 <button
                   className="btn btn-primary"
                   disabled={saving}
-                  onClick={() => handleChangeStatus('shipped')}
+                  onClick={() => setShipDialog(true)}
                 >
                   Отметить отправленным
                 </button>
@@ -363,6 +386,28 @@ function OrderDetailModal({ orderId, onClose, onChanged }: {
                 Удалить заказ
               </button>
             </div>
+
+            {shipDialog && (
+              <div className="modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && setShipDialog(false)}>
+                <div className="modal-content confirm-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 420 }}>
+                  <h3>Отметить заказ #{order.display_id} отправленным</h3>
+                  <p style={{ fontSize: '0.9em', color: '#666' }}>Клиенту будет отправлено письмо с трек-номером.</p>
+                  <input
+                    type="text"
+                    placeholder="Введите трек-номер"
+                    value={trackingInput}
+                    onChange={(e) => setTrackingInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleShip()}
+                    autoFocus
+                    style={{ width: '100%', padding: '10px 12px', fontSize: '1em', border: '1px solid #ddd', borderRadius: 4, boxSizing: 'border-box', marginBottom: 16 }}
+                  />
+                  <div className="confirm-actions">
+                    <button className="btn btn-cancel" disabled={saving} onClick={() => { setShipDialog(false); setTrackingInput('') }}>Отмена</button>
+                    <button className="btn btn-confirm" disabled={saving || !trackingInput.trim()} onClick={handleShip}>Отправить</button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {confirmDelete && (
               <div className="modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && setConfirmDelete(false)}>
