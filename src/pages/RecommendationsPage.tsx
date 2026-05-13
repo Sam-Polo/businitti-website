@@ -18,8 +18,9 @@ export default function RecommendationsPage() {
                 Рекомендации по уходу
               </h1>
               <p className="recommendations-header__subtitle">
-                Наши изделия будут радовать вас долго<br />
-                при соблюдении следующих рекомендаций:
+                Наши изделия будут радовать<br />
+                вас долго при соблюдении<br />
+                следующих рекомендаций:
               </p>
             </div>
 

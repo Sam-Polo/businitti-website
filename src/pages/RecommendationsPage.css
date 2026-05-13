@@ -71,6 +71,7 @@
   line-height: 22px;
   text-transform: uppercase;
   color: var(--color-text-primary);
+  padding-bottom: 14px;
 }
 
 /* ===== Bottom Image ===== */
