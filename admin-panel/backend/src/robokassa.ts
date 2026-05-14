@@ -121,7 +121,8 @@ export function createPaymentUrl(params: CreatePaymentParams): PaymentResult {
     urlParams.set('Email', params.email)
   }
   if (params.receipt) {
-    urlParams.set('Receipt', encodeURIComponent(JSON.stringify(params.receipt)))
+    // URLSearchParams сам сделает URL-encoding при toString() — передаём сырой JSON
+    urlParams.set('Receipt', JSON.stringify(params.receipt))
   }
   if (isTest) {
     urlParams.set('IsTest', '1')
