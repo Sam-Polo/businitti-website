@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import './RecommendationsPage.css'
 
 const tips = [
@@ -27,10 +28,12 @@ export default function RecommendationsPage() {
             <div className="recommendations-tips">
               <hr className="recommendations-tips__line" />
               {tips.map((tip, i) => (
-                <div key={i}>
-                  <p className="recommendations-tips__item">{tip}</p>
+                <Fragment key={i}>
+                  <div className="recommendations-tips__item-wrap">
+                    <p className="recommendations-tips__item">{tip}</p>
+                  </div>
                   <hr className="recommendations-tips__line" />
-                </div>
+                </Fragment>
               ))}
             </div>
           </div>

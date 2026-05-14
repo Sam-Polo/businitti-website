@@ -1,4 +1,6 @@
+import { Fragment } from 'react'
 import { externalLinks } from '../config/links'
+import arrowIcon from '../assets/Line 1.svg'
 import './GuaranteePage.css'
 
 const exclusions = [
@@ -20,21 +22,19 @@ export default function GuaranteePage() {
               <div className="guarantee-header__image" />
 
               <div className="guarantee-return">
-                <div className="guarantee-return__texts">
-                  <p>
-                    Все наши изделия находятся на гарантии и подлежат ремонту, замене на аналогичное
-                    или возврату уплаченной суммы (с возвратом товара) в случае производственного дефекта
-                    (сломанный замок, разорванное звено или тросик без внешнего воздействия)
-                    в течение 14 календарных дней с момента получения заказа.
-                  </p>
-                  <p>
-                    Товар должен быть в оригинальном виде, без следов использования, в оригинальной упаковке.
-                  </p>
-                  <p>
-                    Возврат денежных средств осуществляется на ту же карту, с которой была произведена
-                    оплата в течении 10 рабочих дней.
-                  </p>
-                </div>
+                <p>
+                  Все наши изделия находятся на гарантии и подлежат ремонту, замене на аналогичное
+                  или возврату уплаченной суммы (с возвратом товара) в случае производственного дефекта
+                  (сломанный замок, разорванное звено или тросик без внешнего воздействия)
+                  в течение 14 календарных дней с момента получения заказа.
+                </p>
+                <p>
+                  Товар должен быть в оригинальном виде, без следов использования, в оригинальной упаковке.
+                </p>
+                <p>
+                  Возврат денежных средств осуществляется на ту же карту, с которой была произведена
+                  оплата в течении 10 рабочих дней.
+                </p>
                 <p className="guarantee-return__cta">
                   Для оформления возврата свяжитесь с&nbsp;менеджером.
                 </p>
@@ -44,9 +44,7 @@ export default function GuaranteePage() {
 
           <a href={externalLinks.support} target="_blank" rel="noopener noreferrer" className="btn btn--outline guarantee-btn">
             <span>Связаться</span>
-            <svg width="58" height="1" viewBox="0 0 58 1" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <line y1="0.5" x2="58" y2="0.5" stroke="currentColor" />
-            </svg>
+            <img src={arrowIcon} alt="" width="58" height="6" />
           </a>
         </section>
 
@@ -57,10 +55,12 @@ export default function GuaranteePage() {
           <div className="guarantee-exclusions__list">
             <hr className="guarantee-exclusions__line" />
             {exclusions.map((item, i) => (
-              <div key={i}>
-                <p className="guarantee-exclusions__item">{item}</p>
+              <Fragment key={i}>
+                <div className="guarantee-exclusions__item-wrap">
+                  <p className="guarantee-exclusions__item">{item}</p>
+                </div>
                 <hr className="guarantee-exclusions__line" />
-              </div>
+              </Fragment>
             ))}
           </div>
         </section>

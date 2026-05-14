@@ -65,13 +65,18 @@
   margin: 0;
 }
 
+.recommendations-tips__item-wrap {
+  display: flex;
+  align-items: center;
+  min-height: 37px;
+}
+
 .recommendations-tips__item {
   font-family: var(--font-body);
   font-size: 18px;
   line-height: 22px;
   text-transform: uppercase;
   color: var(--color-text-primary);
-  padding-bottom: 14px;
 }
 
 /* ===== Bottom Image ===== */
@@ -125,11 +130,15 @@
     margin-right: -16px;
   }
 
+  .recommendations-tips__item-wrap {
+    min-height: 28px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
   .recommendations-tips__item {
     font-size: 10px;
     line-height: 14px;
-    padding-left: 16px;
-    padding-right: 16px;
   }
 
   .recommendations-image {
