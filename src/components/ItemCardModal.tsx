@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useCart } from '../contexts/CartContext'
 import { formatPrice } from '../api/products'
+import { useModalAnimation } from '../hooks/useModalAnimation'
 import './ItemCardModal.css'
 
 export default function ItemCardModal() {
   const { itemModalProduct, closeItem, addItem, openCart } = useCart()
+  const { shouldRender, isClosing } = useModalAnimation(!!itemModalProduct)
   const [activeImage, setActiveImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
 
@@ -26,7 +28,7 @@ export default function ItemCardModal() {
     }
   }, [itemModalProduct, closeItem])
 
-  if (!itemModalProduct) return null
+  if (!shouldRender || !itemModalProduct) return null
 
   const product = itemModalProduct
   const price = product.discount_price_rub ?? product.price_rub
@@ -40,7 +42,7 @@ export default function ItemCardModal() {
   }
 
   return (
-    <div className="item-modal" onClick={closeItem}>
+    <div className={`item-modal${isClosing ? ' is-closing' : ''}`} onClick={closeItem}>
       <div className="item-modal__card" onClick={(e) => e.stopPropagation()}>
         <button className="item-modal__close" onClick={closeItem} aria-label="Закрыть">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

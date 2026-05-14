@@ -158,7 +158,7 @@ export default function CategoryPage() {
           <circle cx="11" cy="29" r="3" fill="#2F2F2F" />
           <circle cx="23" cy="29" r="3" fill="#2F2F2F" />
         </svg>
-        <span className="cart-button__badge">{totalCount}</span>
+        <span key={totalCount} className="cart-button__badge badge-pulse">{totalCount}</span>
       </button>}
     </main>
   )

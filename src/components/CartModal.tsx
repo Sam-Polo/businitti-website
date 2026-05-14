@@ -3,6 +3,7 @@ import { useCart } from '../contexts/CartContext'
 import { externalLinks } from '../config/links'
 import { formatPrice } from '../api/products'
 import { createOrder, fetchDeliveryPrices, type DeliveryPrices, type DeliveryService } from '../api/orders'
+import { useModalAnimation } from '../hooks/useModalAnimation'
 import './CartModal.css'
 
 // дефолтные цены доставки — синхронизированы с бэком (DELIVERY_PRICES в orders-utils.ts).
@@ -14,6 +15,7 @@ const DEFAULT_DELIVERY: DeliveryPrices = {
 
 export default function CartModal() {
   const { isCartOpen, closeCart, items, setQuantity, removeItem, totalPrice, clear } = useCart()
+  const { shouldRender, isClosing } = useModalAnimation(isCartOpen)
 
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -42,7 +44,7 @@ export default function CartModal() {
     }
   }, [isCartOpen, closeCart])
 
-  if (!isCartOpen) return null
+  if (!shouldRender) return null
 
   const deliveryPrice = deliveryPrices[delivery].price
   const grandTotal = totalPrice + (items.length > 0 ? deliveryPrice : 0)
@@ -79,7 +81,7 @@ export default function CartModal() {
   }
 
   return (
-    <div className="cart-modal" onClick={closeCart}>
+    <div className={`cart-modal${isClosing ? ' is-closing' : ''}`} onClick={closeCart}>
       <div className="cart-modal__card" onClick={(e) => e.stopPropagation()}>
         <button className="cart-modal__close" onClick={closeCart} aria-label="Закрыть">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
