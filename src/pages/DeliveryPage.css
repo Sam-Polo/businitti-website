@@ -139,13 +139,13 @@
 }
 
 .delivery-services__icon--yandex {
-  width: 68px;
-  height: auto;
+  height: 25px;
+  width: auto;
 }
 
 .delivery-services__icon--sdek {
-  width: 99px;
-  height: auto;
+  height: 25px;
+  width: auto;
 }
 
 .delivery-services__note {
@@ -264,11 +264,13 @@
   }
 
   .delivery-services__icon--yandex {
-    width: 52px;
+    height: 19px;
+    width: auto;
   }
 
   .delivery-services__icon--sdek {
-    width: 76px;
+    height: 19px;
+    width: auto;
   }
 
   .payment-section {

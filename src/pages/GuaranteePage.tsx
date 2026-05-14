@@ -11,30 +11,34 @@ export default function GuaranteePage() {
   return (
     <main className="guarantee-page">
       <div className="guarantee-page__content">
-        {/* Main section */}
-        <section className="guarantee-main">
-          <div className="guarantee-top">
-            <div className="guarantee-header">
-              <div className="guarantee-header__text">
-                <h1 className="guarantee-header__title">Гарантия и возврат</h1>
-              </div>
-              <div className="guarantee-header__image" />
-            </div>
 
-            <div className="guarantee-return">
-              <div className="guarantee-return__text">
-                <p>
-                  Товар должен быть в оригинальном виде, без следов использования,
-                  в оригинальной упаковке.
-                </p>
-                <p>
-                  Возврат денежных средств осуществляется на ту же карту,
-                  с которой была произведена оплата в течении 10 рабочих дней.
+        <section className="guarantee-main">
+          <div className="guarantee-block">
+            <h1 className="guarantee-header__title">Гарантия и возврат</h1>
+
+            <div className="guarantee-body">
+              <div className="guarantee-header__image" />
+
+              <div className="guarantee-return">
+                <div className="guarantee-return__texts">
+                  <p>
+                    Все наши изделия находятся на гарантии и подлежат ремонту, замене на аналогичное
+                    или возврату уплаченной суммы (с возвратом товара) в случае производственного дефекта
+                    (сломанный замок, разорванное звено или тросик без внешнего воздействия)
+                    в течение 14 календарных дней с момента получения заказа.
+                  </p>
+                  <p>
+                    Товар должен быть в оригинальном виде, без следов использования, в оригинальной упаковке.
+                  </p>
+                  <p>
+                    Возврат денежных средств осуществляется на ту же карту, с которой была произведена
+                    оплата в течении 10 рабочих дней.
+                  </p>
+                </div>
+                <p className="guarantee-return__cta">
+                  Для оформления возврата свяжитесь с&nbsp;менеджером.
                 </p>
               </div>
-              <p className="guarantee-return__cta">
-                Для оформления возврата свяжитесь с&nbsp;менеджером.
-              </p>
             </div>
           </div>
 
@@ -46,7 +50,6 @@ export default function GuaranteePage() {
           </a>
         </section>
 
-        {/* Exclusions section */}
         <section className="guarantee-exclusions">
           <h2 className="guarantee-exclusions__title">
             Гарантия не распространяется на:
@@ -61,6 +64,7 @@ export default function GuaranteePage() {
             ))}
           </div>
         </section>
+
       </div>
     </main>
   )
