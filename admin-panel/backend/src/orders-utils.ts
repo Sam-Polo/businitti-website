@@ -6,9 +6,10 @@ export type OrderStatus = 'pending_payment' | 'new' | 'shipped' | 'cancelled' | 
 export type DeliveryService = 'cdek' | 'yandex_market'
 
 // Цены доставки (источник истины — бэк, чтобы клиент не подменил)
+// Переопределяются через .env: DELIVERY_PRICE_CDEK, DELIVERY_PRICE_YANDEX_MARKET
 export const DELIVERY_PRICES: Record<DeliveryService, number> = {
-  cdek: 650,
-  yandex_market: 300,
+  cdek: Number(process.env.DELIVERY_PRICE_CDEK) || 650,
+  yandex_market: Number(process.env.DELIVERY_PRICE_YANDEX_MARKET) || 300,
 }
 
 export const DELIVERY_LABELS: Record<DeliveryService, string> = {
