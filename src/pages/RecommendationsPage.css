@@ -93,7 +93,17 @@
 
 /* ===== Mobile ===== */
 
+@media (min-width: 769px) {
+  .br--desktop {
+    display: block;
+  }
+}
+
 @media (max-width: 768px) {
+  .br--desktop {
+    display: none;
+  }
+
   .recommendations-page__content {
     padding-top: 40px;
     padding-bottom: 72px;
