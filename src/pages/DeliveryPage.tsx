@@ -10,7 +10,7 @@ export default function DeliveryPage() {
         <section className="delivery-section">
           <div className="delivery-top">
             {/* Header with image and delivery services */}
-            <div className="delivery-header">
+            <div className="delivery-header reveal">
               <div className="delivery-header__info">
                 <h1 className="delivery-header__title">Доставка и оплата</h1>
                 <div className="delivery-header__desc">
@@ -52,7 +52,7 @@ export default function DeliveryPage() {
           </div>
 
           {/* Payment Section */}
-          <div className="payment-section">
+          <div className="payment-section reveal">
             <div className="payment-section__image" />
             <h2 className="payment-section__title">Оплата:</h2>
             <p className="payment-section__text">

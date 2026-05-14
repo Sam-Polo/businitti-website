@@ -14,7 +14,7 @@ export default function GuaranteePage() {
     <main className="guarantee-page">
       <div className="guarantee-page__content">
 
-        <section className="guarantee-main">
+        <section className="guarantee-main reveal">
           <div className="guarantee-block">
             <h1 className="guarantee-header__title">Гарантия и возврат</h1>
 
@@ -48,7 +48,7 @@ export default function GuaranteePage() {
           </a>
         </section>
 
-        <section className="guarantee-exclusions">
+        <section className="guarantee-exclusions reveal">
           <h2 className="guarantee-exclusions__title">
             Гарантия не распространяется на:
           </h2>

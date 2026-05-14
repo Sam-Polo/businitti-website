@@ -70,7 +70,7 @@ export default function CategoryPage() {
       <div className="category-page__content">
         {/* Category header */}
         <section className="category-header">
-          <div className="category-intro">
+          <div className="category-intro reveal">
             <h1 className="category-intro__title">{title}</h1>
             {description && (
               <p className="category-intro__desc">{description}</p>
@@ -88,15 +88,16 @@ export default function CategoryPage() {
             <p className="category-grid__empty">В этой категории пока нет товаров</p>
           )}
           {products && products.length > 0 && (
-            <div className="category-grid">
-              {products.map((product) => {
+            <div className="category-grid reveal-stagger">
+              {products.map((product, i) => {
                 const price = product.discount_price_rub ?? product.price_rub
                 const image = product.images[0]
                 return (
                   <button
                     key={product.slug}
                     type="button"
-                    className="product-card"
+                    className="product-card reveal"
+                    style={{ ['--i' as string]: i % 6 }}
                     onClick={() => openItem(product)}
                   >
                     <div
@@ -123,7 +124,7 @@ export default function CategoryPage() {
       </div>
 
       {/* Contacts section */}
-      <section className="category-contacts">
+      <section className="category-contacts reveal">
         <div className="category-contacts__inner">
           <div className="category-contacts__content">
             <div className="category-contacts__text">

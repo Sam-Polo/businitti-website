@@ -201,3 +201,88 @@ h3 {
   white-space: nowrap;
   border: 0;
 }
+
+
+/* ===== Animations ===== */
+
+/*
+ * Scroll-reveal: elements get .reveal class and start hidden.
+ * useScrollReveal hook adds .is-visible when element enters viewport.
+ */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 600ms ease-out, transform 600ms ease-out;
+  will-change: opacity, transform;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Staggered children — apply .reveal-stagger on parent, child index in --i */
+.reveal-stagger > .reveal {
+  transition-delay: calc(var(--i, 0) * 80ms);
+}
+
+/* Page fade — applied to <main> wrapper on route mount */
+.page-fade {
+  animation: pageFadeIn 300ms ease-out both;
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Modal animations — overlay + card */
+@keyframes modalOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Cart counter pulse — applied on count change */
+@keyframes badgePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+.badge-pulse {
+  animation: badgePulse 300ms ease-out;
+}
+
+/* Reduce motion: disable all animations/transitions */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}

@@ -6,7 +6,7 @@ export default function CatalogPage() {
   return (
     <main className="catalog-page">
       <div className="catalog-page__content">
-        <div className="catalog-page__header">
+        <div className="catalog-page__header reveal">
           <div className="catalog-page__titles">
             <h1 className="catalog-page__title">Каталог</h1>
             <p className="catalog-page__desc">
@@ -18,12 +18,13 @@ export default function CatalogPage() {
           <h2 className="catalog-page__subtitle">Выбери свое</h2>
         </div>
 
-        <div className="catalog-page__grid">
+        <div className="catalog-page__grid reveal-stagger">
           {categories.map((cat, i) => (
             <Link
               key={cat.slug}
               to={`/category/${cat.slug}`}
-              className={`catalog-page__card ${i === categories.length - 1 ? 'catalog-page__card--wide' : ''}`}
+              className={`catalog-page__card reveal ${i === categories.length - 1 ? 'catalog-page__card--wide' : ''}`}
+              style={{ ['--i' as string]: i }}
             >
               <div className="catalog-page__card-image" />
               <div className="catalog-page__card-label">

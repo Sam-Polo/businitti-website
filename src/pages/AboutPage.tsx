@@ -6,7 +6,7 @@ export default function AboutPage() {
       <div className="about-page__content">
         <h1 className="about-hero__title">О бренде</h1>
 
-        <div className="about-grid">
+        <div className="about-grid reveal">
           <div className="about-hero__buddy">
             <p>
               <span className="about-hero__brand">BUSINITTI (Бусинити)</span>
@@ -32,7 +32,7 @@ export default function AboutPage() {
           <div className="about-gallery__img about-gallery__img--2" />
         </div>
 
-        <div className="about-closing-block">
+        <div className="about-closing-block reveal">
           <div className="about-gallery__text">
             <p>
               Мы верим, что красота — это не только внешний блеск,

@@ -198,6 +198,17 @@
   border-color: var(--color-text-primary);
 }
 
+.cart-modal__input--error {
+  border-color: #e05a5a;
+}
+
+.cart-modal__field-error {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #e05a5a;
+}
+
 .cart-modal__field--radio {
   gap: 16px;
 }

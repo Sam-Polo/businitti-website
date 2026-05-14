@@ -21,6 +21,7 @@ export default function CartModal() {
   const [delivery, setDelivery] = useState<DeliveryService>('cdek')
   const [address, setAddress] = useState('')
   const [agreed, setAgreed] = useState(false)
+  const [phoneError, setPhoneError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [deliveryPrices, setDeliveryPrices] = useState<DeliveryPrices>(DEFAULT_DELIVERY)
@@ -45,7 +46,10 @@ export default function CartModal() {
 
   const deliveryPrice = deliveryPrices[delivery].price
   const grandTotal = totalPrice + (items.length > 0 ? deliveryPrice : 0)
-  const canSubmit = !submitting && items.length > 0 && agreed && name.trim() && phone.trim() && email.trim() && address.trim()
+
+  const phoneDigits = phone.replace(/\D/g, '')
+  const isPhoneValid = phoneDigits.length >= 10
+  const canSubmit = !submitting && items.length > 0 && agreed && name.trim() && phone.trim() && isPhoneValid && email.trim() && address.trim()
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -144,12 +148,22 @@ export default function CartModal() {
               <span className="cart-modal__label">Ваш номер</span>
               <input
                 type="tel"
-                className="cart-modal__input"
-                placeholder="89090888888"
+                className={`cart-modal__input${phoneError ? ' cart-modal__input--error' : ''}`}
+                placeholder="+7 900 000-00-00"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  const filtered = e.target.value.replace(/[^\d+\s\-()]/g, '')
+                  setPhone(filtered)
+                  setPhoneError('')
+                }}
+                onBlur={() => {
+                  if (phone.trim() && phoneDigits.length < 10) {
+                    setPhoneError('Введите корректный номер телефона')
+                  }
+                }}
                 required
               />
+              {phoneError && <span className="cart-modal__field-error">{phoneError}</span>}
             </label>
 
             <label className="cart-modal__field">

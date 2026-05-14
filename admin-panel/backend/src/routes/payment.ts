@@ -77,54 +77,56 @@ router.post('/result', async (req: Request, res: Response) => {
       return
     }
 
-    // ищем заказ по inv_id и переводим в статус "new" (оплачен)
+    // Отвечаем Робокассе немедленно — она ждёт не более ~10 сек
+    // Все операции с Google Sheets и отправка письма выполняются в фоне
+    res.send(`OK${InvId}`)
+    logger.info({ InvId, OutSum }, 'оплата подтверждена Робокассой')
+
+    // Фоновая обработка
     const sheetId = process.env.GOOGLE_SHEET_ID
-    if (sheetId) {
+    if (!sheetId) return
+
+    setImmediate(async () => {
       try {
         const auth = getAuth()
         const invIdNum = Number(InvId)
         const order = await findOrderByInvId(auth, sheetId, invIdNum)
-        if (order) {
-          if (order.status === 'pending_payment') {
-            await updateOrderStatus(auth, sheetId, order.id, 'new')
-            logger.info({ orderId: order.id, InvId }, 'заказ переведён в new (оплачен)')
-            // уменьшаем остатки только один раз — при переходе pending_payment → new
-            try {
-              await decrementStockForOrder(auth, sheetId, order.id)
-            } catch (stockErr: any) {
-              logger.error({ err: stockErr?.message, orderId: order.id }, 'не удалось уменьшить stock')
-            }
-
-            // отправляем письмо клиенту (не блокирует ответ Робокассе при ошибке)
-            try {
-              const full = await fetchOrderWithItems(auth, sheetId, order.id)
-              if (full && full.customer_email) {
-                await sendEmail({
-                  to: full.customer_email,
-                  toName: full.customer_name,
-                  subject: buildOrderEmailSubject(full),
-                  html: buildOrderEmailHtml(full),
-                  replyTo: process.env.SUPPORT_EMAIL,
-                })
-              }
-            } catch (mailErr: any) {
-              logger.error({ err: mailErr?.message, orderId: order.id }, 'не удалось отправить письмо клиенту')
-            }
-          } else {
-            logger.warn({ orderId: order.id, status: order.status, InvId }, 'заказ уже не в pending_payment, статус не меняем')
-          }
-        } else {
+        if (!order) {
           logger.warn({ InvId }, 'заказ по inv_id не найден')
+          return
+        }
+        if (order.status !== 'pending_payment') {
+          logger.warn({ orderId: order.id, status: order.status, InvId }, 'заказ уже не в pending_payment, статус не меняем')
+          return
+        }
+
+        await updateOrderStatus(auth, sheetId, order.id, 'new')
+        logger.info({ orderId: order.id, InvId }, 'заказ переведён в new (оплачен)')
+
+        try {
+          await decrementStockForOrder(auth, sheetId, order.id)
+        } catch (stockErr: any) {
+          logger.error({ err: stockErr?.message, orderId: order.id }, 'не удалось уменьшить stock')
+        }
+
+        try {
+          const full = await fetchOrderWithItems(auth, sheetId, order.id)
+          if (full?.customer_email) {
+            await sendEmail({
+              to: full.customer_email,
+              toName: full.customer_name,
+              subject: buildOrderEmailSubject(full),
+              html: buildOrderEmailHtml(full),
+              replyTo: process.env.SUPPORT_EMAIL,
+            })
+          }
+        } catch (mailErr: any) {
+          logger.error({ err: mailErr?.message, orderId: order.id }, 'не удалось отправить письмо клиенту')
         }
       } catch (e: any) {
-        logger.error({ err: e?.message, InvId }, 'не удалось обновить статус заказа')
+        logger.error({ err: e?.message, InvId }, 'ошибка фоновой обработки платежа')
       }
-    }
-
-    logger.info({ InvId, OutSum }, 'оплата подтверждена Робокассой')
-
-    // Робокасса ожидает именно такой формат ответа
-    res.send(`OK${InvId}`)
+    })
   } catch (err: any) {
     logger.error({ err: err.message }, 'ошибка обработки Result URL')
     res.status(500).send('internal error')

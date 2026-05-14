@@ -27,7 +27,7 @@ export default function MainPage() {
 
       {/* Catalog */}
       <section className="catalog container">
-        <div className="catalog__header">
+        <div className="catalog__header reveal">
           <div className="catalog__titles">
             <h2 className="catalog__title">Каталог</h2>
             <p className="catalog__desc">
@@ -39,12 +39,13 @@ export default function MainPage() {
           <h3 className="catalog__subtitle">Выбери свое</h3>
         </div>
 
-        <div className="catalog__grid">
+        <div className="catalog__grid reveal-stagger">
           {categories.map((cat, i) => (
             <Link
               key={cat.slug}
               to={`/category/${cat.slug}`}
-              className={`catalog__card ${i === categories.length - 1 ? 'catalog__card--wide' : ''}`}
+              className={`catalog__card reveal ${i === categories.length - 1 ? 'catalog__card--wide' : ''}`}
+              style={{ ['--i' as string]: i }}
             >
               <div className="catalog__card-image" />
               <div className="catalog__card-label">
@@ -61,7 +62,7 @@ export default function MainPage() {
       </section>
 
       {/* Contacts */}
-      <section className="home-contacts">
+      <section className="home-contacts reveal">
         <div className="home-contacts__inner">
           <div className="home-contacts__content">
             <div className="home-contacts__text">

@@ -12,7 +12,7 @@ export default function RecommendationsPage() {
   return (
     <main className="recommendations-page">
       <div className="recommendations-page__content">
-        <section className="recommendations-section">
+        <section className="recommendations-section reveal">
           <div className="recommendations-header">
             <div className="recommendations-header__top">
               <h1 className="recommendations-header__title">
