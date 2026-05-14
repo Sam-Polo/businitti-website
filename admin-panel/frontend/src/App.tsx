@@ -194,6 +194,8 @@ function ProductsList({ onNavigate, newOrdersCount }: { onNavigate?: (page: 'pro
   const [selectedProductSlugs, setSelectedProductSlugs] = useState<Set<string>>(new Set())
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<{ product: Product } | null>(null)
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false)
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false)
   const [isReorderProductsMode, setIsReorderProductsMode] = useState(false)
   const [reorderedProductsByCategory, setReorderedProductsByCategory] = useState<Record<string, Product[]>>({})
   const [isSavingProductsOrder, setIsSavingProductsOrder] = useState(false)
@@ -378,6 +380,20 @@ function ProductsList({ onNavigate, newOrdersCount }: { onNavigate?: (page: 'pro
     }
   }
 
+  const handleBulkDeleteConfirmed = async () => {
+    setBulkDeleteConfirm(false)
+    setIsBulkDeleting(true)
+    try {
+      await Promise.all(Array.from(selectedProductSlugs).map(slug => api.deleteProduct(slug)))
+      showToast(`Удалено товаров: ${selectedProductSlugs.size}`, 'success')
+      await loadProducts()
+      setSelectedProductSlugs(new Set())
+    } catch (err: any) {
+      showToast(err.message || 'Ошибка удаления товаров', 'error')
+    } finally {
+      setIsBulkDeleting(false)
+    }
+  }
 
   const handleLogout = () => {
     removeToken()
@@ -693,6 +709,14 @@ function ProductsList({ onNavigate, newOrdersCount }: { onNavigate?: (page: 'pro
                       </button>
                     </>
                   )}
+                  <button
+                    onClick={() => setBulkDeleteConfirm(true)}
+                    disabled={isBulkDeleting || loading}
+                    className="btn-delete-bulk"
+                    title="Удалить выбранные"
+                  >
+                    {isBulkDeleting ? 'Удаление...' : `Удалить (${selectedProductSlugs.size})`}
+                  </button>
                 </>
               )
             })()}
@@ -853,6 +877,19 @@ function ProductsList({ onNavigate, newOrdersCount }: { onNavigate?: (page: 'pro
             onConfirm={(category) => handleDeleteConfirm(category)}
             onCancel={() => setDeleteConfirm(null)}
           />
+        )}
+
+        {bulkDeleteConfirm && (
+          <div className="modal-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setBulkDeleteConfirm(false) }}>
+            <div className="modal-content" style={{ maxWidth: 400 }}>
+              <h2 style={{ marginTop: 0 }}>Удалить товары?</h2>
+              <p>Вы уверены, что хотите удалить <strong>{selectedProductSlugs.size}</strong> {selectedProductSlugs.size === 1 ? 'товар' : selectedProductSlugs.size < 5 ? 'товара' : 'товаров'}? Это действие необратимо.</p>
+              <div className="modal-actions">
+                <button className="btn-delete-bulk" onClick={handleBulkDeleteConfirmed}>Удалить</button>
+                <button className="btn-secondary" onClick={() => setBulkDeleteConfirm(false)}>Отмена</button>
+              </div>
+            </div>
+          </div>
         )}
 
         {!loading && filteredProducts.length === 0 && (

@@ -331,6 +331,43 @@
   cursor: not-allowed;
 }
 
+.btn-secondary {
+  padding: 0.5rem 1rem;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #5a6268;
+}
+
+.btn-delete-bulk {
+  padding: 0.5rem 1rem;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-delete-bulk:hover:not(:disabled) {
+  background: #c82333;
+}
+
+.btn-delete-bulk:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .btn-activate {
   padding: 0.5rem 1rem;
   background: #4a90e2;
@@ -2135,9 +2172,11 @@
     height: 1.5rem;
   }
 
-  /* кнопки активации/деактивации */
+  /* кнопки активации/деактивации/удаления */
   .btn-deactivate,
-  .btn-activate {
+  .btn-activate,
+  .btn-delete-bulk,
+  .btn-secondary {
     width: 100%;
     padding: 0.75rem;
     font-size: 0.9rem;
