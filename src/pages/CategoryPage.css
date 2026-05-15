@@ -127,6 +127,48 @@
   font-size: var(--font-size-caption);
 }
 
+/* ===== Skeleton Loading ===== */
+
+.product-card--skeleton {
+  cursor: default;
+  pointer-events: none;
+}
+
+.product-card--skeleton .product-card__image {
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+.product-card__name--skeleton,
+.product-card__price--skeleton {
+  display: inline-block;
+  background-color: #d5cec9;
+  border-radius: 2px;
+  color: transparent;
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+.product-card__name--skeleton {
+  width: 70%;
+}
+
+.product-card__price--skeleton {
+  width: 40%;
+}
+
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-card--skeleton .product-card__image,
+  .product-card__name--skeleton,
+  .product-card__price--skeleton {
+    animation: none;
+    opacity: 0.7;
+  }
+}
+
 /* ===== Category Contacts ===== */
 
 .category-contacts {

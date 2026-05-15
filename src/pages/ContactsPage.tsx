@@ -14,7 +14,7 @@ export default function ContactsPage() {
           <div className="contacts-page__text">
             <h1 className="contacts-page__title">Контакты</h1>
             <div className="contacts-page__body">
-              <p>
+              <p className="contacts-page__desc">
                 Мы стараемся, чтобы каждая покупка приносила радость.
                 Если вы сомневаетесь в размере или хотите увидеть
                 дополнительные фото украшения

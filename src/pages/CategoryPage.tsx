@@ -107,7 +107,19 @@ export default function CategoryPage() {
 
           {/* Product grid */}
           {products === null && !error && (
-            <div className="category-grid category-grid--loading" />
+            <div className="category-grid">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="product-card product-card--skeleton">
+                  <div className="product-card__image" />
+                  <div className="product-card__info">
+                    <p className="product-card__name product-card__name--skeleton">&nbsp;</p>
+                    <div className="product-card__price-wrap">
+                      <p className="product-card__price product-card__price--skeleton">&nbsp;</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
           {error && (
             <p className="category-grid__error">Не удалось загрузить товары</p>
