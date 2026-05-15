@@ -340,50 +340,39 @@ function OrderDetailModal({ orderId, onClose, onChanged }: {
               Итого: <strong>{formatPrice(order.total_rub)}</strong>
             </div>
 
-            <div className="modal-actions" style={{ marginTop: 24, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <div className="modal-actions order-modal-actions" style={{ marginTop: 24 }}>
               {order.status === 'new' && (
-                <button
-                  className="btn btn-primary"
-                  disabled={saving}
-                  onClick={() => setShipDialog(true)}
-                >
-                  Отметить отправленным
+                <button className="btn btn-order-ship" disabled={saving} onClick={() => setShipDialog(true)}>
+                  Отправлен
                 </button>
               )}
               {(order.status === 'new' || order.status === 'pending_payment') && (
-                <button
-                  className="btn btn-secondary"
-                  disabled={saving}
-                  onClick={() => handleChangeStatus('cancelled')}
-                >
-                  Отменить
+                <button className="btn btn-order-cancel" disabled={saving} onClick={() => handleChangeStatus('cancelled')}>
+                  Отменён
                 </button>
               )}
               {(order.status === 'new' || order.status === 'shipped') && (
-                <button
-                  className="btn btn-secondary"
-                  disabled={saving}
-                  onClick={() => handleChangeStatus('refunded')}
-                >
-                  Отметить возврат
+                <button className="btn btn-order-refund" disabled={saving} onClick={() => handleChangeStatus('refunded')}>
+                  Возвращён
                 </button>
               )}
               {(order.status === 'cancelled' || order.status === 'refunded') && (
-                <button
-                  className="btn btn-secondary"
-                  disabled={saving}
-                  onClick={() => handleChangeStatus('new')}
-                >
+                <button className="btn btn-order-restore" disabled={saving} onClick={() => handleChangeStatus('new')}>
                   Вернуть в «Новый»
                 </button>
               )}
               <button
-                className="btn btn-danger"
+                className="btn btn-order-delete btn-icon-trash"
                 disabled={saving}
                 onClick={() => setConfirmDelete(true)}
-                style={{ marginLeft: 'auto' }}
+                title="Удалить заказ"
               >
-                Удалить заказ
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                  <path d="M10 11v6"/><path d="M14 11v6"/>
+                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                </svg>
               </button>
             </div>
 
@@ -429,8 +418,8 @@ function OrderDetailModal({ orderId, onClose, onChanged }: {
                       </button>
                     )}
                     <div className="confirm-actions">
-                      <button className="btn btn-cancel" disabled={saving} onClick={() => { setShipDialog(false); setTrackingInput('') }}>Отмена</button>
-                      <button className="btn btn-confirm" disabled={saving || !canSubmit} onClick={handleShip}>Отправить</button>
+                      <button className="btn btn-secondary" disabled={saving} onClick={() => { setShipDialog(false); setTrackingInput('') }}>Отмена</button>
+                      <button className="btn btn-order-ship" disabled={saving || !canSubmit} onClick={handleShip}>Отправить</button>
                     </div>
                   </div>
                 </div>
@@ -443,8 +432,8 @@ function OrderDetailModal({ orderId, onClose, onChanged }: {
                   <h3>Удалить заказ?</h3>
                   <p>Заказ <strong>#{order.display_id}</strong> будет удалён вместе со всеми позициями. Это действие необратимо.</p>
                   <div className="confirm-actions">
-                    <button className="btn btn-cancel" disabled={saving} onClick={() => setConfirmDelete(false)}>Отмена</button>
-                    <button className="btn btn-confirm" disabled={saving} onClick={handleDelete}>Удалить</button>
+                    <button className="btn btn-secondary" disabled={saving} onClick={() => setConfirmDelete(false)}>Отмена</button>
+                    <button className="btn btn-order-delete" disabled={saving} onClick={handleDelete}>Удалить</button>
                   </div>
                 </div>
               </div>

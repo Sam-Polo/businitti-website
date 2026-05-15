@@ -144,7 +144,7 @@ const labelStyle: React.CSSProperties = {
 const valueStyle: React.CSSProperties = {
   fontSize: '2em',
   fontWeight: 700,
-  color: '#bf9243',
+  color: '#5b5bd6',
 }
 
 const hintStyle: React.CSSProperties = {

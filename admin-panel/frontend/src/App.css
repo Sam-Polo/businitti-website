@@ -205,6 +205,21 @@
   gap: 0.5rem;
 }
 
+.search-label input {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  min-width: 220px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-label input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
 .search-input-wrapper {
   position: relative;
   display: flex;
@@ -485,7 +500,7 @@
 }
 
 .btn-confirm {
-  background: #dc3545;
+  background: #3b82f6;
   color: white;
   padding: 0.75rem 1.5rem;
   border: none;
@@ -496,9 +511,100 @@
   font-weight: 500;
 }
 
-.btn-confirm:hover {
-  background: #c82333;
+.btn-confirm:hover:not(:disabled) {
+  background: #2563eb;
   transform: translateY(-1px);
+}
+
+.btn-confirm:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* кнопки действий с заказом */
+.order-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn-order-ship {
+  background: #10b981;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.btn-order-ship:hover:not(:disabled) { background: #059669; transform: translateY(-1px); }
+.btn-order-ship:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-order-cancel {
+  background: #8b5cf6;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.btn-order-cancel:hover:not(:disabled) { background: #7c3aed; transform: translateY(-1px); }
+.btn-order-cancel:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-order-refund {
+  background: #f59e0b;
+  color: #1a1a1a;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.btn-order-refund:hover:not(:disabled) { background: #d97706; transform: translateY(-1px); }
+.btn-order-refund:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-order-restore {
+  background: #64748b;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.btn-order-restore:hover:not(:disabled) { background: #475569; transform: translateY(-1px); }
+.btn-order-restore:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-order-delete {
+  background: #dc3545;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.btn-order-delete:hover:not(:disabled) { background: #c82333; transform: translateY(-1px); }
+.btn-order-delete:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-icon-trash {
+  padding: 0.6rem 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
 }
 
 .error-message {
@@ -2180,6 +2286,30 @@
     width: 100%;
     padding: 0.75rem;
     font-size: 0.9rem;
+  }
+
+  /* кнопки действий с заказом */
+  .order-modal-actions {
+    flex-direction: column;
+  }
+  .btn-order-ship,
+  .btn-order-cancel,
+  .btn-order-refund,
+  .btn-order-restore,
+  .btn-order-delete {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+    justify-content: center;
+  }
+  .btn-icon-trash {
+    margin-left: 0;
+  }
+
+  /* поиск в заказах */
+  .search-label input {
+    min-width: auto;
+    width: 100%;
   }
 
   /* модальное окно подтверждения */
