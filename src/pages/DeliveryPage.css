@@ -218,93 +218,130 @@
     padding-bottom: 72px;
     padding-left: 16px;
     padding-right: 16px;
-    gap: 32px;
+    gap: 28px;
   }
 
   .delivery-section {
-    gap: 40px;
+    gap: 28px;
   }
 
   .delivery-top {
-    gap: 32px;
+    gap: 0;
   }
 
+  /* Header: reorder info -> image -> services, no fixed height */
   .delivery-header {
     min-height: 0;
+    justify-content: flex-start;
+    gap: 0;
   }
 
   .delivery-header__info {
+    order: 0;
     max-width: 100%;
+    gap: 28px;
   }
 
   .delivery-header__title {
     font-size: 28px;
-    line-height: 28px;
+    line-height: 30px;
   }
 
-  .delivery-header__desc p {
-    font-size: 14px;
-    line-height: 18px;
+  .delivery-header__subtitle {
+    font-size: 16px;
+    line-height: 30px;
+  }
+
+  .delivery-header__desc {
+    gap: 8px;
+  }
+
+  .delivery-header__desc p:not(.delivery-header__subtitle) {
+    font-size: 10px;
+    line-height: 14px;
+  }
+
+  .delivery-header__desc p:not(.delivery-header__subtitle) + p:not(.delivery-header__subtitle) {
+    margin-top: 14px;
   }
 
   .delivery-header__image {
+    order: 1;
     position: relative;
     width: 100%;
-    height: 250px;
+    height: auto;
+    aspect-ratio: 328 / 243;
     right: auto;
     top: auto;
+    margin-top: 20px;
   }
 
+  /* Services: order after image, full-width dividers (extend past page padding) */
   .delivery-services {
+    order: 2;
     width: 100%;
     max-width: 100%;
+    margin-top: 28px;
+    margin-left: -16px;
+    margin-right: -16px;
+    gap: 16px;
   }
 
   .delivery-services__title {
-    font-size: 18px;
-    line-height: 22px;
-  }
-
-  .delivery-services__text,
-  .delivery-services__note {
-    font-size: 14px;
-    line-height: 18px;
+    font-size: 16px;
+    line-height: 30px;
+    padding-left: 16px;
+    padding-right: 16px;
   }
 
   .delivery-services__row {
     height: auto;
     min-height: 36px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .delivery-services__text {
+    font-size: 10px;
+    line-height: 14px;
+  }
+
+  .delivery-services__note {
+    font-size: 10px;
+    line-height: 14px;
+    padding-left: 16px;
+    padding-right: 16px;
   }
 
   .delivery-services__icon {
     margin-right: 0;
   }
 
-  .delivery-services__icon--yandex {
-    height: 19px;
-    width: auto;
-  }
-
+  .delivery-services__icon--yandex,
   .delivery-services__icon--sdek {
     height: 19px;
     width: auto;
   }
 
+  /* Payment: hide image, simple gap layout */
   .payment-section {
     padding-left: 0;
     min-height: 0;
+    gap: 8px;
+    justify-content: flex-start;
   }
 
   .payment-section__image {
-    position: relative;
-    width: 100%;
-    height: 180px;
-    left: auto;
-    top: auto;
+    display: none;
+  }
+
+  .payment-section__title {
+    font-size: 16px;
+    line-height: 30px;
   }
 
   .payment-section__text {
-    font-size: 14px;
-    line-height: 18px;
+    font-size: 10px;
+    line-height: 14px;
   }
 }
