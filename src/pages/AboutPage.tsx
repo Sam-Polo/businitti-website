@@ -27,9 +27,9 @@ export default function AboutPage() {
               о пути к мечте.
             </p>
           </div>
-          <div className="about-hero__img" />
-          <div className="about-gallery__img about-gallery__img--1" />
-          <div className="about-gallery__img about-gallery__img--2" />
+          <div className="about-hero__img reveal" />
+          <div className="about-gallery__img about-gallery__img--1 reveal" />
+          <div className="about-gallery__img about-gallery__img--2 reveal" />
         </div>
 
         <div className="about-closing-block reveal">

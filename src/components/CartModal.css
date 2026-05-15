@@ -443,7 +443,7 @@
   }
 
   .cart-modal__items,
-  .cart-modal__form-section,
+  .cart-modal__form,
   .cart-modal__notice,
   .cart-modal__agree,
   .cart-modal__totals {
@@ -455,6 +455,11 @@
     margin: 0 16px;
     height: 48px;
     font-size: 16px;
+  }
+
+  .cart-modal__error {
+    margin-left: 16px;
+    margin-right: 16px;
   }
 
   .cart-modal__item {

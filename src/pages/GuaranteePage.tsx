@@ -25,7 +25,7 @@ export default function GuaranteePage() {
                 (сломанный замок, разорванное звено или тросик без внешнего воздействия)
                 в течение 14 календарных дней с момента получения заказа.
               </p>
-              <div className="guarantee-header__image" />
+              <div className="guarantee-header__image reveal" />
               <p className="guarantee-return__text">
                 Товар должен быть в оригинальном виде, без следов использования, в оригинальной упаковке.
               </p>

@@ -47,13 +47,13 @@ export default function DeliveryPage() {
                 </p>
               </div>
 
-              <div className="delivery-header__image" />
+              <div className="delivery-header__image reveal" />
             </div>
           </div>
 
           {/* Payment Section */}
           <div className="payment-section reveal">
-            <div className="payment-section__image" />
+            <div className="payment-section__image reveal" />
             <h2 className="payment-section__title">Оплата:</h2>
             <p className="payment-section__text">
               Все заказы оплачиваются онлайн при оформлении заказа —

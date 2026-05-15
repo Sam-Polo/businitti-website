@@ -37,7 +37,7 @@ export default function RecommendationsPage() {
             </div>
           </div>
 
-          <div className="recommendations-image" />
+          <div className="recommendations-image reveal" />
         </section>
       </div>
     </main>

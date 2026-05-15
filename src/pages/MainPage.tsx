@@ -11,7 +11,7 @@ export default function MainPage() {
       {/* Hero */}
       <section className="hero">
         <div className="hero__inner container">
-          <div className="hero__image-wrapper">
+          <div className="hero__image-wrapper reveal">
           </div>
           <div className="hero__content">
             <h1 className="hero__title">
