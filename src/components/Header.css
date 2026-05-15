@@ -94,9 +94,10 @@
   }
 
   .header__inner {
+    position: relative;
     padding: 0 16px;
     gap: 0;
-    justify-content: space-between;
+    justify-content: center;
   }
 
   .header__logo img {
@@ -106,6 +107,10 @@
 
   .header__burger {
     display: flex;
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
   }
 
   .header__nav {

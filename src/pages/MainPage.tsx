@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { externalLinks } from '../config/links'
 import { categories } from '../data/categories'
+import arrowIcon from '../assets/Line 1.svg'
 import './MainPage.css'
 
 export default function MainPage() {
@@ -17,9 +18,7 @@ export default function MainPage() {
             </h1>
             <Link to="/catalog" className="btn btn--outline hero__btn">
               <span>Перейти в каталог</span>
-              <svg width="58" height="1" viewBox="0 0 58 1" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <line y1="0.5" x2="58" y2="0.5" stroke="currentColor" />
-              </svg>
+              <img src={arrowIcon} alt="" width="58" height="6" />
             </Link>
           </div>
         </div>

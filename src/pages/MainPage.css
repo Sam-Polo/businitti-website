@@ -239,18 +239,42 @@
   }
 
   .hero__inner {
-    gap: 16px;
-    padding-left: 16px;
-    padding-right: 16px;
+    gap: 20px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .hero__image-wrapper {
+    aspect-ratio: 360 / 422;
+    border-radius: 0;
+  }
+
+  .hero__content {
+    align-items: center;
+    gap: 4px;
+    padding: 0 16px;
   }
 
   .hero__title {
+    font-size: 28px;
+    line-height: 31px;
+    text-align: center;
+  }
+
+  .hero__title-accent {
+    display: block;
     font-size: 24px;
-    line-height: 28px;
+    line-height: 26px;
+    margin-top: 2px;
   }
 
   .hero__btn {
-    font-size: 14px;
+    align-self: center;
+    font-size: 12px;
+    line-height: 15px;
+    padding: 0 16px;
+    gap: 7px;
+    margin-top: 16px;
   }
 
   .catalog {
