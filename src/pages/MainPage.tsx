@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { externalLinks } from '../config/links'
 import { categories } from '../data/categories'
 import arrowIcon from '../assets/Line 1.svg'
+import arrowWhiteIcon from '../assets/img/Line 1 white.svg'
 import './MainPage.css'
 
 export default function MainPage() {
@@ -29,11 +30,13 @@ export default function MainPage() {
         <div className="catalog__header reveal">
           <div className="catalog__titles">
             <h2 className="catalog__title">Каталог</h2>
-            <p className="catalog__desc">
-              Наши украшения для любого случая<br />
-              Для офиса или отпуска, свидания или вечеринки — у каждого повода
-              есть своё настроение, а у нас есть то самое украшение, чтобы его подчеркнуть
-            </p>
+            <div className="catalog__desc">
+              <p>Наши украшения для любого случая</p>
+              <p>
+                Для офиса или отпуска, свидания или вечеринки — у каждого повода
+                есть своё настроение, а у нас есть то самое украшение, чтобы его подчеркнуть
+              </p>
+            </div>
           </div>
           <h3 className="catalog__subtitle">Выбери свое</h3>
         </div>
@@ -51,9 +54,7 @@ export default function MainPage() {
                 <span className="catalog__card-name">{cat.label}</span>
               </div>
               <div className="catalog__card-line">
-                <svg width="100" height="1" viewBox="0 0 100 1" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <line y1="0.5" x2="100" y2="0.5" stroke="white" />
-                </svg>
+                <img src={arrowWhiteIcon} alt="" width="58" height="6" />
               </div>
             </Link>
           ))}

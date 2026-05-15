@@ -5,7 +5,7 @@ import { useModalAnimation } from '../hooks/useModalAnimation'
 import './ItemCardModal.css'
 
 export default function ItemCardModal() {
-  const { itemModalProduct, closeItem, addItem, openCart } = useCart()
+  const { itemModalProduct, closeItem, addItem } = useCart()
   const { shouldRender, isClosing } = useModalAnimation(!!itemModalProduct)
   const [activeImage, setActiveImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
@@ -38,7 +38,6 @@ export default function ItemCardModal() {
   const handleAdd = () => {
     addItem(product, quantity)
     closeItem()
-    openCart()
   }
 
   return (

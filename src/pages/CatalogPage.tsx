@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { categories } from '../data/categories'
+import arrowWhiteIcon from '../assets/img/Line 1 white.svg'
 import './CatalogPage.css'
 
 export default function CatalogPage() {
@@ -31,9 +32,7 @@ export default function CatalogPage() {
                 <span className="catalog-page__card-name">{cat.label}</span>
               </div>
               <div className="catalog-page__card-line">
-                <svg width="100" height="1" viewBox="0 0 100 1" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <line y1="0.5" x2="100" y2="0.5" stroke="white" />
-                </svg>
+                <img src={arrowWhiteIcon} alt="" width="58" height="6" />
               </div>
             </Link>
           ))}

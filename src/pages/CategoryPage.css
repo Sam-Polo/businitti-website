@@ -36,12 +36,22 @@
 }
 
 .category-intro__desc {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 800px;
+}
+
+.category-intro__desc-p {
   font-family: var(--font-body);
   font-size: var(--font-size-body);
   line-height: var(--line-height-body);
   text-transform: uppercase;
   text-align: center;
-  max-width: 800px;
+}
+
+.category-intro__accent {
+  color: var(--color-accent);
 }
 
 /* ===== Product Grid ===== */
@@ -250,8 +260,12 @@
   }
 
   .category-intro__desc {
-    font-size: 14px;
-    line-height: 18px;
+    gap: 10px;
+  }
+
+  .category-intro__desc-p {
+    font-size: 10px;
+    line-height: 12px;
   }
 
   .category-grid {
