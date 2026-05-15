@@ -68,7 +68,7 @@ export default function MainPage() {
             <div className="home-contacts__text">
               <h2 className="home-contacts__title">Контакты</h2>
               <div className="home-contacts__body">
-                <p>
+                <p className="home-contacts__desc">
                   Мы стараемся, чтобы каждая покупка приносила радость.
                   Если вы сомневаетесь в размере или хотите увидеть
                   дополнительные фото украшения

@@ -224,7 +224,7 @@
   gap: 8px;
 }
 
-.home-contacts__body p {
+.home-contacts__desc {
   font-family: var(--font-body);
   font-size: var(--font-size-body);
   line-height: var(--line-height-body);
@@ -265,7 +265,7 @@
     text-align: center;
   }
 
-  .hero__title-accent {
+  .hero__title .hero__title-accent {
     display: block;
     font-size: 24px;
     line-height: 26px;
@@ -329,7 +329,7 @@
   }
 
   .home-contacts {
-    padding: 0;
+    padding: 72px 0 0;
   }
 
   .home-contacts__inner {
@@ -359,9 +359,10 @@
     gap: 8px;
   }
 
-  .home-contacts__body p {
+  .home-contacts__desc {
     font-size: 10px;
-    line-height: 12px;
+    line-height: 1;
+    text-transform: uppercase;
   }
 
   .home-contacts__cta-text {
