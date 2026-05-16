@@ -170,7 +170,7 @@ export default function CategoryPage() {
             <div className="category-contacts__text">
               <h2 className="category-contacts__title">Контакты</h2>
               <div className="category-contacts__body">
-                <p>
+                <p className="category-contacts__desc">
                   Мы стараемся, чтобы каждая покупка приносила радость.
                   Если вы сомневаетесь в размере или хотите увидеть
                   дополнительные фото украшения
