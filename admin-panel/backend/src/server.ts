@@ -1,10 +1,20 @@
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
+import helmet from 'helmet'
 import { logger } from './logger.js'
 
 const app = express()
 const PORT = process.env.PORT || 4001
+
+// бэкенд за nginx: берём реальный IP клиента из X-Forwarded-For (нужно для rate limiting)
+app.set('trust proxy', 1)
+
+// security headers; crossOriginResourcePolicy ослабляем, чтобы фронт мог тянуть статику через CORS
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: false, // CSP отключаем — фронт ходит через CORS, лишние ограничения мешают
+}))
 
 // лог каждого входящего запроса (до разбора body) — чтобы видеть, доходят ли большие запросы до Node
 app.use((req: express.Request, _res: express.Response, next: express.NextFunction) => {

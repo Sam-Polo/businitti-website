@@ -294,11 +294,17 @@
     padding-right: 16px;
   }
 
+  /* Full-width dividers: pull rows container out of page padding */
+  .delivery-services__rows {
+    margin-left: -16px;
+    margin-right: -16px;
+  }
+
   .delivery-services__row {
     height: auto;
     min-height: 36px;
     padding-left: 16px;
-    padding-right: 16px;
+    padding-right: 8px;
   }
 
   .delivery-services__text {

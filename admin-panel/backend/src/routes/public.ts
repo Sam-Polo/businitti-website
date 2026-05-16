@@ -3,6 +3,7 @@ import { fetchProductsFromSheet, type SheetProduct } from '../sheets.js'
 import { logger } from '../logger.js'
 import { createOrder, getAuth, DELIVERY_PRICES, DELIVERY_LABELS, type DeliveryService } from '../orders-utils.js'
 import { buildReceipt, createPaymentUrl } from '../robokassa.js'
+import { orderLimiter } from '../rate-limit.js'
 
 const router = express.Router()
 
@@ -118,7 +119,7 @@ router.get('/products/:slug', async (req, res) => {
 
 // POST /api/public/orders — создание заказа с сайта
 // body: { customer_name, customer_phone, customer_email, delivery_service, delivery_address, items: [{ slug, quantity }] }
-router.post('/orders', async (req, res) => {
+router.post('/orders', orderLimiter, async (req, res) => {
   try {
     const body = req.body || {}
     const customer_name = String(body.customer_name || '').trim()

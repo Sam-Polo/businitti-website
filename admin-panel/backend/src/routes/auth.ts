@@ -1,18 +1,15 @@
 import express from 'express'
 import { generateToken } from '../auth.js'
+import { loginLimiter } from '../rate-limit.js'
 import pino from 'pino'
 
 const logger = pino()
 const router = express.Router()
 
-// простой логин (в будущем можно добавить проверку пароля)
-// пока что один пользователь с фиксированными данными
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   try {
     const { username, password } = req.body
-    
-    // TODO: добавить проверку пароля из env или базы данных
-    // пока что простой хардкод для тестирования
+
     const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin'
     const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123'
     
