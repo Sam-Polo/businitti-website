@@ -129,26 +129,31 @@ export default function StatsPage({ onNavigate, newCount }: {
 }
 
 const cardStyle: React.CSSProperties = {
-  background: 'white',
-  border: '1px solid #e5e7eb',
-  borderRadius: 8,
-  padding: 20,
+  background: '#ffffff',
+  border: '1px solid #ece6e1',
+  borderRadius: '0 24px 0 24px',
+  padding: '24px 28px',
 }
 
 const labelStyle: React.CSSProperties = {
-  fontSize: '0.9em',
-  opacity: 0.7,
-  marginBottom: 8,
+  fontSize: '0.75em',
+  letterSpacing: '0.12em',
+  textTransform: 'uppercase',
+  color: '#6b6b6b',
+  marginBottom: 10,
 }
 
 const valueStyle: React.CSSProperties = {
-  fontSize: '2em',
-  fontWeight: 700,
+  fontSize: '2.2em',
+  fontWeight: 400,
+  fontFamily: "'Forum', serif",
+  letterSpacing: '0.03em',
   color: '#5b5bd6',
 }
 
 const hintStyle: React.CSSProperties = {
-  fontSize: '0.8em',
-  opacity: 0.6,
-  marginTop: 4,
+  fontSize: '0.75em',
+  letterSpacing: '0.06em',
+  color: '#6b6b6b',
+  marginTop: 6,
 }

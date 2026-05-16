@@ -357,7 +357,7 @@ function OrderDetailModal({ orderId, onClose, onChanged }: {
                     />
                   )}
                   <div style={{ flex: 1 }}>
-                    <div><strong>{item.product_title}</strong></div>
+                    <div className="bn-display" style={{ fontSize: '1.05em', textTransform: 'uppercase' }}>{item.product_title}</div>
                     {item.product_article && (
                       <div style={{ fontSize: '0.85em', opacity: 0.7 }}>Артикул: {item.product_article}</div>
                     )}

@@ -771,7 +771,10 @@ function ProductsList({ onNavigate, newOrdersCount }: { onNavigate?: (page: 'pro
               const categoryTitle = categories.find((c) => c.key === category)?.title || category
               return (
               <div key={category} className="category-section">
-                <h2>{categoryTitle}</h2>
+                <div className="category-section-header">
+                  <h2>{categoryTitle}</h2>
+                  <span className="category-section-count">{categoryProducts.length}</span>
+                </div>
                 {isReorderProductsMode ? (
                   <DndContext
                     sensors={productsSensors}
