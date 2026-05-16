@@ -264,6 +264,12 @@ export const api = {
     })
   },
 
+  async resendOrderEmail(id: string) {
+    return fetchWithAuth(`/api/orders/${encodeURIComponent(id)}/resend-email`, {
+      method: 'POST'
+    })
+  },
+
   async deleteOrder(id: string) {
     return fetchWithAuth(`/api/orders/${encodeURIComponent(id)}`, {
       method: 'DELETE'
@@ -289,6 +295,8 @@ export type Order = {
   delivery_address: string
   total_rub: number
   tracking_number?: string
+  email_sent?: boolean
+  email_error?: string
 }
 
 export type OrderItem = {

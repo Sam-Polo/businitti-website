@@ -238,6 +238,21 @@ function OrderDetailModal({ orderId, onClose, onChanged }: {
     }
   }
 
+  const handleResendEmail = async () => {
+    if (!order) return
+    setSaving(true)
+    setError(null)
+    try {
+      await api.resendOrderEmail(order.id)
+      setOrder({ ...order, email_sent: true, email_error: undefined })
+    } catch (e: any) {
+      setError(e?.message || 'Не удалось переотправить письмо')
+      setOrder({ ...order, email_sent: false, email_error: e?.message })
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const handleDelete = async () => {
     if (!order) return
     setSaving(true)
@@ -309,6 +324,24 @@ function OrderDetailModal({ orderId, onClose, onChanged }: {
               <div className="detail-row">
                 <span className="detail-label">Трек-номер:</span>
                 <span className="detail-value" style={{ fontWeight: 600 }}>{order.tracking_number}</span>
+              </div>
+            )}
+
+            {(order.status === 'new' || order.status === 'shipped') && order.email_sent === false && (
+              <div style={{ marginTop: 16, padding: '12px 14px', background: '#fff5f5', border: '1px solid #f5c6cb', borderRadius: 4 }}>
+                <div style={{ fontSize: '0.9em', color: '#721c24', marginBottom: 8 }}>
+                  <strong>Письмо клиенту не отправлено</strong>
+                  {order.email_error && <div style={{ fontSize: '0.85em', marginTop: 4, opacity: 0.9 }}>{order.email_error}</div>}
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  disabled={saving}
+                  onClick={handleResendEmail}
+                  style={{ fontSize: '0.85em', padding: '6px 14px' }}
+                >
+                  Переотправить письмо
+                </button>
               </div>
             )}
 

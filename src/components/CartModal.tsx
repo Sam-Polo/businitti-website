@@ -217,7 +217,7 @@ export default function CartModal() {
             </label>
           </div>
 
-          <p className="cart-modal__notice">Сборка и отправка заказа осуществляется в течении 2–5 дней</p>
+          <p className="cart-modal__notice">Сборка и отправка заказа осуществляется в течение 2–5 дней</p>
 
           <label className="cart-modal__agree">
             <input

@@ -31,7 +31,7 @@ export default function GuaranteePage() {
               </p>
               <p className="guarantee-return__text">
                 Возврат денежных средств осуществляется на ту же карту, с которой была произведена
-                оплата в течении 10 рабочих дней.
+                оплата в течение 10 рабочих дней.
               </p>
               <p className="guarantee-return__cta">
                 Для оформления возврата свяжитесь с&nbsp;менеджером.

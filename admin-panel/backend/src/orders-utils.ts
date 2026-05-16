@@ -43,6 +43,8 @@ export type Order = {
   delivery_rub: number
   total_rub: number
   tracking_number?: string
+  email_sent?: boolean
+  email_error?: string
 }
 
 export type OrderWithItems = Order & { items: OrderItem[] }
@@ -53,7 +55,8 @@ const ORDER_ITEMS_SHEET = 'order_items'
 const ORDERS_HEADERS = [
   'id', 'display_id', 'inv_id', 'created_at', 'updated_at', 'status',
   'customer_name', 'customer_phone', 'customer_email',
-  'delivery_service', 'delivery_address', 'delivery_rub', 'total_rub', 'tracking_number'
+  'delivery_service', 'delivery_address', 'delivery_rub', 'total_rub', 'tracking_number',
+  'email_sent', 'email_error'
 ]
 
 const ORDER_ITEMS_HEADERS = [
@@ -133,6 +136,8 @@ function parseOrderRow(row: any[], idx: Record<string, number>): Order | null {
     delivery_rub: Number(row[idx.delivery_rub]) || 0,
     total_rub: Number(row[idx.total_rub]) || 0,
     tracking_number: String(row[idx.tracking_number] ?? '') || undefined,
+    email_sent: String(row[idx.email_sent] ?? '').toLowerCase() === 'true',
+    email_error: String(row[idx.email_error] ?? '') || undefined,
   }
 }
 
@@ -395,6 +400,43 @@ export async function deleteOrder(auth: any, sheetId: string, orderId: string): 
   }
 
   logger.info({ orderId }, 'заказ удалён')
+}
+
+// обновление полей email_sent / email_error
+export async function updateOrderEmailStatus(
+  auth: any,
+  sheetId: string,
+  orderId: string,
+  sent: boolean,
+  error?: string
+): Promise<void> {
+  const sheets = google.sheets({ version: 'v4', auth })
+  const rowNumber = await findOrderRowNumber(auth, sheetId, orderId)
+  if (!rowNumber) {
+    logger.warn({ orderId }, 'updateOrderEmailStatus: заказ не найден')
+    return
+  }
+
+  const headerRes = await sheets.spreadsheets.values.get({
+    spreadsheetId: sheetId,
+    range: `${ORDERS_SHEET}!A1:Z1`
+  })
+  const idx = buildHeaderIndex(headerRes.data.values?.[0] || [])
+  const colLetter = (i: number) => String.fromCharCode(65 + i)
+
+  const updates: any[] = []
+  if (idx.email_sent !== undefined) {
+    updates.push({ range: `${ORDERS_SHEET}!${colLetter(idx.email_sent)}${rowNumber}`, values: [[sent ? 'true' : 'false']] })
+  }
+  if (idx.email_error !== undefined) {
+    updates.push({ range: `${ORDERS_SHEET}!${colLetter(idx.email_error)}${rowNumber}`, values: [[error ?? '']] })
+  }
+  if (updates.length === 0) return
+
+  await sheets.spreadsheets.values.batchUpdate({
+    spreadsheetId: sheetId,
+    requestBody: { valueInputOption: 'USER_ENTERED', data: updates }
+  })
 }
 
 // смена статуса на shipped + запись трек-номера

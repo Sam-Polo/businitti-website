@@ -11,7 +11,6 @@ import {
 } from '../sheets-utils.js'
 import { fetchCategoriesFromSheet } from '../categories-utils.js'
 import pino from 'pino'
-import axios from 'axios'
 
 const logger = pino()
 const router = express.Router()
@@ -23,27 +22,6 @@ function normalizeArticle(article: string | undefined): string | undefined {
   const n = parseInt(s, 10)
   if (!Number.isFinite(n) || n < 0 || n > 9999) return undefined
   return String(n).padStart(4, '0')
-}
-
-// функция для вызова импорта в основном бэкенде
-async function triggerBackendImport() {
-  try {
-    const backendUrl = process.env.BACKEND_URL || ''
-    const adminKey = process.env.ADMIN_IMPORT_KEY
-    
-    if (adminKey) {
-      await axios.post(`${backendUrl}/admin/import/sheets`, {}, {
-        headers: { 'x-admin-key': adminKey },
-        timeout: 30000
-      })
-      logger.info('импорт товаров в основном бэкенде вызван')
-    } else {
-      logger.warn('ADMIN_IMPORT_KEY не задан, импорт в основном бэкенде пропущен')
-    }
-  } catch (error: any) {
-    // не блокируем выполнение, если импорт не удался
-    logger.warn({ error: error?.message }, 'не удалось вызвать импорт в основном бэкенде')
-  }
 }
 
 // все роуты требуют авторизации
@@ -205,8 +183,6 @@ router.post('/', async (req, res) => {
 
     logger.info({ slug: product.slug, categories: normalizedCategories }, 'товар добавлен')
     
-    await triggerBackendImport()
-    
     res.json({ success: true, product: { ...product, categories: normalizedCategories } })
   } catch (error: any) {
     logger.error({ error: error?.message }, 'ошибка добавления товара')
@@ -358,8 +334,6 @@ router.put('/:slug', async (req, res) => {
 
     logger.info({ oldSlug, newSlug: product.slug, categories: normalizedCategoriesEdit }, 'товар обновлен')
     
-    await triggerBackendImport()
-    
     res.json({ success: true, product: { ...product, categories: normalizedCategoriesEdit } })
   } catch (error: any) {
     logger.error({ error: error?.message }, 'ошибка обновления товара')
@@ -389,8 +363,6 @@ router.post('/reorder', async (req, res) => {
     logger.info({ category: normalizedCategory, count: slugs.length }, 'порядок товаров обновлен')
     
     // вызываем импорт в основном бэкенде для обновления мини-апки
-    await triggerBackendImport()
-    
     res.json({ success: true })
   } catch (error: any) {
     logger.error({ error: error?.message }, 'ошибка переупорядочивания товаров')
@@ -433,8 +405,6 @@ router.delete('/:slug', async (req, res) => {
     }
 
     logger.info({ slug, categories: categoriesToDelete, onlyCategory: !!onlyCategory }, 'товар удален')
-    
-    await triggerBackendImport()
     
     res.json({ success: true })
   } catch (error: any) {

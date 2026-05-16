@@ -6,26 +6,9 @@ import {
   type Category
 } from '../categories-utils.js'
 import pino from 'pino'
-import axios from 'axios'
 
 const logger = pino()
 const router = express.Router()
-
-async function triggerBackendImport() {
-  try {
-    const backendUrl = process.env.BACKEND_URL || ''
-    const adminKey = process.env.ADMIN_IMPORT_KEY
-    if (adminKey) {
-      await axios.post(`${backendUrl}/admin/import/sheets`, {}, {
-        headers: { 'x-admin-key': adminKey },
-        timeout: 30000
-      })
-      logger.info('импорт в основном бэкенде вызван')
-    }
-  } catch (error: any) {
-    logger.warn({ error: error?.message }, 'не удалось вызвать импорт в основном бэкенде')
-  }
-}
 
 router.use(requireAuth)
 
@@ -75,7 +58,6 @@ router.put('/', async (req, res) => {
     }
 
     await saveCategoriesToSheet(sheetId, valid)
-    await triggerBackendImport()
     return res.json({ success: true, categories: valid })
   } catch (error: any) {
     logger.error({ error: error?.message }, 'ошибка сохранения категорий')

@@ -5,13 +5,14 @@ import {
   fetchOrders,
   fetchOrderWithItems,
   updateOrderStatus,
+  updateOrderEmailStatus,
   shipOrder,
   deleteOrder,
   getAuth,
   type OrderStatus,
 } from '../orders-utils.js'
 import { sendEmail } from '../unisender.js'
-import { buildShippingEmailHtml, buildShippingEmailSubject } from '../order-email.js'
+import { buildOrderEmailHtml, buildOrderEmailSubject, buildShippingEmailHtml, buildShippingEmailSubject } from '../order-email.js'
 
 const router = express.Router()
 
@@ -171,15 +172,63 @@ router.post('/:id/ship', async (req, res) => {
           html: buildShippingEmailHtml(order, trackingNumber),
           replyTo: process.env.SUPPORT_EMAIL,
         })
+        await updateOrderEmailStatus(auth, sheetId, req.params.id, true, '')
       }
     } catch (mailErr: any) {
-      logger.error({ err: mailErr?.message, orderId: req.params.id }, 'не удалось отправить письмо об отправке')
+      const errMsg = mailErr?.message || 'неизвестная ошибка'
+      logger.error({ err: errMsg, orderId: req.params.id }, 'не удалось отправить письмо об отправке')
+      try {
+        await updateOrderEmailStatus(auth, sheetId, req.params.id, false, errMsg)
+      } catch {/* ignore */}
     }
 
     res.json({ ok: true })
   } catch (error: any) {
     logger.error({ error: error?.message }, 'ошибка при отметке отправки')
     res.status(500).json({ error: 'failed_to_ship_order' })
+  }
+})
+
+// POST /api/orders/:id/resend-email — переотправить письмо клиенту (тип письма выбирается по статусу заказа)
+router.post('/:id/resend-email', async (req, res) => {
+  try {
+    const sheetId = getSheetId(res); if (!sheetId) return
+    const auth = getAuth()
+    const order = await fetchOrderWithItems(auth, sheetId, req.params.id)
+    if (!order) return res.status(404).json({ error: 'not_found' })
+    if (!order.customer_email) return res.status(400).json({ error: 'no_customer_email' })
+
+    let subject = ''
+    let html = ''
+    if (order.status === 'shipped' && order.tracking_number) {
+      subject = buildShippingEmailSubject(order)
+      html = buildShippingEmailHtml(order, order.tracking_number)
+    } else if (order.status === 'new' || order.status === 'shipped') {
+      subject = buildOrderEmailSubject(order)
+      html = buildOrderEmailHtml(order)
+    } else {
+      return res.status(400).json({ error: 'order_status_not_eligible_for_email' })
+    }
+
+    try {
+      await sendEmail({
+        to: order.customer_email,
+        toName: order.customer_name,
+        subject,
+        html,
+        replyTo: process.env.SUPPORT_EMAIL,
+      })
+      await updateOrderEmailStatus(auth, sheetId, order.id, true, '')
+      res.json({ ok: true })
+    } catch (mailErr: any) {
+      const errMsg = mailErr?.message || 'неизвестная ошибка'
+      logger.error({ err: errMsg, orderId: order.id }, 'переотправка письма не удалась')
+      try { await updateOrderEmailStatus(auth, sheetId, order.id, false, errMsg) } catch {/* ignore */}
+      res.status(502).json({ error: errMsg })
+    }
+  } catch (error: any) {
+    logger.error({ error: error?.message }, 'ошибка переотправки письма')
+    res.status(500).json({ error: 'failed_to_resend_email' })
   }
 })
 

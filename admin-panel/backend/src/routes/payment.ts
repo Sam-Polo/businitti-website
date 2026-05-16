@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express'
 import { createPaymentUrl, verifyResultSignature, verifySuccessSignature, buildReceipt } from '../robokassa.js'
-import { findOrderByInvId, fetchOrderWithItems, updateOrderStatus, decrementStockForOrder, getAuth } from '../orders-utils.js'
+import { findOrderByInvId, fetchOrderWithItems, updateOrderStatus, decrementStockForOrder, updateOrderEmailStatus, getAuth } from '../orders-utils.js'
 import { sendEmail } from '../unisender.js'
 import { buildOrderEmailHtml, buildOrderEmailSubject } from '../order-email.js'
 import { logger } from '../logger.js'
@@ -100,6 +100,13 @@ router.post('/result', async (req: Request, res: Response) => {
           return
         }
 
+        // Defense in depth: сверяем сумму платежа с total_rub заказа (подпись Робокассы это и так гарантирует, но лишним не будет)
+        const paidSum = Number(OutSum)
+        if (!Number.isFinite(paidSum) || Math.abs(paidSum - order.total_rub) > 0.01) {
+          logger.error({ orderId: order.id, expected: order.total_rub, got: paidSum, InvId }, 'сумма платежа не совпадает с total_rub — статус не меняем')
+          return
+        }
+
         await updateOrderStatus(auth, sheetId, order.id, 'new')
         logger.info({ orderId: order.id, InvId }, 'заказ переведён в new (оплачен)')
 
@@ -119,9 +126,14 @@ router.post('/result', async (req: Request, res: Response) => {
               html: buildOrderEmailHtml(full),
               replyTo: process.env.SUPPORT_EMAIL,
             })
+            await updateOrderEmailStatus(auth, sheetId, order.id, true, '')
           }
         } catch (mailErr: any) {
-          logger.error({ err: mailErr?.message, orderId: order.id }, 'не удалось отправить письмо клиенту')
+          const errMsg = mailErr?.message || 'неизвестная ошибка'
+          logger.error({ err: errMsg, orderId: order.id }, 'не удалось отправить письмо клиенту об оплате')
+          try {
+            await updateOrderEmailStatus(auth, sheetId, order.id, false, errMsg)
+          } catch {/* ignore */}
         }
       } catch (e: any) {
         logger.error({ err: e?.message, InvId }, 'ошибка фоновой обработки платежа')
