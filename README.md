@@ -2,7 +2,7 @@
 
 Полнофункциональный e-commerce проект: основной сайт, админ-панель и backend. Сделан под реальный магазин украшений ручной работы.
 
-🔗 **Демо:** [businitti.ru](https://businitti.ru)
+🔗 [businitti.ru](https://businitti.ru)
 
 ## Стек
 
