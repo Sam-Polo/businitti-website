@@ -72,7 +72,7 @@ function SortableCategoryRow({
         />
       </td>
       <td>{category.key}</td>
-      <td>{category.title}</td>
+      <td><span className="bn-display" style={{ textTransform: 'uppercase', fontSize: '1.05rem' }}>{category.title}</span></td>
       <td>{category.description || '—'}</td>
       <td>
         <button type="button" className="btn-icon btn-edit" onClick={onEdit} title="Редактировать"><EditIcon /></button>

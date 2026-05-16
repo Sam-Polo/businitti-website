@@ -148,7 +148,7 @@ const valueStyle: React.CSSProperties = {
   fontWeight: 400,
   fontFamily: "'Forum', serif",
   letterSpacing: '0.03em',
-  color: '#5b5bd6',
+  color: '#2f2f2f',
 }
 
 const hintStyle: React.CSSProperties = {

@@ -901,9 +901,14 @@ body, button, input, textarea, select {
   line-height: 1;
 }
 
-.product-card-checkbox input[type="checkbox"]:hover {
+.product-card-checkbox input[type="checkbox"]:not(:checked):hover {
   border-color: var(--bn-accent);
   background: rgba(255, 255, 255, 1);
+}
+
+.product-card-checkbox input[type="checkbox"]:checked:hover {
+  background: var(--bn-accent-hover);
+  border-color: var(--bn-accent-hover);
 }
 
 .product-card-content {
@@ -1150,9 +1155,10 @@ body, button, input, textarea, select {
 .image-drag-item {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 5;
-  border-radius: 8px;
-  border: 1px solid #ddd;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--bn-radius-card);
+  background: var(--bn-img-placeholder);
+  border: none;
   overflow: hidden;
   transition: none; /* убираем transition для мгновенного отклика */
   will-change: transform, opacity;
@@ -1801,11 +1807,11 @@ body, button, input, textarea, select {
 
 .image-preview-item {
   position: relative;
-  aspect-ratio: 4 / 5;
-  border-radius: 8px;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--bn-radius-card);
   overflow: hidden;
-  border: 2px solid #ddd;
-  background: #f5f5f5;
+  border: none;
+  background: var(--bn-img-placeholder);
   transition: none; /* убираем задержку при перемещении */
 }
 
@@ -2923,30 +2929,39 @@ body, button, input, textarea, select {
 .categories-table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
-  border-radius: 8px;
+  background: var(--bn-bg-card);
+  border: 1px solid var(--bn-border);
+  border-radius: 0 24px 0 24px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .categories-table thead {
-  background: #667eea;
-  color: white;
+  background: #faf6f3;
+  color: var(--bn-text-muted);
 }
 
 .categories-table th {
-  padding: 1rem;
+  padding: 14px 18px;
   text-align: left;
-  font-weight: 600;
+  font-family: var(--bn-font-ui);
+  font-weight: 400;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .categories-table td {
-  padding: 1rem;
-  border-bottom: 1px solid #eee;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--bn-border);
 }
 
 .categories-table tbody tr:hover {
-  background: #f9f9f9;
+  background: #faf6f3;
+}
+
+.categories-table .drag-handle:hover {
+  color: var(--bn-accent);
 }
 
 .categories-table tbody tr.dragging {
@@ -2968,10 +2983,6 @@ body, button, input, textarea, select {
   pointer-events: auto;
   user-select: none;
   display: inline-block;
-}
-
-.categories-table .drag-handle:hover {
-  color: #667eea;
 }
 
 .categories-table .drag-handle:active {
