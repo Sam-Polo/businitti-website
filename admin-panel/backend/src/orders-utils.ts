@@ -136,7 +136,12 @@ function parseOrderRow(row: any[], idx: Record<string, number>): Order | null {
     delivery_rub: Number(row[idx.delivery_rub]) || 0,
     total_rub: Number(row[idx.total_rub]) || 0,
     tracking_number: String(row[idx.tracking_number] ?? '') || undefined,
-    email_sent: String(row[idx.email_sent] ?? '').toLowerCase() === 'true',
+    email_sent: (() => {
+      const raw = String(row[idx.email_sent] ?? '').trim().toLowerCase()
+      if (raw === 'true') return true
+      if (raw === 'false') return false
+      return undefined // нет записи (старый заказ или ещё не обрабатывался)
+    })(),
     email_error: String(row[idx.email_error] ?? '') || undefined,
   }
 }
