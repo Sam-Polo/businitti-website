@@ -183,9 +183,14 @@ function ContentSlotCard({
 
       {slot.type === 'image' && (
         <div className="content-slot-image-area">
-          <div className="content-slot-image-preview">
+          <div className={`content-slot-image-preview ${!slot.isOverridden && slot.defaultValue ? 'is-default' : ''}`}>
             {currentSrc ? (
-              <img src={currentSrc} alt={slot.label} />
+              <>
+                <img src={currentSrc} alt={slot.label} />
+                {!slot.isOverridden && slot.defaultValue && (
+                  <span className="content-slot-original-badge">Оригинал</span>
+                )}
+              </>
             ) : (
               <div className="no-image">Нет фото</div>
             )}

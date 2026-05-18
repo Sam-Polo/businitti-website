@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom'
 import { externalLinks } from '../config/links'
 import { fetchProductsByCategory, formatPrice, type Product } from '../api/products'
 import { useCart } from '../contexts/CartContext'
+import { useSiteContent } from '../contexts/SiteContentContext'
+import contactsImgDefault from '../assets/img/home-contacts__image.png'
 import './CategoryPage.css'
 
 const categoryData: Record<string, { title: string; description: string }> = {
@@ -78,6 +80,7 @@ export default function CategoryPage() {
   const description = data?.description ?? ''
 
   const { openItem, openCart, totalCount } = useCart()
+  const contactsImage = useSiteContent('category.contacts_image', contactsImgDefault)
 
   const [products, setProducts] = useState<Product[] | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -187,7 +190,7 @@ export default function CategoryPage() {
               MAX
             </a>
           </div>
-          <div className="category-contacts__image" />
+          <div className="category-contacts__image" style={{ backgroundImage: `url(${contactsImage})` }} />
         </div>
       </section>
 

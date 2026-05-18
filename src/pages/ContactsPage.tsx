@@ -1,13 +1,17 @@
 import { externalLinks } from '../config/links'
+import { useSiteContent } from '../contexts/SiteContentContext'
+import bgImageDefault from '../assets/img/home-contacts__image.png'
 import './ContactsPage.css'
 
 export default function ContactsPage() {
+  const bgImage = useSiteContent('contacts.bg_image', bgImageDefault)
+
   return (
     <main className="contacts-page">
       <div className="contacts-page__block">
         <div className="contacts-page__bg">
           <div className="contacts-page__bg-content" />
-          <div className="contacts-page__bg-image" />
+          <div className="contacts-page__bg-image" style={{ backgroundImage: `url(${bgImage})` }} />
         </div>
 
         <div className="contacts-page__inner">

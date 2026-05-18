@@ -1,6 +1,8 @@
 import { Fragment } from 'react'
 import { externalLinks } from '../config/links'
 import arrowIcon from '../assets/Line 1.svg'
+import { useSiteContent } from '../contexts/SiteContentContext'
+import headerImgDefault from '../assets/img/guarantee-header__image.png'
 import './GuaranteePage.css'
 
 const exclusions = [
@@ -10,6 +12,7 @@ const exclusions = [
 ]
 
 export default function GuaranteePage() {
+  const headerImage = useSiteContent('guarantee.header_image', headerImgDefault)
   return (
     <main className="guarantee-page">
       <div className="guarantee-page__content">
@@ -25,7 +28,7 @@ export default function GuaranteePage() {
                 (сломанный замок, разорванное звено или тросик без внешнего воздействия)
                 в течение 14 календарных дней с момента получения заказа.
               </p>
-              <div className="guarantee-header__image reveal" />
+              <div className="guarantee-header__image reveal" style={{ backgroundImage: `url(${headerImage})` }} />
               <p className="guarantee-return__text">
                 Товар должен быть в оригинальном виде, без следов использования, в оригинальной упаковке.
               </p>

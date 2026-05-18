@@ -1,4 +1,6 @@
 import { Fragment } from 'react'
+import { useSiteContent } from '../contexts/SiteContentContext'
+import imageDefault from '../assets/img/recommendations-image.png'
 import './RecommendationsPage.css'
 
 const tips = [
@@ -9,6 +11,7 @@ const tips = [
 ]
 
 export default function RecommendationsPage() {
+  const image = useSiteContent('recommendations.image', imageDefault)
   return (
     <main className="recommendations-page">
       <div className="recommendations-page__content">
@@ -37,7 +40,7 @@ export default function RecommendationsPage() {
             </div>
           </div>
 
-          <div className="recommendations-image reveal" />
+          <div className="recommendations-image reveal" style={{ backgroundImage: `url(${image})` }} />
         </section>
       </div>
     </main>

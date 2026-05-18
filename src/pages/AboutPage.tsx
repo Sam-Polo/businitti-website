@@ -1,6 +1,14 @@
+import { useSiteContent } from '../contexts/SiteContentContext'
+import heroDefault from '../assets/img/about-hero__img.jpg'
+import gallery1Default from '../assets/img/about-gallery__img1.jpg'
+import gallery2Default from '../assets/img/about-gallery__img2.jpg'
 import './AboutPage.css'
 
 export default function AboutPage() {
+  const heroImg = useSiteContent('about.hero_image', heroDefault)
+  const gallery1 = useSiteContent('about.gallery_image_1', gallery1Default)
+  const gallery2 = useSiteContent('about.gallery_image_2', gallery2Default)
+
   return (
     <main className="about-page">
       <div className="about-page__content">
@@ -27,9 +35,9 @@ export default function AboutPage() {
               о пути к мечте.
             </p>
           </div>
-          <div className="about-hero__img reveal" />
-          <div className="about-gallery__img about-gallery__img--1 reveal" />
-          <div className="about-gallery__img about-gallery__img--2 reveal" />
+          <div className="about-hero__img reveal" style={{ backgroundImage: `url(${heroImg})` }} />
+          <div className="about-gallery__img about-gallery__img--1 reveal" style={{ backgroundImage: `url(${gallery1})` }} />
+          <div className="about-gallery__img about-gallery__img--2 reveal" style={{ backgroundImage: `url(${gallery2})` }} />
         </div>
 
         <div className="about-closing-block reveal">

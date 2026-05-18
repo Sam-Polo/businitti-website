@@ -1,8 +1,14 @@
 import yandexIcon from '../assets/yandex-delivery-icon.svg'
 import sdekIcon from '../assets/sdek-icon.svg'
+import headerImgDefault from '../assets/img/delivery-header__image.jpg'
+import paymentImgDefault from '../assets/img/payment-section__image.png'
+import { useSiteContent } from '../contexts/SiteContentContext'
 import './DeliveryPage.css'
 
 export default function DeliveryPage() {
+  const headerImage = useSiteContent('delivery.header_image', headerImgDefault)
+  const paymentImage = useSiteContent('delivery.payment_image', paymentImgDefault)
+
   return (
     <main className="delivery-page">
       <div className="delivery-page__content">
@@ -47,13 +53,13 @@ export default function DeliveryPage() {
                 </p>
               </div>
 
-              <div className="delivery-header__image reveal" />
+              <div className="delivery-header__image reveal" style={{ backgroundImage: `url(${headerImage})` }} />
             </div>
           </div>
 
           {/* Payment Section */}
           <div className="payment-section reveal">
-            <div className="payment-section__image reveal" />
+            <div className="payment-section__image reveal" style={{ backgroundImage: `url(${paymentImage})` }} />
             <h2 className="payment-section__title">Оплата:</h2>
             <p className="payment-section__text">
               Все заказы оплачиваются онлайн при оформлении заказа —
