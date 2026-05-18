@@ -86,7 +86,7 @@ function CategoriesPage({
   onNavigate,
   newOrdersCount
 }: {
-  onNavigate?: (page: 'products' | 'categories' | 'orders' | 'stats' | 'content') => void
+  onNavigate?: (page: 'products' | 'categories' | 'orders' | 'stats' | 'content' | 'links') => void
   newOrdersCount?: number
 }) {
   const [categories, setCategories] = useState<Category[]>([])
@@ -260,6 +260,9 @@ function CategoriesPage({
           </button>
           <button className="nav-btn" onClick={() => onNavigate?.('content')}>
             Контент
+          </button>
+          <button className="nav-btn" onClick={() => onNavigate?.('links')}>
+            Ссылки
           </button>
         </div>
         <div className="header-actions">

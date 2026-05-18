@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useCart } from '../contexts/CartContext'
-import { externalLinks } from '../config/links'
+import { useExternalLinks } from '../config/links'
 import { formatPrice } from '../api/products'
 import { createOrder, fetchDeliveryPrices, type DeliveryPrices, type DeliveryService } from '../api/orders'
 import { useModalAnimation } from '../hooks/useModalAnimation'
@@ -14,6 +14,7 @@ const DEFAULT_DELIVERY: DeliveryPrices = {
 }
 
 export default function CartModal() {
+  const externalLinks = useExternalLinks()
   const { isCartOpen, closeCart, items, setQuantity, removeItem, totalPrice, clear } = useCart()
   const { shouldRender, isClosing } = useModalAnimation(isCartOpen)
 

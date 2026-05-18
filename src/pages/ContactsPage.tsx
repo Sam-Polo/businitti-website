@@ -1,4 +1,4 @@
-import { externalLinks } from '../config/links'
+import { useExternalLinks } from '../config/links'
 import { useSiteContent } from '../contexts/SiteContentContext'
 import { RichText } from '../lib/RichText'
 import bgImageDefault from '../assets/img/home-contacts__image.png'
@@ -8,6 +8,7 @@ const CONTACTS_DESC_DEFAULT =
   'Мы стараемся, чтобы каждая покупка приносила радость. Если вы сомневаетесь в размере или хотите увидеть дополнительные фото украшения'
 
 export default function ContactsPage() {
+  const externalLinks = useExternalLinks()
   const bgImage = useSiteContent('contacts.bg_image', bgImageDefault)
   const desc = useSiteContent('contacts.desc', CONTACTS_DESC_DEFAULT)
 
@@ -28,12 +29,12 @@ export default function ContactsPage() {
             </div>
           </div>
           <a
-            href={externalLinks.max}
+            href={externalLinks.contactsCtaUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn--primary"
           >
-            MAX
+            {externalLinks.contactsCtaLabel}
           </a>
         </div>
       </div>

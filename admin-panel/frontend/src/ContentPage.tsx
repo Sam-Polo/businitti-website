@@ -3,7 +3,7 @@ import { api, removeToken, type ContentSlot } from './api'
 import RichTextEditor from './RichTextEditor'
 import './App.css'
 
-type NavPage = 'products' | 'categories' | 'orders' | 'stats' | 'content'
+type NavPage = 'products' | 'categories' | 'orders' | 'stats' | 'content' | 'links'
 
 export default function ContentPage({ onNavigate, newCount }: {
   onNavigate?: (page: NavPage) => void
@@ -20,7 +20,8 @@ export default function ContentPage({ onNavigate, newCount }: {
     setError(null)
     try {
       const data = await api.getContent()
-      setSlots(data.slots || [])
+      // ссылки — отдельный раздел, в «Контенте» их не показываем
+      setSlots((data.slots || []).filter((s) => s.page !== 'links'))
     } catch (e: any) {
       setError(e?.message || 'Ошибка загрузки контента')
     } finally {
@@ -66,6 +67,7 @@ export default function ContentPage({ onNavigate, newCount }: {
           </button>
           <button className="nav-btn" onClick={() => onNavigate?.('stats')}>Статистика</button>
           <button className="nav-btn active" onClick={() => onNavigate?.('content')}>Контент</button>
+          <button className="nav-btn" onClick={() => onNavigate?.('links')}>Ссылки</button>
         </div>
         <div className="header-actions">
           <button onClick={handleLogout} className="logout-btn">Выйти</button>

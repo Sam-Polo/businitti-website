@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { externalLinks } from '../config/links'
+import { useExternalLinks } from '../config/links'
 import { categories } from '../data/categories'
 import logo from '../assets/logo.svg'
 import maxIcon from '../assets/max-icon.svg'
@@ -13,6 +13,7 @@ const customerLinks = [
 ]
 
 export default function Header() {
+  const externalLinks = useExternalLinks()
   const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
 

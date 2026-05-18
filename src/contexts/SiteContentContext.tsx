@@ -49,3 +49,8 @@ export function useSiteContent(key: string, fallback: string = ''): string {
   const { content } = useContext(SiteContentContext)
   return content[key] || fallback
 }
+
+/** Доступ к сырой мапе override'ов — для случаев, когда нужно много ключей сразу. */
+export function useSiteContentMap() {
+  return useContext(SiteContentContext).content
+}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { externalLinks } from '../config/links'
+import { useExternalLinks } from '../config/links'
 import { fetchProductsByCategory, formatPrice, type Product } from '../api/products'
 import { fetchPublicCategories, type PublicCategory } from '../api/categories'
 import { useCart } from '../contexts/CartContext'
@@ -27,6 +27,7 @@ export default function CategoryPage() {
   const { slug } = useParams<{ slug: string }>()
 
   const { openItem, openCart, totalCount } = useCart()
+  const externalLinks = useExternalLinks()
   const contactsImage = useSiteContent('category.contacts_image', contactsImgDefault)
   const contactsDesc = useSiteContent('home.contacts_desc', HOME_CONTACTS_DESC_DEFAULT)
 
@@ -141,12 +142,12 @@ export default function CategoryPage() {
               </div>
             </div>
             <a
-              href={externalLinks.max}
+              href={externalLinks.contactsCtaUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn--primary"
             >
-              MAX
+              {externalLinks.contactsCtaLabel}
             </a>
           </div>
           <div className="category-contacts__image" style={{ backgroundImage: `url(${contactsImage})` }} />

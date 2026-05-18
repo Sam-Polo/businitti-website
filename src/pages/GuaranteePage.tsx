@@ -1,5 +1,5 @@
 import { Fragment } from 'react'
-import { externalLinks } from '../config/links'
+import { useExternalLinks } from '../config/links'
 import arrowIcon from '../assets/Line 1.svg'
 import { useSiteContent } from '../contexts/SiteContentContext'
 import { RichText } from '../lib/RichText'
@@ -16,6 +16,7 @@ const exclusions = [
 ]
 
 export default function GuaranteePage() {
+  const externalLinks = useExternalLinks()
   const headerImage = useSiteContent('guarantee.header_image', headerImgDefault)
   const returnText = useSiteContent('guarantee.return_text', GUARANTEE_RETURN_DEFAULT)
   return (

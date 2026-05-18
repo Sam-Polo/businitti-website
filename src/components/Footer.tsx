@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { externalLinks } from '../config/links'
+import { useExternalLinks } from '../config/links'
 import { categories } from '../data/categories'
 import maxIcon from '../assets/max-icon.svg'
 import './Footer.css'
@@ -16,6 +16,7 @@ const customerLinks = [
 ]
 
 export default function Footer() {
+  const externalLinks = useExternalLinks()
   return (
     <footer className="footer">
       <div className="footer__inner">

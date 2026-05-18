@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { externalLinks } from '../config/links'
+import { useExternalLinks } from '../config/links'
 import { categories } from '../data/categories'
 import arrowIcon from '../assets/Line 1.svg'
 import arrowWhiteIcon from '../assets/img/Line 1 white.svg'
@@ -13,6 +13,7 @@ const HOME_CONTACTS_DESC_DEFAULT =
   'Мы стараемся, чтобы каждая покупка приносила радость. Если вы сомневаетесь в размере или хотите увидеть дополнительные фото украшения'
 
 export default function MainPage() {
+  const externalLinks = useExternalLinks()
   const heroImage = useSiteContent('home.hero_image', heroDefault)
   const contactsImage = useSiteContent('home.contacts_image', contactsDefault)
   const contactsDesc = useSiteContent('home.contacts_desc', HOME_CONTACTS_DESC_DEFAULT)
@@ -87,12 +88,12 @@ export default function MainPage() {
               </div>
             </div>
             <a
-              href={externalLinks.max}
+              href={externalLinks.contactsCtaUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn--primary"
             >
-              MAX
+              {externalLinks.contactsCtaLabel}
             </a>
           </div>
           <div className="home-contacts__image" style={{ backgroundImage: `url(${contactsImage})` }} />
