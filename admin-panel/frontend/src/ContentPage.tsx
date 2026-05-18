@@ -114,14 +114,18 @@ function ContentSlotCard({
   onSaved: () => void
   showToast: (m: string, t: 'success' | 'error') => void
 }) {
-  const [textValue, setTextValue] = useState(slot.value)
+  // когда переопределение не задано — показываем оригинал, чтобы заказчик мог
+  // взять его за основу и не редактировать с пустого экрана
+  const baseline = slot.isOverridden ? slot.value : (slot.defaultValue || '')
+  const [textValue, setTextValue] = useState(baseline)
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [resetting, setResetting] = useState(false)
 
-  useEffect(() => { setTextValue(slot.value) }, [slot.value, slot.key])
+  useEffect(() => { setTextValue(baseline) }, [baseline, slot.key])
 
   const currentSrc = slot.value || slot.defaultValue || ''
+  const isUnchanged = textValue === baseline
 
   const handleUpload = async (file: File) => {
     setUploading(true)
@@ -177,8 +181,10 @@ function ContentSlotCard({
             <div className="content-slot-desc">{slot.description}</div>
           )}
         </div>
-        {slot.isOverridden && (
+        {slot.isOverridden ? (
           <span className="content-slot-badge">изменено</span>
+        ) : (
+          <span className="content-slot-badge content-slot-badge-original">оригинал</span>
         )}
       </div>
 
@@ -239,7 +245,7 @@ function ContentSlotCard({
           <div className="content-slot-actions">
             <button
               className="btn-order-ship"
-              disabled={saving || !textValue.trim() || textValue === slot.value}
+              disabled={saving || !textValue.trim() || isUnchanged}
               onClick={handleSaveText}
             >
               {saving ? 'Сохранение...' : 'Сохранить'}
@@ -269,7 +275,7 @@ function ContentSlotCard({
           <div className="content-slot-actions">
             <button
               className="btn-order-ship"
-              disabled={saving || !textValue.trim() || textValue.trim() === slot.value}
+              disabled={saving || !textValue.trim() || isUnchanged}
               onClick={handleSaveText}
             >
               {saving ? 'Сохранение...' : 'Сохранить'}
