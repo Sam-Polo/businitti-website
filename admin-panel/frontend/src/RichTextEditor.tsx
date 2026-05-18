@@ -25,19 +25,33 @@ function plainLen(s: string): number {
   return s.replace(/\[\[|\]\]/g, '').replace(/\r\n/g, '\n').length
 }
 
-function parseInline(line: string, key: string): ReactNode[] {
+function textWithBreaks(text: string, keyPrefix: string): ReactNode[] {
+  const parts = text.split('\n')
+  const out: ReactNode[] = []
+  parts.forEach((p, i) => {
+    if (i > 0) out.push(<br key={`${keyPrefix}-br${i}`} />)
+    if (p) out.push(<Fragment key={`${keyPrefix}-t${i}`}>{p}</Fragment>)
+  })
+  return out
+}
+
+function parseParagraph(para: string, keyPrefix: string): ReactNode[] {
   const out: ReactNode[] = []
   let last = 0
   let m: RegExpExecArray | null
   let i = 0
   ACCENT_RE.lastIndex = 0
-  while ((m = ACCENT_RE.exec(line)) !== null) {
-    if (m.index > last) out.push(line.slice(last, m.index))
-    out.push(<span key={`${key}-a${i}`} className="rte-accent">{m[1]}</span>)
+  while ((m = ACCENT_RE.exec(para)) !== null) {
+    if (m.index > last) out.push(...textWithBreaks(para.slice(last, m.index), `${keyPrefix}-pre${i}`))
+    out.push(
+      <span key={`${keyPrefix}-a${i}`} className="rte-accent">
+        {textWithBreaks(m[1], `${keyPrefix}-a${i}-in`)}
+      </span>
+    )
     last = m.index + m[0].length
     i++
   }
-  if (last < line.length) out.push(line.slice(last))
+  if (last < para.length) out.push(...textWithBreaks(para.slice(last), `${keyPrefix}-end`))
   return out
 }
 
@@ -46,19 +60,9 @@ function Preview({ text }: { text: string }) {
   const paragraphs = text.replace(/\r\n/g, '\n').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
   return (
     <>
-      {paragraphs.map((para, pi) => {
-        const lines = para.split('\n')
-        return (
-          <p key={pi}>
-            {lines.map((line, li) => (
-              <Fragment key={li}>
-                {parseInline(line, `${pi}-${li}`)}
-                {li < lines.length - 1 && <br />}
-              </Fragment>
-            ))}
-          </p>
-        )
-      })}
+      {paragraphs.map((para, pi) => (
+        <p key={pi}>{parseParagraph(para, String(pi))}</p>
+      ))}
     </>
   )
 }

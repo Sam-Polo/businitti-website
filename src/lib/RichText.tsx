@@ -6,40 +6,52 @@ import { Fragment, type ReactNode } from 'react'
  *   - Пустая строка (двойной перенос) = новый абзац `<p>`.
  *   - Одиночный перенос строки = `<br />` внутри текущего абзаца.
  *   - `[[текст]]` = `<span class="accent">текст</span>` (розовый акцент).
+ *     Маркер `[[ ... ]]` может занимать несколько строк внутри одного абзаца.
  *
- * Компонент не оборачивает абзацы в собственный контейнер — родитель решает.
- * Это нужно для случаев, где родитель — flex-контейнер с justify-content:space-between
- * (например, .guarantee-return).
- *
- * Никакого HTML в строке не допускается — всё, что прилетает из админки,
- * рендерится как plain text за исключением `[[...]]` маркеров (React эскейпит
- * `<`, `>`, `&` автоматически).
+ * React эскейпит `<`, `>`, `&` автоматически — инъекция HTML невозможна.
  */
 
 type Props = {
   text: string
-  /** className, применяемый к каждому абзацу `<p>` */
   paragraphClassName?: string
 }
 
 const ACCENT_RE = /\[\[([\s\S]+?)\]\]/g
 
-function parseInline(line: string, lineKey: string): ReactNode[] {
-  const nodes: ReactNode[] = []
+/** Разбивает строку на ноды: текст + <br /> для одиночных \n. */
+function textWithBreaks(text: string, keyPrefix: string): ReactNode[] {
+  const parts = text.split('\n')
+  const out: ReactNode[] = []
+  parts.forEach((p, i) => {
+    if (i > 0) out.push(<br key={`${keyPrefix}-br${i}`} />)
+    if (p) out.push(<Fragment key={`${keyPrefix}-t${i}`}>{p}</Fragment>)
+  })
+  return out
+}
+
+/** Парсит абзац целиком: ищет [[...]] маркеры (могут содержать \n) и собирает реакт-ноды. */
+function parseParagraph(para: string, keyPrefix: string): ReactNode[] {
+  const out: ReactNode[] = []
   let last = 0
-  let match: RegExpExecArray | null
+  let m: RegExpExecArray | null
   let i = 0
   ACCENT_RE.lastIndex = 0
-  while ((match = ACCENT_RE.exec(line)) !== null) {
-    if (match.index > last) {
-      nodes.push(line.slice(last, match.index))
+  while ((m = ACCENT_RE.exec(para)) !== null) {
+    if (m.index > last) {
+      out.push(...textWithBreaks(para.slice(last, m.index), `${keyPrefix}-pre${i}`))
     }
-    nodes.push(<span key={`${lineKey}-a${i}`} className="accent">{match[1]}</span>)
-    last = match.index + match[0].length
+    out.push(
+      <span key={`${keyPrefix}-a${i}`} className="accent">
+        {textWithBreaks(m[1], `${keyPrefix}-a${i}-in`)}
+      </span>
+    )
+    last = m.index + m[0].length
     i++
   }
-  if (last < line.length) nodes.push(line.slice(last))
-  return nodes
+  if (last < para.length) {
+    out.push(...textWithBreaks(para.slice(last), `${keyPrefix}-end`))
+  }
+  return out
 }
 
 function splitParagraphs(text: string): string[] {
@@ -47,24 +59,18 @@ function splitParagraphs(text: string): string[] {
   return normalized.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
 }
 
-function renderParagraph(para: string, key: string | number, className?: string): ReactNode {
-  const lines = para.split('\n')
-  return (
-    <p key={key} className={className}>
-      {lines.map((line, li) => (
-        <Fragment key={li}>
-          {parseInline(line, `${key}-${li}`)}
-          {li < lines.length - 1 && <br />}
-        </Fragment>
-      ))}
-    </p>
-  )
-}
-
 export function RichText({ text, paragraphClassName }: Props) {
   if (!text) return null
   const paragraphs = splitParagraphs(text)
-  return <>{paragraphs.map((p, i) => renderParagraph(p, i, paragraphClassName))}</>
+  return (
+    <>
+      {paragraphs.map((para, pi) => (
+        <p key={pi} className={paragraphClassName}>
+          {parseParagraph(para, String(pi))}
+        </p>
+      ))}
+    </>
+  )
 }
 
 /** Чистый счётчик длины — без `[[ ]]` маркеров. */

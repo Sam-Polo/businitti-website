@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { Fragment, useState, useEffect, useRef, type ReactNode } from 'react'
 import { api, removeToken } from './api'
 import RichTextEditor from './RichTextEditor'
 import {
@@ -27,6 +27,25 @@ type Category = {
   image: string
   image_position?: string
   order: number
+}
+
+// рендер описания категории в таблице с поддержкой [[ ]] и переносов строк
+const ACCENT_RE = /\[\[([\s\S]+?)\]\]/g
+function DescriptionPreview({ text }: { text: string }) {
+  const out: ReactNode[] = []
+  const safe = text.replace(/\r\n/g, '\n')
+  let last = 0
+  let m: RegExpExecArray | null
+  let i = 0
+  ACCENT_RE.lastIndex = 0
+  while ((m = ACCENT_RE.exec(safe)) !== null) {
+    if (m.index > last) out.push(<Fragment key={`t${i}`}>{safe.slice(last, m.index)}</Fragment>)
+    out.push(<span key={`a${i}`} style={{ color: '#f5a2b7' }}>{m[1]}</span>)
+    last = m.index + m[0].length
+    i++
+  }
+  if (last < safe.length) out.push(<Fragment key="end">{safe.slice(last)}</Fragment>)
+  return <span style={{ whiteSpace: 'pre-line' }}>{out}</span>
 }
 
 const EditIcon = () => (
@@ -74,7 +93,7 @@ function SortableCategoryRow({
       </td>
       <td>{category.key}</td>
       <td><span className="bn-display" style={{ textTransform: 'uppercase', fontSize: '1.05rem' }}>{category.title}</span></td>
-      <td>{category.description || '—'}</td>
+      <td>{category.description ? <DescriptionPreview text={category.description} /> : '—'}</td>
       <td>
         <button type="button" className="btn-icon btn-edit" onClick={onEdit} title="Редактировать"><EditIcon /></button>
       </td>
