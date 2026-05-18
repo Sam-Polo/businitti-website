@@ -4,6 +4,7 @@ import { generateSlug, formatArticle, parseArticle, normalizeArticle } from './u
 import CategoriesPage from './CategoriesPage'
 import OrdersPage from './OrdersPage'
 import StatsPage from './StatsPage'
+import ContentPage from './ContentPage'
 import {
   DndContext,
   closestCenter,
@@ -179,7 +180,7 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
 
 type CategoryOption = { key: string; title: string }
 
-function ProductsList({ onNavigate, newOrdersCount }: { onNavigate?: (page: 'products' | 'categories' | 'orders' | 'stats') => void; newOrdersCount?: number }) {
+function ProductsList({ onNavigate, newOrdersCount }: { onNavigate?: (page: 'products' | 'categories' | 'orders' | 'stats' | 'content') => void; newOrdersCount?: number }) {
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<CategoryOption[]>([])
   const [loading, setLoading] = useState(true)
@@ -551,6 +552,12 @@ function ProductsList({ onNavigate, newOrdersCount }: { onNavigate?: (page: 'pro
             onClick={() => onNavigate?.('stats')}
           >
             Статистика
+          </button>
+          <button
+            className="nav-btn"
+            onClick={() => onNavigate?.('content')}
+          >
+            Контент
           </button>
         </div>
         <button onClick={handleLogout} className="logout-btn">
@@ -2048,7 +2055,7 @@ function ProductFormModal({
   )
 }
 
-type AdminPage = 'products' | 'categories' | 'orders' | 'stats'
+type AdminPage = 'products' | 'categories' | 'orders' | 'stats' | 'content'
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -2112,6 +2119,8 @@ export default function App() {
           <OrdersPage onNavigate={handlePageChange} newCount={newOrdersCount} />
         ) : currentPage === 'stats' ? (
           <StatsPage onNavigate={handlePageChange} newCount={newOrdersCount} />
+        ) : currentPage === 'content' ? (
+          <ContentPage onNavigate={handlePageChange} newCount={newOrdersCount} />
         ) : (
           <ProductsList onNavigate={handlePageChange} newOrdersCount={newOrdersCount} />
         )}

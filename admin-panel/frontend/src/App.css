@@ -3129,3 +3129,229 @@ body, button, input, textarea, select {
   }
 }
 
+/* ===== Контент сайта ===== */
+.content-pages-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--bn-border);
+}
+
+.content-page-tab {
+  background: transparent;
+  border: 1px solid var(--bn-border);
+  border-radius: 999px;
+  padding: 0.5rem 1.25rem;
+  font-family: var(--bn-font-ui);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bn-text);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.content-page-tab:hover {
+  border-color: var(--bn-accent);
+  color: var(--bn-accent);
+}
+
+.content-page-tab.active {
+  background: var(--bn-accent);
+  border-color: var(--bn-accent);
+  color: white;
+}
+
+.content-slots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.content-slot-card {
+  background: var(--bn-bg-card);
+  border: 1px solid var(--bn-border);
+  border-radius: 0 24px 0 24px;
+  padding: 1.5rem;
+}
+
+.content-slot-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.content-slot-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.content-slot-label {
+  font-family: var(--bn-font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--bn-text);
+}
+
+.content-slot-desc {
+  font-family: var(--bn-font-ui);
+  font-size: 0.85rem;
+  color: var(--bn-text-muted);
+}
+
+.content-slot-badge {
+  font-family: var(--bn-font-ui);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bn-accent);
+  border: 1px solid var(--bn-accent);
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  white-space: nowrap;
+}
+
+.content-slot-image-area {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.content-slot-image-preview {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: var(--bn-img-placeholder);
+  border-radius: var(--bn-radius-card);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content-slot-image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.content-slot-image-preview .no-image {
+  color: var(--bn-text-muted);
+  font-size: 0.85rem;
+}
+
+.content-slot-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.content-slot-hint {
+  font-family: var(--bn-font-ui);
+  font-size: 0.8rem;
+  color: var(--bn-text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.btn-upload-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.25rem;
+  background: var(--bn-accent);
+  color: white;
+  border: none;
+  border-radius: 1px;
+  font-family: var(--bn-font-ui);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-upload-content:hover {
+  background: var(--bn-accent-hover);
+}
+
+.content-slot-text-area {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.content-slot-textarea,
+.content-slot-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--bn-border);
+  border-radius: 4px;
+  font-family: var(--bn-font-ui);
+  font-size: 0.95rem;
+  color: var(--bn-text);
+  resize: vertical;
+  background: white;
+}
+
+.content-slot-textarea:focus,
+.content-slot-input:focus {
+  outline: none;
+  border-color: var(--bn-accent);
+}
+
+@media (max-width: 768px) {
+  .content-slot-card {
+    padding: 1rem;
+  }
+
+  .content-slot-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .content-slot-image-area {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .content-slot-image-preview {
+    max-width: 280px;
+  }
+
+  .content-slot-actions {
+    width: 100%;
+  }
+
+  .btn-upload-content,
+  .content-slot-actions .btn-secondary {
+    width: 100%;
+  }
+
+  .content-pages-tabs {
+    gap: 0.4rem;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .content-pages-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .content-page-tab {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    padding: 0.4rem 0.9rem;
+  }
+}
+

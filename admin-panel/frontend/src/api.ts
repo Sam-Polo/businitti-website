@@ -274,7 +274,40 @@ export const api = {
     return fetchWithAuth(`/api/orders/${encodeURIComponent(id)}`, {
       method: 'DELETE'
     })
+  },
+
+  // контент сайта
+  async getContent(): Promise<{ slots: ContentSlot[] }> {
+    return fetchWithAuth('/api/content')
+  },
+
+  async updateContentSlot(key: string, value: string) {
+    return fetchWithAuth(`/api/content/${encodeURIComponent(key)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ value })
+    })
+  },
+
+  async resetContentSlot(key: string) {
+    return fetchWithAuth(`/api/content/${encodeURIComponent(key)}`, {
+      method: 'DELETE'
+    })
   }
+}
+
+export type ContentSlot = {
+  key: string
+  page: string
+  pageTitle: string
+  type: 'image' | 'text' | 'link'
+  label: string
+  description?: string
+  defaultValue?: string
+  hint?: string
+  order: number
+  value: string
+  isOverridden: boolean
 }
 
 // типы заказов

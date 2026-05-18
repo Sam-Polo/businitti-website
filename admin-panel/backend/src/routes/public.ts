@@ -4,6 +4,7 @@ import { logger } from '../logger.js'
 import { createOrder, getAuth, DELIVERY_PRICES, DELIVERY_LABELS, type DeliveryService } from '../orders-utils.js'
 import { buildReceipt, createPaymentUrl } from '../robokassa.js'
 import { orderLimiter } from '../rate-limit.js'
+import { fetchOverridesMap, type SiteContentMap } from '../site-content-utils.js'
 
 const router = express.Router()
 
@@ -11,6 +12,30 @@ const router = express.Router()
 type CacheEntry = { data: SheetProduct[]; expiresAt: number }
 let cache: CacheEntry | null = null
 const CACHE_TTL_MS = 60_000
+
+// кеш контента (60 сек) — переопределения текстов/фото со стороны админки
+let contentCache: { data: SiteContentMap; expiresAt: number } | null = null
+const CONTENT_CACHE_TTL_MS = 60_000
+
+async function getContentOverridesCached(): Promise<SiteContentMap> {
+  const now = Date.now()
+  if (contentCache && contentCache.expiresAt > now) return contentCache.data
+  const sheetId = process.env.GOOGLE_SHEET_ID
+  if (!sheetId) return {}
+  try {
+    const data = await fetchOverridesMap(sheetId)
+    contentCache = { data, expiresAt: now + CONTENT_CACHE_TTL_MS }
+    return data
+  } catch (err: any) {
+    logger.warn({ err: err?.message }, 'не удалось загрузить переопределения контента — возвращаем пусто')
+    return {}
+  }
+}
+
+// принудительный сброс кеша контента (можно дёргать из админских роутов после изменения)
+export function invalidateContentCache() {
+  contentCache = null
+}
 
 async function getProductsCached(): Promise<SheetProduct[]> {
   const now = Date.now()
@@ -66,6 +91,17 @@ function sortByOrder(category: string) {
     return oa - ob
   }
 }
+
+// GET /api/public/content — переопределения текстов/фото (key → value)
+router.get('/content', async (_req, res) => {
+  try {
+    const data = await getContentOverridesCached()
+    res.json({ content: data })
+  } catch (error: any) {
+    logger.error({ error: error?.message }, 'ошибка загрузки контента')
+    res.json({ content: {} })
+  }
+})
 
 // GET /api/public/delivery-prices — цены доставки для отображения на сайте
 router.get('/delivery-prices', (_req, res) => {

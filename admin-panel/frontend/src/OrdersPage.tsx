@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { api, removeToken, type Order, type OrderStatus, type OrderWithItems } from './api'
 import './App.css'
 
-type NavPage = 'products' | 'categories' | 'orders' | 'stats'
+type NavPage = 'products' | 'categories' | 'orders' | 'stats' | 'content'
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
   pending_payment: 'Ожидает оплаты',
@@ -100,6 +100,7 @@ export default function OrdersPage({ onNavigate, newCount }: {
             )}
           </button>
           <button className="nav-btn" onClick={() => onNavigate?.('stats')}>Статистика</button>
+          <button className="nav-btn" onClick={() => onNavigate?.('content')}>Контент</button>
         </div>
         <div className="header-actions">
           <button onClick={handleLogout} className="logout-btn">Выйти</button>

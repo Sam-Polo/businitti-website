@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { api, removeToken, type OrderStats } from './api'
 import './App.css'
 
-type NavPage = 'products' | 'categories' | 'orders' | 'stats'
+type NavPage = 'products' | 'categories' | 'orders' | 'stats' | 'content'
 type Period = 'day' | 'week' | 'month' | 'all'
 
 const PERIOD_LABELS: Record<Period, string> = {
@@ -61,6 +61,7 @@ export default function StatsPage({ onNavigate, newCount }: {
             )}
           </button>
           <button className="nav-btn active" onClick={() => onNavigate?.('stats')}>Статистика</button>
+          <button className="nav-btn" onClick={() => onNavigate?.('content')}>Контент</button>
         </div>
         <div className="header-actions">
           <button onClick={handleLogout} className="logout-btn">Выйти</button>

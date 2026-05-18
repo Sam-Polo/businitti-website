@@ -3,15 +3,24 @@ import { externalLinks } from '../config/links'
 import { categories } from '../data/categories'
 import arrowIcon from '../assets/Line 1.svg'
 import arrowWhiteIcon from '../assets/img/Line 1 white.svg'
+import heroDefault from '../assets/img/hero__overlay.jpg'
+import contactsDefault from '../assets/img/home-contacts__image.png'
+import { useSiteContent } from '../contexts/SiteContentContext'
 import './MainPage.css'
 
 export default function MainPage() {
+  const heroImage = useSiteContent('home.hero_image', heroDefault)
+  const contactsImage = useSiteContent('home.contacts_image', contactsDefault)
+
   return (
     <main className="main-page">
       {/* Hero */}
       <section className="hero">
         <div className="hero__inner container">
-          <div className="hero__image-wrapper reveal">
+          <div
+            className="hero__image-wrapper reveal"
+            style={{ backgroundImage: `url(${heroImage})` }}
+          >
           </div>
           <div className="hero__content">
             <h1 className="hero__title">
@@ -85,7 +94,7 @@ export default function MainPage() {
               MAX
             </a>
           </div>
-          <div className="home-contacts__image" />
+          <div className="home-contacts__image" style={{ backgroundImage: `url(${contactsImage})` }} />
         </div>
       </section>
     </main>
