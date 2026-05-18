@@ -1,8 +1,33 @@
 import jwt from 'jsonwebtoken'
 import express from 'express'
 import pino from 'pino'
+import { scryptSync, randomBytes, timingSafeEqual } from 'crypto'
 
 const logger = pino()
+
+// ===== Хэширование пароля (scrypt — встроенный модуль Node, без сторонних зависимостей) =====
+
+export function hashPassword(plain: string): string {
+  const salt = randomBytes(16).toString('hex')
+  const hash = scryptSync(plain, salt, 64).toString('hex')
+  return `scrypt:${salt}:${hash}`
+}
+
+export function verifyPasswordHash(plain: string, stored: string): boolean {
+  const parts = stored.split(':')
+  if (parts.length !== 3 || parts[0] !== 'scrypt') return false
+  const [, salt, hash] = parts
+  if (!salt || !hash) return false
+  try {
+    const test = scryptSync(plain, salt, 64).toString('hex')
+    const a = Buffer.from(test, 'hex')
+    const b = Buffer.from(hash, 'hex')
+    if (a.length !== b.length) return false
+    return timingSafeEqual(a, b)
+  } catch {
+    return false
+  }
+}
 
 const JWT_SECRET = process.env.JWT_SECRET
 if (!JWT_SECRET) {

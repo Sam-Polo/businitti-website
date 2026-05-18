@@ -1,15 +1,44 @@
 import { google } from 'googleapis'
 import { getAuthFromEnv, getSheetIdByName } from './sheets-utils.js'
 import { logger } from './logger.js'
+import { fetchDeliveryPriceOverrides } from './settings-utils.js'
 
 export type OrderStatus = 'pending_payment' | 'new' | 'shipped' | 'cancelled' | 'refunded'
 export type DeliveryService = 'cdek' | 'yandex_market'
 
-// Цены доставки (источник истины — бэк, чтобы клиент не подменил)
-// Переопределяются через .env: DELIVERY_PRICE_CDEK, DELIVERY_PRICE_YANDEX_MARKET
+// Дефолтные цены доставки: env > хардкод. Override из админки (Sheets) применяется
+// через getEffectiveDeliveryPrices(); прямое чтение DELIVERY_PRICES остаётся как
+// нижний фолбэк, если Sheets недоступен.
 export const DELIVERY_PRICES: Record<DeliveryService, number> = {
   cdek: Number(process.env.DELIVERY_PRICE_CDEK) || 650,
   yandex_market: Number(process.env.DELIVERY_PRICE_YANDEX_MARKET) || 300,
+}
+
+// кешируем эффективные цены, чтобы не дёргать Sheets на каждый заказ
+let pricesCache: { data: Record<DeliveryService, number>; expiresAt: number } | null = null
+const PRICES_CACHE_TTL_MS = 60_000
+
+export async function getEffectiveDeliveryPrices(): Promise<Record<DeliveryService, number>> {
+  const now = Date.now()
+  if (pricesCache && pricesCache.expiresAt > now) return pricesCache.data
+  const sheetId = process.env.GOOGLE_SHEET_ID
+  if (!sheetId) return DELIVERY_PRICES
+  try {
+    const overrides = await fetchDeliveryPriceOverrides(sheetId)
+    const data: Record<DeliveryService, number> = {
+      cdek: overrides.cdek ?? DELIVERY_PRICES.cdek,
+      yandex_market: overrides.yandex_market ?? DELIVERY_PRICES.yandex_market,
+    }
+    pricesCache = { data, expiresAt: now + PRICES_CACHE_TTL_MS }
+    return data
+  } catch (err: any) {
+    logger.warn({ err: err?.message }, 'не удалось загрузить override цен доставки — используем дефолт')
+    return DELIVERY_PRICES
+  }
+}
+
+export function invalidateDeliveryPricesCache() {
+  pricesCache = null
 }
 
 export const DELIVERY_LABELS: Record<DeliveryService, string> = {
@@ -249,7 +278,8 @@ export async function createOrder(
   const { display_id, inv_id } = await nextIds(auth, sheetId)
   const id = `ord_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
   const now = new Date().toISOString()
-  const delivery_rub = DELIVERY_PRICES[data.delivery_service]
+  const effectivePrices = await getEffectiveDeliveryPrices()
+  const delivery_rub = effectivePrices[data.delivery_service]
   const items_sum = data.items.reduce((s, it) => s + it.subtotal_rub, 0)
   const total_rub = items_sum + delivery_rub
 

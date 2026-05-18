@@ -1,9 +1,11 @@
+import { useEffect, useState } from 'react'
 import yandexIcon from '../assets/yandex-delivery-icon.svg'
 import sdekIcon from '../assets/sdek-icon.svg'
 import headerImgDefault from '../assets/img/delivery-header__image.jpg'
 import paymentImgDefault from '../assets/img/payment-section__image.png'
 import { useSiteContent } from '../contexts/SiteContentContext'
 import { RichText } from '../lib/RichText'
+import { fetchDeliveryPrices, type DeliveryPrices } from '../api/orders'
 import './DeliveryPage.css'
 
 const DELIVERY_HEADER_DESC_DEFAULT =
@@ -17,6 +19,13 @@ export default function DeliveryPage() {
   const paymentImage = useSiteContent('delivery.payment_image', paymentImgDefault)
   const headerDesc = useSiteContent('delivery.header_desc', DELIVERY_HEADER_DESC_DEFAULT)
   const paymentText = useSiteContent('delivery.payment_text', DELIVERY_PAYMENT_TEXT_DEFAULT)
+
+  const [prices, setPrices] = useState<DeliveryPrices | null>(null)
+  useEffect(() => {
+    fetchDeliveryPrices().then(setPrices).catch(() => setPrices(null))
+  }, [])
+  const cdekPrice = prices?.cdek?.price ?? 650
+  const yandexPrice = prices?.yandex_market?.price ?? 300
 
   return (
     <main className="delivery-page">
@@ -40,12 +49,12 @@ export default function DeliveryPage() {
                 <div className="delivery-services__rows">
                   <hr className="delivery-services__line" />
                   <div className="delivery-services__row">
-                    <span className="delivery-services__text">Яндекс доставка в пункт выдачи 300 р.</span>
+                    <span className="delivery-services__text">Яндекс доставка в пункт выдачи {yandexPrice} р.</span>
                     <img src={yandexIcon} alt="" className="delivery-services__icon delivery-services__icon--yandex" />
                   </div>
                   <hr className="delivery-services__line" />
                   <div className="delivery-services__row">
-                    <span className="delivery-services__text">СДЭК в пункт выдачи 650 р.</span>
+                    <span className="delivery-services__text">СДЭК в пункт выдачи {cdekPrice} р.</span>
                     <img src={sdekIcon} alt="" className="delivery-services__icon delivery-services__icon--sdek" />
                   </div>
                   <hr className="delivery-services__line" />

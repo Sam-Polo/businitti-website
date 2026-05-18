@@ -276,6 +276,33 @@ export const api = {
     })
   },
 
+  // настройки: цены доставки
+  async getDeliveryPrices(): Promise<{
+    cdek: number
+    yandex_market: number
+    defaults: { cdek: number; yandex_market: number }
+    isOverridden: { cdek: boolean; yandex_market: boolean }
+  }> {
+    return fetchWithAuth('/api/settings/delivery-prices')
+  },
+
+  async updateDeliveryPrices(cdek: number, yandex_market: number) {
+    return fetchWithAuth('/api/settings/delivery-prices', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cdek, yandex_market }),
+    })
+  },
+
+  // настройки: смена пароля
+  async changePassword(currentPassword: string, newPassword: string, newUsername?: string) {
+    return fetchWithAuth('/api/settings/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentPassword, newPassword, newUsername }),
+    })
+  },
+
   // контент сайта
   async getContent(): Promise<{ slots: ContentSlot[] }> {
     return fetchWithAuth('/api/content')

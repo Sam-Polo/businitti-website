@@ -47,3 +47,14 @@ export async function fetchDeliveryPrices(): Promise<DeliveryPrices> {
   if (!res.ok) throw new Error(`failed_to_load_delivery_prices`)
   return res.json() as Promise<DeliveryPrices>
 }
+
+export type OrdersStatus = {
+  ordersClosed: boolean
+  reopenDate: string | null // YYYY-MM-DD
+}
+
+export async function fetchOrdersStatus(): Promise<OrdersStatus> {
+  const res = await fetch(`${API_BASE}/api/public/orders-status`)
+  if (!res.ok) return { ordersClosed: false, reopenDate: null }
+  return res.json() as Promise<OrdersStatus>
+}

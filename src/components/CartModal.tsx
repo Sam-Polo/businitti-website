@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useCart } from '../contexts/CartContext'
 import { useExternalLinks } from '../config/links'
 import { formatPrice } from '../api/products'
-import { createOrder, fetchDeliveryPrices, type DeliveryPrices, type DeliveryService } from '../api/orders'
+import { createOrder, fetchDeliveryPrices, fetchOrdersStatus, type DeliveryPrices, type DeliveryService, type OrdersStatus } from '../api/orders'
 import { useModalAnimation } from '../hooks/useModalAnimation'
 import './CartModal.css'
 
@@ -11,6 +11,18 @@ import './CartModal.css'
 const DEFAULT_DELIVERY: DeliveryPrices = {
   cdek: { price: 650, label: 'СДЭК' },
   yandex_market: { price: 300, label: 'Яндекс Маркет' },
+}
+
+const RU_MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
+
+function formatReopenDate(iso: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso)
+  if (!m) return iso
+  const year = m[1]
+  const month = Number(m[2])
+  const day = Number(m[3])
+  if (month < 1 || month > 12) return iso
+  return `${day} ${RU_MONTHS[month - 1]} ${year}`
 }
 
 export default function CartModal() {
@@ -28,9 +40,11 @@ export default function CartModal() {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [deliveryPrices, setDeliveryPrices] = useState<DeliveryPrices>(DEFAULT_DELIVERY)
+  const [ordersStatus, setOrdersStatus] = useState<OrdersStatus>({ ordersClosed: false, reopenDate: null })
 
   useEffect(() => {
     fetchDeliveryPrices().then(setDeliveryPrices).catch(() => {/* остаёмся на DEFAULT */})
+    fetchOrdersStatus().then(setOrdersStatus).catch(() => {/* по умолчанию открыты */})
   }, [])
 
   useEffect(() => {
@@ -245,13 +259,24 @@ export default function CartModal() {
             <p className="cart-modal__error" role="alert">{submitError}</p>
           )}
 
-          <button
-            type="submit"
-            className="cart-modal__submit"
-            disabled={!canSubmit}
-          >
-            {submitting ? 'Создаём заказ…' : 'Оформить заказ'}
-          </button>
+          {ordersStatus.ordersClosed ? (
+            <div className="cart-modal__closed-notice">
+              <p className="cart-modal__closed-title">Заказы временно недоступны</p>
+              <p className="cart-modal__closed-text">
+                {ordersStatus.reopenDate
+                  ? <>Магазин откроется <span className="cart-modal__closed-date">{formatReopenDate(ordersStatus.reopenDate)}</span></>
+                  : 'Скоро снова откроемся'}
+              </p>
+            </div>
+          ) : (
+            <button
+              type="submit"
+              className="cart-modal__submit"
+              disabled={!canSubmit}
+            >
+              {submitting ? 'Создаём заказ…' : 'Оформить заказ'}
+            </button>
+          )}
         </form>
       </div>
     </div>

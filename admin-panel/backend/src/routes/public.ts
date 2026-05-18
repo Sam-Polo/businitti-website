@@ -1,11 +1,12 @@
 import express from 'express'
 import { fetchProductsFromSheet, type SheetProduct } from '../sheets.js'
 import { logger } from '../logger.js'
-import { createOrder, getAuth, DELIVERY_PRICES, DELIVERY_LABELS, type DeliveryService } from '../orders-utils.js'
+import { createOrder, getAuth, DELIVERY_LABELS, getEffectiveDeliveryPrices, type DeliveryService } from '../orders-utils.js'
 import { buildReceipt, createPaymentUrl } from '../robokassa.js'
 import { orderLimiter } from '../rate-limit.js'
 import { fetchOverridesMap, type SiteContentMap } from '../site-content-utils.js'
 import { fetchCategoriesFromSheet, type Category } from '../categories-utils.js'
+import { fetchOrdersSettingsFromSheet } from '../settings-utils.js'
 
 const router = express.Router()
 
@@ -143,11 +144,25 @@ router.get('/content', async (_req, res) => {
 })
 
 // GET /api/public/delivery-prices — цены доставки для отображения на сайте
-router.get('/delivery-prices', (_req, res) => {
+router.get('/delivery-prices', async (_req, res) => {
+  const prices = await getEffectiveDeliveryPrices()
   res.json({
-    cdek: { price: DELIVERY_PRICES.cdek, label: DELIVERY_LABELS.cdek },
-    yandex_market: { price: DELIVERY_PRICES.yandex_market, label: DELIVERY_LABELS.yandex_market },
+    cdek: { price: prices.cdek, label: DELIVERY_LABELS.cdek },
+    yandex_market: { price: prices.yandex_market, label: DELIVERY_LABELS.yandex_market },
   })
+})
+
+// GET /api/public/orders-status — статус приёма заказов (закрыты ли + дата открытия)
+router.get('/orders-status', async (_req, res) => {
+  const sheetId = process.env.GOOGLE_SHEET_ID
+  if (!sheetId) return res.json({ ordersClosed: false })
+  try {
+    const s = await fetchOrdersSettingsFromSheet(sheetId)
+    res.json({ ordersClosed: s.ordersClosed, reopenDate: s.closeDate || null })
+  } catch (err: any) {
+    logger.warn({ err: err?.message }, 'не удалось прочесть orders-status')
+    res.json({ ordersClosed: false })
+  }
 })
 
 // GET /api/public/products?category=necklaces — товары категории, отфильтрованные и в правильном порядке
@@ -196,6 +211,17 @@ router.get('/products/:slug', async (req, res) => {
 // body: { customer_name, customer_phone, customer_email, delivery_service, delivery_address, items: [{ slug, quantity }] }
 router.post('/orders', orderLimiter, async (req, res) => {
   try {
+    // блокируем приём заказов, если в админке выставлен флаг
+    const sheetId = process.env.GOOGLE_SHEET_ID
+    if (sheetId) {
+      try {
+        const status = await fetchOrdersSettingsFromSheet(sheetId)
+        if (status.ordersClosed) {
+          return res.status(403).json({ error: 'orders_closed', reopenDate: status.closeDate || null })
+        }
+      } catch { /* если Sheets недоступен — не блокируем */ }
+    }
+
     const body = req.body || {}
     const customer_name = String(body.customer_name || '').trim()
     const customer_phone = String(body.customer_phone || '').trim()
@@ -214,7 +240,6 @@ router.post('/orders', orderLimiter, async (req, res) => {
     if (itemsInput.length === 0) return res.status(400).json({ error: 'no_items' })
 
     // загружаем актуальные товары
-    const sheetId = process.env.GOOGLE_SHEET_ID
     if (!sheetId) return res.status(500).json({ error: 'GOOGLE_SHEET_ID not configured' })
 
     const all = await getProductsCached()

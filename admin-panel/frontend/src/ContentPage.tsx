@@ -3,7 +3,7 @@ import { api, removeToken, type ContentSlot } from './api'
 import RichTextEditor from './RichTextEditor'
 import './App.css'
 
-type NavPage = 'products' | 'categories' | 'orders' | 'stats' | 'content' | 'links'
+type NavPage = 'products' | 'categories' | 'orders' | 'stats' | 'content' | 'links' | 'settings'
 
 export default function ContentPage({ onNavigate, newCount }: {
   onNavigate?: (page: NavPage) => void
@@ -68,6 +68,7 @@ export default function ContentPage({ onNavigate, newCount }: {
           <button className="nav-btn" onClick={() => onNavigate?.('stats')}>Статистика</button>
           <button className="nav-btn active" onClick={() => onNavigate?.('content')}>Контент</button>
           <button className="nav-btn" onClick={() => onNavigate?.('links')}>Ссылки</button>
+          <button className="nav-btn" onClick={() => onNavigate?.('settings')}>Настройки</button>
         </div>
         <div className="header-actions">
           <button onClick={handleLogout} className="logout-btn">Выйти</button>
