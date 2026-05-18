@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { api, removeToken } from './api'
+import RichTextEditor from './RichTextEditor'
 import {
   DndContext,
   closestCenter,
@@ -358,12 +359,12 @@ function CategoriesPage({
               />
             </div>
             <div className="form-group">
-              <label>Описание</label>
-              <input
-                type="text"
+              <label>Описание (показывается на странице категории)</label>
+              <RichTextEditor
                 value={formData.description}
-                onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
-                placeholder="Эксклюзивная коллекция..."
+                onChange={(next) => setFormData((p) => ({ ...p, description: next }))}
+                placeholder="Краткое описание категории. Пустая строка — новый абзац. Выделите фразу и нажмите «Розовый», чтобы её подсветить."
+                rows={5}
               />
             </div>
             <div className="form-group">

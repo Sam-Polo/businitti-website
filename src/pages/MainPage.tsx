@@ -6,11 +6,16 @@ import arrowWhiteIcon from '../assets/img/Line 1 white.svg'
 import heroDefault from '../assets/img/hero__overlay.jpg'
 import contactsDefault from '../assets/img/home-contacts__image.png'
 import { useSiteContent } from '../contexts/SiteContentContext'
+import { RichText } from '../lib/RichText'
 import './MainPage.css'
+
+const HOME_CONTACTS_DESC_DEFAULT =
+  'Мы стараемся, чтобы каждая покупка приносила радость. Если вы сомневаетесь в размере или хотите увидеть дополнительные фото украшения'
 
 export default function MainPage() {
   const heroImage = useSiteContent('home.hero_image', heroDefault)
   const contactsImage = useSiteContent('home.contacts_image', contactsDefault)
+  const contactsDesc = useSiteContent('home.contacts_desc', HOME_CONTACTS_DESC_DEFAULT)
 
   return (
     <main className="main-page">
@@ -77,11 +82,7 @@ export default function MainPage() {
             <div className="home-contacts__text">
               <h2 className="home-contacts__title">Контакты</h2>
               <div className="home-contacts__body">
-                <p className="home-contacts__desc">
-                  Мы стараемся, чтобы каждая покупка приносила радость.
-                  Если вы сомневаетесь в размере или хотите увидеть
-                  дополнительные фото украшения
-                </p>
+                <RichText text={contactsDesc} paragraphClassName="home-contacts__desc" />
                 <p className="home-contacts__cta-text">Напишите нам</p>
               </div>
             </div>

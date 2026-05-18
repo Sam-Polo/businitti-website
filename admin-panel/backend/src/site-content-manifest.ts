@@ -25,6 +25,34 @@ export type ContentSlot = {
 
 const DEFAULTS_BASE = '/content-defaults'
 
+// оригинальные тексты — нужны и для рендера сайтом как фолбэк, и для счётчика в админке
+const ORIG_HOME_CONTACTS_DESC =
+  'Мы стараемся, чтобы каждая покупка приносила радость. Если вы сомневаетесь в размере или хотите увидеть дополнительные фото украшения'
+
+const ORIG_CONTACTS_DESC = ORIG_HOME_CONTACTS_DESC
+
+const ORIG_DELIVERY_HEADER_DESC =
+  'Сборка и отправка заказа осуществляется в течение 2-5 рабочих дней с момента оформления заказа.\n\nПри оформлении заказа на сайте введите адрес ближайшего к вам пункта выдачи, из которого вам удобно будет забрать заказ.'
+
+const ORIG_DELIVERY_PAYMENT_TEXT =
+  'Все заказы оплачиваются онлайн при оформлении заказа — это быстро и безопасно через систему Robokassa.\n\nПокупателю доступны банковские карты и иные способы оплаты, предусмотренные платежной формой на момент совершения заказа.\n\nПосле успешного проведения платежа кассовый чек направляется на указанные покупателем контактные данные.'
+
+const ORIG_GUARANTEE_RETURN =
+  'Все наши изделия находятся на гарантии и подлежат ремонту, замене на аналогичное или возврату уплаченной суммы (с возвратом товара) в случае производственного дефекта (сломанный замок, разорванное звено или тросик без внешнего воздействия) в течение 14 календарных дней с момента получения заказа.\n\nТовар должен быть в оригинальном виде, без следов использования, в оригинальной упаковке.\n\nВозврат денежных средств осуществляется на ту же карту, с которой была произведена оплата в течение 10 рабочих дней.\n\nДля оформления возврата свяжитесь с менеджером.'
+
+const ORIG_TIP_1 = 'Избегайте контакта украшений с водой, парфюмом и косметическими средствами'
+const ORIG_TIP_2 = 'Берегите от воздействия прямых солнечных лучей'
+const ORIG_TIP_3 = 'Храните в индивидуальной упаковке в горизонтальном положении'
+const ORIG_TIP_4 = 'После носки протирайте украшения мягкой безворсовой тканью'
+
+const ORIG_ABOUT_HERO_BUDDY =
+  '[[BUSINITTI (Бусинити)]]\n\n— это авторские украшения ручной работы из натуральных камней и минералов.\n\nМы создаём не просто аксессуары, а украшения со смыслом — те, что тонко дополняют образ и становятся его продолжением.\n\nКаждое изделие может стать вашим личным символом: оберегом в непростые дни, талисманом, придающим уверенность на новом этапе, или тихим напоминанием о пути к мечте.'
+
+const ORIG_ABOUT_GALLERY_TEXT =
+  'Мы верим, что красота — это не только внешний блеск, но и внутреннее ощущение. Именно поэтому в каждое украшение мы вкладываем внимание к деталям, энергию и любовь.\n\nДавайте создавать красоту со смыслом вместе.'
+
+const ORIG_ABOUT_CLOSING = 'С любовью к вам,\nBUSINITTI'
+
 export const CONTENT_SLOTS: ContentSlot[] = [
   // ===== Главная =====
   {
@@ -48,6 +76,16 @@ export const CONTENT_SLOTS: ContentSlot[] = [
     hint: 'Соотношение сторон 560 × 382',
     defaultValue: `${DEFAULTS_BASE}/home-contacts__image.png`,
     order: 2,
+  },
+  {
+    key: 'home.contacts_desc',
+    page: 'home',
+    pageTitle: 'Главная',
+    type: 'text',
+    label: 'Текст в блоке «Контакты»',
+    description: 'Над кнопкой MAX в правой части блока',
+    defaultValue: ORIG_HOME_CONTACTS_DESC,
+    order: 3,
   },
 
   // ===== О бренде =====
@@ -83,6 +121,35 @@ export const CONTENT_SLOTS: ContentSlot[] = [
     hint: 'Соотношение сторон 560 × 240',
     defaultValue: `${DEFAULTS_BASE}/about-gallery__img2.jpg`,
     order: 3,
+  },
+  {
+    key: 'about.hero_buddy_text',
+    page: 'about',
+    pageTitle: 'О бренде',
+    type: 'text',
+    label: 'Главный текст (слева сверху)',
+    description: 'Абзацы распределяются по высоте блока',
+    defaultValue: ORIG_ABOUT_HERO_BUDDY,
+    order: 4,
+  },
+  {
+    key: 'about.gallery_text',
+    page: 'about',
+    pageTitle: 'О бренде',
+    type: 'text',
+    label: 'Текст в нижнем блоке',
+    defaultValue: ORIG_ABOUT_GALLERY_TEXT,
+    order: 5,
+  },
+  {
+    key: 'about.closing_text',
+    page: 'about',
+    pageTitle: 'О бренде',
+    type: 'text',
+    label: 'Подпись «С любовью к вам, BUSINITTI»',
+    description: 'Короткая подпись справа внизу',
+    defaultValue: ORIG_ABOUT_CLOSING,
+    order: 6,
   },
 
   // ===== Внутри категории =====
@@ -121,6 +188,26 @@ export const CONTENT_SLOTS: ContentSlot[] = [
     defaultValue: `${DEFAULTS_BASE}/payment-section__image.png`,
     order: 2,
   },
+  {
+    key: 'delivery.header_desc',
+    page: 'delivery',
+    pageTitle: 'Покупателям (доставка)',
+    type: 'text',
+    label: 'Текст под заголовком «Доставка:»',
+    description: 'Несколько абзацев, разделённых пустой строкой',
+    defaultValue: ORIG_DELIVERY_HEADER_DESC,
+    order: 3,
+  },
+  {
+    key: 'delivery.payment_text',
+    page: 'delivery',
+    pageTitle: 'Покупателям (доставка)',
+    type: 'text',
+    label: 'Текст в блоке «Оплата:»',
+    description: 'Несколько абзацев, разделённых пустой строкой',
+    defaultValue: ORIG_DELIVERY_PAYMENT_TEXT,
+    order: 4,
+  },
 
   // ===== Контакты =====
   {
@@ -133,6 +220,15 @@ export const CONTENT_SLOTS: ContentSlot[] = [
     hint: 'Соотношение сторон 560 × 382',
     defaultValue: `${DEFAULTS_BASE}/home-contacts__image.png`,
     order: 1,
+  },
+  {
+    key: 'contacts.desc',
+    page: 'contacts',
+    pageTitle: 'Контакты',
+    type: 'text',
+    label: 'Текст над кнопкой',
+    defaultValue: ORIG_CONTACTS_DESC,
+    order: 2,
   },
 
   // ===== Гарантия и возврат =====
@@ -147,6 +243,16 @@ export const CONTENT_SLOTS: ContentSlot[] = [
     defaultValue: `${DEFAULTS_BASE}/guarantee-header__image.png`,
     order: 1,
   },
+  {
+    key: 'guarantee.return_text',
+    page: 'guarantee',
+    pageTitle: 'Гарантия и возврат',
+    type: 'text',
+    label: 'Текст справа от фото',
+    description: 'Абзацы автоматически распределяются по высоте блока с фото — пустая строка = новый абзац',
+    defaultValue: ORIG_GUARANTEE_RETURN,
+    order: 2,
+  },
 
   // ===== Рекомендации по уходу =====
   {
@@ -159,6 +265,42 @@ export const CONTENT_SLOTS: ContentSlot[] = [
     hint: 'Высота 560px (десктоп) / 202px (мобилка)',
     defaultValue: `${DEFAULTS_BASE}/recommendations-image.png`,
     order: 1,
+  },
+  {
+    key: 'recommendations.tip_1',
+    page: 'recommendations',
+    pageTitle: 'Рекомендации по уходу',
+    type: 'text',
+    label: 'Совет 1',
+    defaultValue: ORIG_TIP_1,
+    order: 2,
+  },
+  {
+    key: 'recommendations.tip_2',
+    page: 'recommendations',
+    pageTitle: 'Рекомендации по уходу',
+    type: 'text',
+    label: 'Совет 2',
+    defaultValue: ORIG_TIP_2,
+    order: 3,
+  },
+  {
+    key: 'recommendations.tip_3',
+    page: 'recommendations',
+    pageTitle: 'Рекомендации по уходу',
+    type: 'text',
+    label: 'Совет 3',
+    defaultValue: ORIG_TIP_3,
+    order: 4,
+  },
+  {
+    key: 'recommendations.tip_4',
+    page: 'recommendations',
+    pageTitle: 'Рекомендации по уходу',
+    type: 'text',
+    label: 'Совет 4',
+    defaultValue: ORIG_TIP_4,
+    order: 5,
   },
 ]
 

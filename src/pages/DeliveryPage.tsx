@@ -3,11 +3,20 @@ import sdekIcon from '../assets/sdek-icon.svg'
 import headerImgDefault from '../assets/img/delivery-header__image.jpg'
 import paymentImgDefault from '../assets/img/payment-section__image.png'
 import { useSiteContent } from '../contexts/SiteContentContext'
+import { RichText } from '../lib/RichText'
 import './DeliveryPage.css'
+
+const DELIVERY_HEADER_DESC_DEFAULT =
+  'Сборка и отправка заказа осуществляется в течение 2-5 рабочих дней с момента оформления заказа.\n\nПри оформлении заказа на сайте введите адрес ближайшего к вам пункта выдачи, из которого вам удобно будет забрать заказ.'
+
+const DELIVERY_PAYMENT_TEXT_DEFAULT =
+  'Все заказы оплачиваются онлайн при оформлении заказа — это быстро и безопасно через систему Robokassa.\n\nПокупателю доступны банковские карты и иные способы оплаты, предусмотренные платежной формой на момент совершения заказа.\n\nПосле успешного проведения платежа кассовый чек направляется на указанные покупателем контактные данные.'
 
 export default function DeliveryPage() {
   const headerImage = useSiteContent('delivery.header_image', headerImgDefault)
   const paymentImage = useSiteContent('delivery.payment_image', paymentImgDefault)
+  const headerDesc = useSiteContent('delivery.header_desc', DELIVERY_HEADER_DESC_DEFAULT)
+  const paymentText = useSiteContent('delivery.payment_text', DELIVERY_PAYMENT_TEXT_DEFAULT)
 
   return (
     <main className="delivery-page">
@@ -21,14 +30,7 @@ export default function DeliveryPage() {
                 <h1 className="delivery-header__title">Доставка и оплата</h1>
                 <div className="delivery-header__desc">
                   <p className="delivery-header__subtitle">Доставка:</p>
-                  <p>
-                    Сборка и отправка заказа осуществляется в течение 2-5 рабочих дней
-                    с момента оформления заказа.
-                  </p>
-                  <p>
-                    При оформлении заказа на сайте введите адрес ближайшего к вам
-                    пункта выдачи, из которого вам удобно будет забрать заказ.
-                  </p>
+                  <RichText text={headerDesc} />
                 </div>
               </div>
 
@@ -61,18 +63,7 @@ export default function DeliveryPage() {
           <div className="payment-section reveal">
             <div className="payment-section__image reveal" style={{ backgroundImage: `url(${paymentImage})` }} />
             <h2 className="payment-section__title">Оплата:</h2>
-            <p className="payment-section__text">
-              Все заказы оплачиваются онлайн при оформлении заказа —
-              это быстро и безопасно через систему Robokassa.
-            </p>
-            <p className="payment-section__text">
-              Покупателю доступны банковские карты и иные способы оплаты,
-              предусмотренные платежной формой на момент совершения заказа.
-            </p>
-            <p className="payment-section__text">
-              После успешного проведения платежа кассовый чек направляется
-              на указанные покупателем контактные данные.
-            </p>
+            <RichText text={paymentText} paragraphClassName="payment-section__text" />
           </div>
         </section>
       </div>

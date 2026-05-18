@@ -1,9 +1,10 @@
 import { Fragment } from 'react'
 import { useSiteContent } from '../contexts/SiteContentContext'
+import { RichText } from '../lib/RichText'
 import imageDefault from '../assets/img/recommendations-image.png'
 import './RecommendationsPage.css'
 
-const tips = [
+const TIP_DEFAULTS = [
   'Избегайте контакта украшений с водой, парфюмом и косметическими средствами',
   'Берегите от воздействия прямых солнечных лучей',
   'Храните в индивидуальной упаковке в горизонтальном положении',
@@ -12,6 +13,11 @@ const tips = [
 
 export default function RecommendationsPage() {
   const image = useSiteContent('recommendations.image', imageDefault)
+  const tip1 = useSiteContent('recommendations.tip_1', TIP_DEFAULTS[0])
+  const tip2 = useSiteContent('recommendations.tip_2', TIP_DEFAULTS[1])
+  const tip3 = useSiteContent('recommendations.tip_3', TIP_DEFAULTS[2])
+  const tip4 = useSiteContent('recommendations.tip_4', TIP_DEFAULTS[3])
+  const tips = [tip1, tip2, tip3, tip4]
   return (
     <main className="recommendations-page">
       <div className="recommendations-page__content">
@@ -32,7 +38,7 @@ export default function RecommendationsPage() {
               {tips.map((tip, i) => (
                 <Fragment key={i}>
                   <div className="recommendations-tips__item-wrap">
-                    <p className="recommendations-tips__item">{tip}</p>
+                    <RichText text={tip} paragraphClassName="recommendations-tips__item" />
                   </div>
                   <hr className="recommendations-tips__line" />
                 </Fragment>

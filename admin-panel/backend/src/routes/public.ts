@@ -5,6 +5,7 @@ import { createOrder, getAuth, DELIVERY_PRICES, DELIVERY_LABELS, type DeliverySe
 import { buildReceipt, createPaymentUrl } from '../robokassa.js'
 import { orderLimiter } from '../rate-limit.js'
 import { fetchOverridesMap, type SiteContentMap } from '../site-content-utils.js'
+import { fetchCategoriesFromSheet, type Category } from '../categories-utils.js'
 
 const router = express.Router()
 
@@ -91,6 +92,44 @@ function sortByOrder(category: string) {
     return oa - ob
   }
 }
+
+// кеш категорий (60 сек) — на сайте нужно описание и заголовок
+let categoriesCache: { data: Category[]; expiresAt: number } | null = null
+async function getCategoriesCached(): Promise<Category[]> {
+  const now = Date.now()
+  if (categoriesCache && categoriesCache.expiresAt > now) return categoriesCache.data
+  const sheetId = process.env.GOOGLE_SHEET_ID
+  if (!sheetId) return []
+  try {
+    const data = await fetchCategoriesFromSheet(sheetId)
+    categoriesCache = { data, expiresAt: now + CACHE_TTL_MS }
+    return data
+  } catch (err: any) {
+    logger.warn({ err: err?.message }, 'не удалось загрузить категории')
+    return []
+  }
+}
+
+export function invalidateCategoriesCache() {
+  categoriesCache = null
+}
+
+// GET /api/public/categories — список категорий с заголовками и описанием
+router.get('/categories', async (_req, res) => {
+  try {
+    const list = await getCategoriesCached()
+    res.json({
+      categories: list.map((c) => ({
+        key: c.key,
+        title: c.title,
+        description: c.description || '',
+      })),
+    })
+  } catch (error: any) {
+    logger.error({ error: error?.message }, 'ошибка загрузки категорий')
+    res.json({ categories: [] })
+  }
+})
 
 // GET /api/public/content — переопределения текстов/фото (key → value)
 router.get('/content', async (_req, res) => {

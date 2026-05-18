@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api, removeToken, type ContentSlot } from './api'
+import RichTextEditor from './RichTextEditor'
 import './App.css'
 
 type NavPage = 'products' | 'categories' | 'orders' | 'stats' | 'content'
@@ -226,25 +227,45 @@ function ContentSlotCard({
         </div>
       )}
 
-      {(slot.type === 'text' || slot.type === 'link') && (
+      {slot.type === 'text' && (
         <div className="content-slot-text-area">
-          {slot.type === 'text' ? (
-            <textarea
-              value={textValue}
-              onChange={(e) => setTextValue(e.target.value)}
-              placeholder={slot.defaultValue || 'Введите текст'}
-              rows={4}
-              className="content-slot-textarea"
-            />
-          ) : (
-            <input
-              type="url"
-              value={textValue}
-              onChange={(e) => setTextValue(e.target.value)}
-              placeholder={slot.defaultValue || 'https://...'}
-              className="content-slot-input"
-            />
-          )}
+          <RichTextEditor
+            value={textValue}
+            onChange={setTextValue}
+            originalText={slot.defaultValue}
+            placeholder={slot.defaultValue || 'Введите текст'}
+            rows={5}
+          />
+          <div className="content-slot-actions">
+            <button
+              className="btn-order-ship"
+              disabled={saving || !textValue.trim() || textValue === slot.value}
+              onClick={handleSaveText}
+            >
+              {saving ? 'Сохранение...' : 'Сохранить'}
+            </button>
+            {slot.isOverridden && (
+              <button
+                className="btn-secondary"
+                disabled={resetting}
+                onClick={handleReset}
+              >
+                {resetting ? 'Сброс...' : 'Сбросить к оригиналу'}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {slot.type === 'link' && (
+        <div className="content-slot-text-area">
+          <input
+            type="url"
+            value={textValue}
+            onChange={(e) => setTextValue(e.target.value)}
+            placeholder={slot.defaultValue || 'https://...'}
+            className="content-slot-input"
+          />
           <div className="content-slot-actions">
             <button
               className="btn-order-ship"

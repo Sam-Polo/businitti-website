@@ -191,6 +191,13 @@ h3 {
 }
 
 
+/* ===== Inline rich-text accent (используется компонентом RichText) ===== */
+
+.accent {
+  color: var(--color-accent);
+}
+
+
 /* ===== Visually Hidden (accessibility) ===== */
 
 .visually-hidden {

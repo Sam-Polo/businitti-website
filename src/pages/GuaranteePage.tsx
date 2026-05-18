@@ -2,8 +2,12 @@ import { Fragment } from 'react'
 import { externalLinks } from '../config/links'
 import arrowIcon from '../assets/Line 1.svg'
 import { useSiteContent } from '../contexts/SiteContentContext'
+import { RichText } from '../lib/RichText'
 import headerImgDefault from '../assets/img/guarantee-header__image.png'
 import './GuaranteePage.css'
+
+const GUARANTEE_RETURN_DEFAULT =
+  'Все наши изделия находятся на гарантии и подлежат ремонту, замене на аналогичное или возврату уплаченной суммы (с возвратом товара) в случае производственного дефекта (сломанный замок, разорванное звено или тросик без внешнего воздействия) в течение 14 календарных дней с момента получения заказа.\n\nТовар должен быть в оригинальном виде, без следов использования, в оригинальной упаковке.\n\nВозврат денежных средств осуществляется на ту же карту, с которой была произведена оплата в течение 10 рабочих дней.\n\nДля оформления возврата свяжитесь с менеджером.'
 
 const exclusions = [
   'Естественное потускнение, царапины, потёртости покрытия в результате носки',
@@ -13,6 +17,7 @@ const exclusions = [
 
 export default function GuaranteePage() {
   const headerImage = useSiteContent('guarantee.header_image', headerImgDefault)
+  const returnText = useSiteContent('guarantee.return_text', GUARANTEE_RETURN_DEFAULT)
   return (
     <main className="guarantee-page">
       <div className="guarantee-page__content">
@@ -22,23 +27,8 @@ export default function GuaranteePage() {
             <h1 className="guarantee-header__title">Гарантия и возврат</h1>
 
             <div className="guarantee-return">
-              <p className="guarantee-return__text">
-                Все наши изделия находятся на гарантии и подлежат ремонту, замене на аналогичное
-                или возврату уплаченной суммы (с возвратом товара) в случае производственного дефекта
-                (сломанный замок, разорванное звено или тросик без внешнего воздействия)
-                в течение 14 календарных дней с момента получения заказа.
-              </p>
               <div className="guarantee-header__image reveal" style={{ backgroundImage: `url(${headerImage})` }} />
-              <p className="guarantee-return__text">
-                Товар должен быть в оригинальном виде, без следов использования, в оригинальной упаковке.
-              </p>
-              <p className="guarantee-return__text">
-                Возврат денежных средств осуществляется на ту же карту, с которой была произведена
-                оплата в течение 10 рабочих дней.
-              </p>
-              <p className="guarantee-return__cta">
-                Для оформления возврата свяжитесь с&nbsp;менеджером.
-              </p>
+              <RichText text={returnText} paragraphClassName="guarantee-return__text" />
             </div>
           </div>
 

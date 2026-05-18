@@ -1,10 +1,15 @@
 import { externalLinks } from '../config/links'
 import { useSiteContent } from '../contexts/SiteContentContext'
+import { RichText } from '../lib/RichText'
 import bgImageDefault from '../assets/img/home-contacts__image.png'
 import './ContactsPage.css'
 
+const CONTACTS_DESC_DEFAULT =
+  'Мы стараемся, чтобы каждая покупка приносила радость. Если вы сомневаетесь в размере или хотите увидеть дополнительные фото украшения'
+
 export default function ContactsPage() {
   const bgImage = useSiteContent('contacts.bg_image', bgImageDefault)
+  const desc = useSiteContent('contacts.desc', CONTACTS_DESC_DEFAULT)
 
   return (
     <main className="contacts-page">
@@ -18,11 +23,7 @@ export default function ContactsPage() {
           <div className="contacts-page__text">
             <h1 className="contacts-page__title">Контакты</h1>
             <div className="contacts-page__body">
-              <p className="contacts-page__desc">
-                Мы стараемся, чтобы каждая покупка приносила радость.
-                Если вы сомневаетесь в размере или хотите увидеть
-                дополнительные фото украшения
-              </p>
+              <RichText text={desc} paragraphClassName="contacts-page__desc" />
               <p className="contacts-page__cta-text">Напишите нам</p>
             </div>
           </div>

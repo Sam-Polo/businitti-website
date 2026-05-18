@@ -5,6 +5,7 @@ import {
   saveCategoriesToSheet,
   type Category
 } from '../categories-utils.js'
+import { invalidateCategoriesCache } from './public.js'
 import pino from 'pino'
 
 const logger = pino()
@@ -58,6 +59,7 @@ router.put('/', async (req, res) => {
     }
 
     await saveCategoriesToSheet(sheetId, valid)
+    invalidateCategoriesCache()
     return res.json({ success: true, categories: valid })
   } catch (error: any) {
     logger.error({ error: error?.message }, 'ошибка сохранения категорий')
