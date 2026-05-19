@@ -342,9 +342,10 @@ function ProductsList({ onNavigate, newOrdersCount }: { onNavigate?: (page: Admi
     window.location.reload()
   }
 
-  // категории для фильтра: из API; если пусто — из товаров (fallback)
+  // категории для фильтра: из API; если пусто — из товаров (fallback).
+  // sale исключаем — там нет реально привязанных товаров (виртуальная категория).
   const categoriesForFilter = categories.length > 0
-    ? categories.map((c) => c.key)
+    ? categories.filter((c) => c.key !== 'sale').map((c) => c.key)
     : Array.from(new Set(products.flatMap((p) => p.categories || [p.category]))).sort()
 
   // фильтруем товары по категории и поисковому запросу (название, описание, артикул, цена)
@@ -1663,9 +1664,11 @@ function ProductFormModal({
   )
 
   // список категорий: из API (key для value, title для отображения); fallback — из товаров
+  // sale — виртуальная категория: товары в неё попадают автоматически по наличию скидки,
+  // поэтому в форме товара её скрываем
   const categoryOptions =
     categories.length > 0
-      ? categories.map((c) => ({ label: c.title, value: c.key }))
+      ? categories.filter((c) => c.key !== 'sale').map((c) => ({ label: c.title, value: c.key }))
       : Array.from(new Set(products.flatMap((p) => p.categories || [p.category])))
           .filter(Boolean)
           .sort()

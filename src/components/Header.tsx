@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useExternalLinks } from '../config/links'
-import { categories } from '../data/categories'
+import { useCategories } from '../contexts/CategoriesContext'
 import logo from '../assets/logo.svg'
 import maxIcon from '../assets/max-icon.svg'
 import './Header.css'
@@ -14,6 +14,7 @@ const customerLinks = [
 
 export default function Header() {
   const externalLinks = useExternalLinks()
+  const { categories } = useCategories()
   const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
 
@@ -88,9 +89,9 @@ export default function Header() {
               <NavLink to="/catalog" className="burger-drawer__link" onClick={closeMenu}>Каталог</NavLink>
               <ul className="burger-drawer__sublist">
                 {categories.map((cat) => (
-                  <li key={cat.slug}>
-                    <Link to={`/category/${cat.slug}`} className="burger-drawer__sublink" onClick={closeMenu}>
-                      {cat.label}
+                  <li key={cat.key}>
+                    <Link to={`/category/${cat.key}`} className="burger-drawer__sublink" onClick={closeMenu}>
+                      {cat.title}
                     </Link>
                   </li>
                 ))}

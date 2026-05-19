@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useExternalLinks } from '../config/links'
 import { fetchProductsByCategory, formatPrice, type Product } from '../api/products'
-import { fetchPublicCategories, type PublicCategory } from '../api/categories'
+import { useCategories } from '../contexts/CategoriesContext'
 import { useCart } from '../contexts/CartContext'
 import { useSiteContent } from '../contexts/SiteContentContext'
 import { RichText } from '../lib/RichText'
@@ -31,16 +31,8 @@ export default function CategoryPage() {
   const contactsImage = useSiteContent('category.contacts_image', contactsImgDefault)
   const contactsDesc = useSiteContent('home.contacts_desc', HOME_CONTACTS_DESC_DEFAULT)
 
-  const [categories, setCategories] = useState<PublicCategory[] | null>(null)
-  useEffect(() => {
-    let cancelled = false
-    fetchPublicCategories()
-      .then((list) => { if (!cancelled) setCategories(list) })
-      .catch(() => { if (!cancelled) setCategories([]) })
-    return () => { cancelled = true }
-  }, [])
-
-  const found = slug && categories ? categories.find((c) => c.key === slug) : undefined
+  const { categories } = useCategories()
+  const found = slug ? categories.find((c) => c.key === slug) : undefined
   const title = found?.title || (slug ? FALLBACK_TITLES[slug] : undefined) || slug || 'Категория'
   const description = found?.description || ''
 

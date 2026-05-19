@@ -119,11 +119,33 @@ export function invalidateCategoriesCache() {
 router.get('/categories', async (_req, res) => {
   try {
     const list = await getCategoriesCached()
+    let visible = list.filter((c) => c.active !== false)
+
+    // sale — виртуальная категория. Скрываем её, если сейчас нет товаров со скидкой,
+    // чтобы пользователь не попал в пустую категорию.
+    if (visible.some((c) => c.key === 'sale')) {
+      try {
+        const products = await getProductsCached()
+        const hasAnyDiscount = products.some(
+          (p) => p.active && (p.stock === undefined || p.stock > 0) &&
+            p.discount_price_rub !== undefined && p.discount_price_rub > 0 &&
+            p.discount_price_rub < p.price_rub,
+        )
+        if (!hasAnyDiscount) {
+          visible = visible.filter((c) => c.key !== 'sale')
+        }
+      } catch {
+        // если не удалось проверить — показываем sale как есть
+      }
+    }
+
     res.json({
-      categories: list.map((c) => ({
+      categories: visible.map((c) => ({
         key: c.key,
         title: c.title,
         description: c.description || '',
+        image: c.image || '',
+        image_position: c.image_position || 'center',
       })),
     })
   } catch (error: any) {
@@ -165,8 +187,21 @@ router.get('/orders-status', async (_req, res) => {
   }
 })
 
+// % скидки 0..1 — для сортировки в виртуальной категории `sale`
+function discountPct(p: SheetProduct): number {
+  if (!p.discount_price_rub || p.discount_price_rub <= 0) return 0
+  if (!p.price_rub || p.price_rub <= 0) return 0
+  if (p.discount_price_rub >= p.price_rub) return 0
+  return (p.price_rub - p.discount_price_rub) / p.price_rub
+}
+
+function hasDiscount(p: SheetProduct): boolean {
+  return discountPct(p) > 0
+}
+
 // GET /api/public/products?category=necklaces — товары категории, отфильтрованные и в правильном порядке
 // без category вернёт все доступные товары
+// специальный category=sale — все товары со скидкой, отсортированные от большей скидки к меньшей
 router.get('/products', async (req, res) => {
   try {
     const category = typeof req.query.category === 'string' ? req.query.category.trim() : ''
@@ -175,6 +210,15 @@ router.get('/products', async (req, res) => {
 
     if (!category) {
       res.json({ products: available.map(toPublic) })
+      return
+    }
+
+    if (category === 'sale') {
+      const saleItems = available
+        .filter(hasDiscount)
+        .sort((a, b) => discountPct(b) - discountPct(a))
+        .map(toPublic)
+      res.json({ products: saleItems })
       return
     }
 

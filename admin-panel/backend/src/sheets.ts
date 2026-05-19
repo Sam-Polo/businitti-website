@@ -119,11 +119,14 @@ async function fetchSheetRange(
 export async function fetchProductsFromSheet(sheetId: string): Promise<SheetProduct[]> {
   const auth = getAuthFromEnv()
   
-  const { fetchCategoriesFromSheet } = await import('./categories-utils.js')
+  const { fetchCategoriesFromSheet, PROTECTED_KEYS } = await import('./categories-utils.js')
   const categories = await fetchCategoriesFromSheet(sheetId)
-  const sheetNames = categories.length > 0
+  // protected ключи (например `sale`) — виртуальные категории без собственного листа товаров,
+  // их пропускаем при чтении
+  const sheetNames = (categories.length > 0
     ? categories.map((c) => c.key)
     : (process.env.SHEET_NAMES?.split(',') || ['ягоды', 'выпечка', 'pets', 'шея', 'руки', 'уши', 'сертификаты']).map((s) => s.trim())
+  ).filter((k) => !PROTECTED_KEYS.has(k))
   
   const bySlug = new Map<string, SheetProduct & { __minOrder?: number }>()
   

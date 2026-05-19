@@ -217,11 +217,29 @@ export const api = {
     return fetchWithAuth('/api/categories')
   },
 
-  async saveCategories(categories: Array<{ key: string; title: string; description?: string; image: string; image_position?: string }>) {
+  async saveCategories(categories: Array<{ key: string; title: string; description?: string; image: string; image_position?: string; active?: boolean }>) {
     return fetchWithAuth('/api/categories', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ categories })
+    })
+  },
+
+  async createCategory(input: { key: string; title: string; description?: string; image?: string; image_position?: string; active?: boolean }) {
+    return fetchWithAuth('/api/categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input)
+    })
+  },
+
+  async getCategoryProductCount(key: string): Promise<{ count: number }> {
+    return fetchWithAuth(`/api/categories/${encodeURIComponent(key)}/product-count`)
+  },
+
+  async deleteCategory(key: string) {
+    return fetchWithAuth(`/api/categories/${encodeURIComponent(key)}`, {
+      method: 'DELETE'
     })
   },
 

@@ -3271,6 +3271,48 @@ body, button, input, textarea, select {
   grid-template-columns: 1fr 1fr;
 }
 
+.categories-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.categories-toolbar .categories-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--bn-text-muted);
+  flex: 1;
+}
+
+.category-row-tag {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--bn-border);
+  font-family: var(--bn-font-ui);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bn-text-muted);
+  vertical-align: middle;
+}
+
+.category-row-tag--hidden {
+  border-color: var(--bn-text-muted);
+  color: var(--bn-text-muted);
+  margin-left: 0;
+}
+
+.category-row-tag--visible {
+  border-color: #10b981;
+  color: #10b981;
+  margin-left: 0;
+}
+
 @media (max-width: 768px) {
   .password-grid {
     grid-template-columns: 1fr;

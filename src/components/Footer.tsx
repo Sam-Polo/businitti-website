@@ -1,13 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useExternalLinks } from '../config/links'
-import { categories } from '../data/categories'
+import { useCategories } from '../contexts/CategoriesContext'
 import maxIcon from '../assets/max-icon.svg'
 import './Footer.css'
-
-const catalogLinks = categories.map((cat) => ({
-  to: `/category/${cat.slug}`,
-  label: cat.label,
-}))
 
 const customerLinks = [
   { to: '/delivery', label: 'Доставка и оплата' },
@@ -17,6 +12,8 @@ const customerLinks = [
 
 export default function Footer() {
   const externalLinks = useExternalLinks()
+  const { categories } = useCategories()
+  const catalogLinks = categories.map((cat) => ({ to: `/category/${cat.key}`, label: cat.title }))
   return (
     <footer className="footer">
       <div className="footer__inner">

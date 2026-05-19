@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useExternalLinks } from '../config/links'
-import { categories } from '../data/categories'
+import { useCategories } from '../contexts/CategoriesContext'
 import arrowIcon from '../assets/Line 1.svg'
 import arrowWhiteIcon from '../assets/img/Line 1 white.svg'
 import heroDefault from '../assets/img/hero__overlay.jpg'
@@ -17,6 +17,8 @@ export default function MainPage() {
   const heroImage = useSiteContent('home.hero_image', heroDefault)
   const contactsImage = useSiteContent('home.contacts_image', contactsDefault)
   const contactsDesc = useSiteContent('home.contacts_desc', HOME_CONTACTS_DESC_DEFAULT)
+
+  const { categories } = useCategories()
 
   return (
     <main className="main-page">
@@ -59,14 +61,17 @@ export default function MainPage() {
         <div className="catalog__grid reveal-stagger">
           {categories.map((cat, i) => (
             <Link
-              key={cat.slug}
-              to={`/category/${cat.slug}`}
+              key={cat.key}
+              to={`/category/${cat.key}`}
               className={`catalog__card reveal ${i === categories.length - 1 ? 'catalog__card--wide' : ''}`}
               style={{ ['--i' as string]: i }}
             >
-              <div className="catalog__card-image" />
+              <div
+                className="catalog__card-image"
+                style={cat.image ? { backgroundImage: `url(${cat.image})`, backgroundSize: 'cover', backgroundPosition: cat.image_position || 'center' } : undefined}
+              />
               <div className="catalog__card-label">
-                <span className="catalog__card-name">{cat.label}</span>
+                <span className="catalog__card-name">{cat.title}</span>
               </div>
               <div className="catalog__card-line">
                 <img src={arrowWhiteIcon} alt="" width="58" height="6" />

@@ -4,6 +4,8 @@ export type PublicCategory = {
   key: string
   title: string
   description: string
+  image: string
+  image_position: string
 }
 
 export async function fetchPublicCategories(): Promise<PublicCategory[]> {
