@@ -197,6 +197,24 @@ h3 {
   color: var(--color-accent);
 }
 
+/* When paragraph is reveal-staggered, accent fades in AFTER its paragraph appears */
+.reveal-stagger > .reveal .accent {
+  opacity: 0;
+  transition: opacity 500ms ease-out;
+  transition-delay: calc(var(--i, 0) * 80ms + 600ms);
+}
+
+.reveal-stagger > .reveal.is-visible .accent {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-stagger > .reveal .accent {
+    opacity: 1;
+    transition: none;
+  }
+}
+
 
 /* ===== Visually Hidden (accessibility) ===== */
 

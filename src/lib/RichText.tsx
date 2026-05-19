@@ -1,4 +1,4 @@
-import { Fragment, type ReactNode } from 'react'
+import { Fragment, type CSSProperties, type ReactNode } from 'react'
 
 /**
  * Лёгкая разметка для текстов, редактируемых через админку.
@@ -14,6 +14,8 @@ import { Fragment, type ReactNode } from 'react'
 type Props = {
   text: string
   paragraphClassName?: string
+  /** Adds `reveal` class + CSS custom property `--i` to each paragraph for staggered scroll-reveal animation. */
+  paragraphReveal?: boolean
 }
 
 const ACCENT_RE = /\[\[([\s\S]+?)\]\]/g
@@ -59,13 +61,20 @@ function splitParagraphs(text: string): string[] {
   return normalized.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
 }
 
-export function RichText({ text, paragraphClassName }: Props) {
+export function RichText({ text, paragraphClassName, paragraphReveal }: Props) {
   if (!text) return null
   const paragraphs = splitParagraphs(text)
+  const className = paragraphReveal
+    ? `${paragraphClassName ?? ''} reveal`.trim()
+    : paragraphClassName
   return (
     <>
       {paragraphs.map((para, pi) => (
-        <p key={pi} className={paragraphClassName}>
+        <p
+          key={pi}
+          className={className}
+          style={paragraphReveal ? ({ ['--i' as string]: pi } as CSSProperties) : undefined}
+        >
           {parseParagraph(para, String(pi))}
         </p>
       ))}

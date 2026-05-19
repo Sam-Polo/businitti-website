@@ -66,8 +66,8 @@ export default function CategoryPage() {
           <div className="category-intro reveal">
             <h1 className="category-intro__title">{title}</h1>
             {description && (
-              <div className="category-intro__desc">
-                <RichText text={description} paragraphClassName="category-intro__desc-p" />
+              <div className="category-intro__desc reveal-stagger">
+                <RichText text={description} paragraphClassName="category-intro__desc-p" paragraphReveal />
               </div>
             )}
           </div>
