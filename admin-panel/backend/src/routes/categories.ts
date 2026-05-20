@@ -72,6 +72,18 @@ router.put('/', async (req, res) => {
       })
     }
 
+    // защита от потери данных: full-overwrite доверяет списку клиента, который может
+    // быть устаревшим. Protected-категории (sale) сохраняем всегда — если клиент их
+    // не прислал, дописываем из текущего листа.
+    const existing = await fetchCategoriesFromSheet(sheetId)
+    const sentKeys = new Set(valid.map((c) => c.key))
+    for (const ex of existing) {
+      if (PROTECTED_KEYS.has(ex.key) && !sentKeys.has(ex.key)) {
+        logger.warn({ key: ex.key }, 'protected-категория отсутствовала в PUT — восстанавливаем')
+        valid.push({ ...ex, order: valid.length })
+      }
+    }
+
     await saveCategoriesToSheet(sheetId, valid)
     invalidateCategoriesCache()
     return res.json({ success: true, categories: valid })
