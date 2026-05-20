@@ -63,7 +63,7 @@ export default function MainPage() {
             <Link
               key={cat.key}
               to={`/category/${cat.key}`}
-              className={`catalog__card reveal ${i === categories.length - 1 ? 'catalog__card--wide' : ''}`}
+              className={`catalog__card reveal ${i === categories.length - 1 && categories.length % 2 === 1 ? 'catalog__card--wide' : ''}`}
               style={{ ['--i' as string]: i }}
             >
               <div

@@ -26,7 +26,7 @@ export default function CatalogPage() {
             <Link
               key={cat.key}
               to={`/category/${cat.key}`}
-              className={`catalog-page__card reveal ${i === categories.length - 1 ? 'catalog-page__card--wide' : ''}`}
+              className={`catalog-page__card reveal ${i === categories.length - 1 && categories.length % 2 === 1 ? 'catalog-page__card--wide' : ''}`}
               style={{ ['--i' as string]: i }}
             >
               <div
