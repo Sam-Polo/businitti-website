@@ -15,9 +15,6 @@
   width: 100%;
   aspect-ratio: 1160 / 632;
   background-color: #e0d5d0;
-  background-image: url('../assets/img/hero__overlay.jpg');
-  background-size: cover;
-  background-position: center;
   position: relative;
   overflow: hidden;
   border-radius: 0 36px 0 36px;
@@ -187,9 +184,6 @@
 .home-contacts__image {
   aspect-ratio: 560 / 382;
   background-color: #d5cec9;
-  background-image: url('../assets/img/home-contacts__image.png');
-  background-size: cover;
-  background-position: center;
   border-radius: 0;
 }
 

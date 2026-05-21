@@ -6,6 +6,7 @@ import { useCategories } from '../contexts/CategoriesContext'
 import { useCart } from '../contexts/CartContext'
 import { useSiteContent } from '../contexts/SiteContentContext'
 import { RichText } from '../lib/RichText'
+import { RevealImage } from '../lib/RevealImage'
 import contactsImgDefault from '../assets/img/home-contacts__image.png'
 import './CategoryPage.css'
 
@@ -99,10 +100,11 @@ export default function CategoryPage() {
                     style={{ ['--i' as string]: i % 6 }}
                     onClick={() => openItem(product)}
                   >
-                    <div
-                      className="product-card__image"
-                      style={image ? { backgroundImage: `url(${image})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
-                    />
+                    {image ? (
+                      <RevealImage className="product-card__image" src={image} alt="" />
+                    ) : (
+                      <div className="product-card__image" />
+                    )}
                     <div className="product-card__info">
                       <p className="product-card__name">{product.title}</p>
                       <div className="product-card__price-wrap">
@@ -142,7 +144,7 @@ export default function CategoryPage() {
               {externalLinks.contactsCtaLabel}
             </a>
           </div>
-          <div className="category-contacts__image" style={{ backgroundImage: `url(${contactsImage})` }} />
+          <RevealImage className="category-contacts__image" src={contactsImage} alt="" />
         </div>
       </section>
 

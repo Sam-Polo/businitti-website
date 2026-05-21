@@ -1,6 +1,7 @@
 import { useExternalLinks } from '../config/links'
 import { useSiteContent } from '../contexts/SiteContentContext'
 import { RichText } from '../lib/RichText'
+import { RevealImage } from '../lib/RevealImage'
 import bgImageDefault from '../assets/img/home-contacts__image.png'
 import './ContactsPage.css'
 
@@ -17,7 +18,7 @@ export default function ContactsPage() {
       <div className="contacts-page__block">
         <div className="contacts-page__bg">
           <div className="contacts-page__bg-content" />
-          <div className="contacts-page__bg-image" style={{ backgroundImage: `url(${bgImage})` }} />
+          <RevealImage className="contacts-page__bg-image" src={bgImage} alt="" />
         </div>
 
         <div className="contacts-page__inner">

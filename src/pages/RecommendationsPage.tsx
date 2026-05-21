@@ -1,6 +1,7 @@
 import { Fragment } from 'react'
 import { useSiteContent } from '../contexts/SiteContentContext'
 import { RichText } from '../lib/RichText'
+import { RevealImage } from '../lib/RevealImage'
 import imageDefault from '../assets/img/recommendations-image.png'
 import './RecommendationsPage.css'
 
@@ -46,7 +47,7 @@ export default function RecommendationsPage() {
             </div>
           </div>
 
-          <div className="recommendations-image reveal" style={{ backgroundImage: `url(${image})` }} />
+          <RevealImage className="recommendations-image reveal" src={image} alt="" />
         </section>
       </div>
     </main>

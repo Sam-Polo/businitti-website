@@ -7,6 +7,7 @@ import heroDefault from '../assets/img/hero__overlay.jpg'
 import contactsDefault from '../assets/img/home-contacts__image.png'
 import { useSiteContent } from '../contexts/SiteContentContext'
 import { RichText } from '../lib/RichText'
+import { RevealImage } from '../lib/RevealImage'
 import './MainPage.css'
 
 const HOME_CONTACTS_DESC_DEFAULT =
@@ -25,11 +26,7 @@ export default function MainPage() {
       {/* Hero */}
       <section className="hero">
         <div className="hero__inner container">
-          <div
-            className="hero__image-wrapper reveal"
-            style={{ backgroundImage: `url(${heroImage})` }}
-          >
-          </div>
+          <RevealImage className="hero__image-wrapper reveal" src={heroImage} alt="" />
           <div className="hero__content">
             <h1 className="hero__title">
               Авторские украшения <span className="hero__title-accent">из натуральных материалов</span>
@@ -66,10 +63,16 @@ export default function MainPage() {
               className={`catalog__card reveal ${i === categories.length - 1 && categories.length % 2 === 1 ? 'catalog__card--wide' : ''}`}
               style={{ ['--i' as string]: i }}
             >
-              <div
-                className="catalog__card-image"
-                style={cat.image ? { backgroundImage: `url(${cat.image})`, backgroundSize: 'cover', backgroundPosition: cat.image_position || 'center' } : undefined}
-              />
+              {cat.image ? (
+                <RevealImage
+                  className="catalog__card-image"
+                  src={cat.image}
+                  objectPosition={cat.image_position || 'center'}
+                  alt=""
+                />
+              ) : (
+                <div className="catalog__card-image" />
+              )}
               <div className="catalog__card-label">
                 <span className="catalog__card-name">{cat.title}</span>
               </div>
@@ -101,7 +104,7 @@ export default function MainPage() {
               {externalLinks.contactsCtaLabel}
             </a>
           </div>
-          <div className="home-contacts__image" style={{ backgroundImage: `url(${contactsImage})` }} />
+          <RevealImage className="home-contacts__image" src={contactsImage} alt="" />
         </div>
       </section>
     </main>

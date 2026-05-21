@@ -231,9 +231,6 @@
 .category-contacts__image {
   aspect-ratio: 560 / 382;
   background-color: #d5cec9;
-  background-image: url('../assets/img/home-contacts__image.png');
-  background-size: cover;
-  background-position: center;
   border-radius: 0;
 }
 

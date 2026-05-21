@@ -28,9 +28,6 @@
 .contacts-page__bg-image {
   flex: 1;
   background-color: #d5cec9;
-  background-image: url('../assets/img/home-contacts__image.png');
-  background-size: cover;
-  background-position: center;
   border-radius: 0 1px 1px 0;
 }
 

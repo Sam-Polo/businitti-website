@@ -1,5 +1,6 @@
 import { useSiteContent } from '../contexts/SiteContentContext'
 import { RichText } from '../lib/RichText'
+import { RevealImage } from '../lib/RevealImage'
 import heroDefault from '../assets/img/about-hero__img.jpg'
 import gallery1Default from '../assets/img/about-gallery__img1.jpg'
 import gallery2Default from '../assets/img/about-gallery__img2.jpg'
@@ -30,9 +31,9 @@ export default function AboutPage() {
           <div className="about-hero__buddy">
             <RichText text={heroBuddy} />
           </div>
-          <div className="about-hero__img reveal" style={{ backgroundImage: `url(${heroImg})` }} />
-          <div className="about-gallery__img about-gallery__img--1 reveal" style={{ backgroundImage: `url(${gallery1})` }} />
-          <div className="about-gallery__img about-gallery__img--2 reveal" style={{ backgroundImage: `url(${gallery2})` }} />
+          <RevealImage className="about-hero__img reveal" src={heroImg} alt="" />
+          <RevealImage className="about-gallery__img about-gallery__img--1 reveal" src={gallery1} alt="" />
+          <RevealImage className="about-gallery__img about-gallery__img--2 reveal" src={gallery2} alt="" />
         </div>
 
         <div className="about-closing-block reveal">

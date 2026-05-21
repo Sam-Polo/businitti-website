@@ -1,0 +1,26 @@
+/* ===== RevealImage — load-faded image ===== */
+
+.reveal-image {
+  position: relative;
+  overflow: hidden;
+}
+
+.reveal-image__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 500ms ease-out;
+}
+
+.reveal-image__img.is-loaded {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-image__img {
+    transition: none;
+  }
+}

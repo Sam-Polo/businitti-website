@@ -5,6 +5,7 @@ import headerImgDefault from '../assets/img/delivery-header__image.jpg'
 import paymentImgDefault from '../assets/img/payment-section__image.png'
 import { useSiteContent } from '../contexts/SiteContentContext'
 import { RichText } from '../lib/RichText'
+import { RevealImage } from '../lib/RevealImage'
 import { fetchDeliveryPrices, type DeliveryPrices } from '../api/orders'
 import './DeliveryPage.css'
 
@@ -64,13 +65,13 @@ export default function DeliveryPage() {
                 </p>
               </div>
 
-              <div className="delivery-header__image reveal" style={{ backgroundImage: `url(${headerImage})` }} />
+              <RevealImage className="delivery-header__image reveal" src={headerImage} alt="" />
             </div>
           </div>
 
           {/* Payment Section */}
           <div className="payment-section reveal">
-            <div className="payment-section__image reveal" style={{ backgroundImage: `url(${paymentImage})` }} />
+            <RevealImage className="payment-section__image reveal" src={paymentImage} alt="" />
             <h2 className="payment-section__title">Оплата:</h2>
             <RichText text={paymentText} paragraphClassName="payment-section__text" />
           </div>

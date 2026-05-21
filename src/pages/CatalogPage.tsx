@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useCategories } from '../contexts/CategoriesContext'
+import { RevealImage } from '../lib/RevealImage'
 import arrowWhiteIcon from '../assets/img/Line 1 white.svg'
 import './CatalogPage.css'
 
@@ -29,10 +30,16 @@ export default function CatalogPage() {
               className={`catalog-page__card reveal ${i === categories.length - 1 && categories.length % 2 === 1 ? 'catalog-page__card--wide' : ''}`}
               style={{ ['--i' as string]: i }}
             >
-              <div
-                className="catalog-page__card-image"
-                style={cat.image ? { backgroundImage: `url(${cat.image})`, backgroundSize: 'cover', backgroundPosition: cat.image_position || 'center' } : undefined}
-              />
+              {cat.image ? (
+                <RevealImage
+                  className="catalog-page__card-image"
+                  src={cat.image}
+                  objectPosition={cat.image_position || 'center'}
+                  alt=""
+                />
+              ) : (
+                <div className="catalog-page__card-image" />
+              )}
               <div className="catalog-page__card-label">
                 <span className="catalog-page__card-name">{cat.title}</span>
               </div>

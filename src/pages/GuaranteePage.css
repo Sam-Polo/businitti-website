@@ -43,9 +43,6 @@
   width: 419px;
   height: 360px;
   background-color: #d5cec9;
-  background-image: url('../assets/img/guarantee-header__image.png');
-  background-size: cover;
-  background-position: center;
   border-radius: var(--border-radius-sm);
 }
 

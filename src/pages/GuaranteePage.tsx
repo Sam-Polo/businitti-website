@@ -3,6 +3,7 @@ import { useExternalLinks } from '../config/links'
 import arrowIcon from '../assets/Line 1.svg'
 import { useSiteContent } from '../contexts/SiteContentContext'
 import { RichText } from '../lib/RichText'
+import { RevealImage } from '../lib/RevealImage'
 import headerImgDefault from '../assets/img/guarantee-header__image.png'
 import './GuaranteePage.css'
 
@@ -28,7 +29,7 @@ export default function GuaranteePage() {
             <h1 className="guarantee-header__title">Гарантия и возврат</h1>
 
             <div className="guarantee-return">
-              <div className="guarantee-header__image reveal" style={{ backgroundImage: `url(${headerImage})` }} />
+              <RevealImage className="guarantee-header__image reveal" src={headerImage} alt="" />
               <RichText text={returnText} paragraphClassName="guarantee-return__text" />
             </div>
           </div>
