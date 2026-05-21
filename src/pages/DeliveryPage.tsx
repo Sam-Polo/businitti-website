@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import yandexIcon from '../assets/yandex-delivery-icon.svg'
-import sdekIcon from '../assets/sdek-icon.svg'
+import yandexIcon from '../assets/yandex-delivery-icon.png'
+import sdekIcon from '../assets/sdek-icon.png'
 import headerImgDefault from '../assets/img/delivery-header__image.jpg'
 import paymentImgDefault from '../assets/img/payment-section__image.png'
 import { useSiteContent } from '../contexts/SiteContentContext'

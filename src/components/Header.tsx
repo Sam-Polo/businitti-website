@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useExternalLinks } from '../config/links'
 import { useCategories } from '../contexts/CategoriesContext'
 import logo from '../assets/logo.svg'
-import maxIcon from '../assets/max-icon.svg'
+import { MaxIcon } from './MaxIcon'
 import './Header.css'
 
 const customerLinks = [
@@ -131,7 +131,7 @@ export default function Header() {
               </svg>
             </a>
             <a href={externalLinks.max} target="_blank" rel="noopener noreferrer" aria-label="MAX" className="burger-drawer__social-link">
-              <img src={maxIcon} alt="MAX" width="25" height="25" />
+              <MaxIcon size={25} />
             </a>
           </div>
         </aside>
