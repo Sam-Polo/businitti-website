@@ -10,10 +10,18 @@ import CatalogPage from './pages/CatalogPage'
 import CategoryPage from './pages/CategoryPage'
 import PaymentResultPage from './pages/PaymentResultPage'
 import NotFoundPage from './pages/NotFoundPage'
+import { usePageTracking } from './hooks/usePageTracking'
+
+// отправляет просмотры страниц в аналитику при смене роута (см. usePageTracking)
+function RouteTracker() {
+  usePageTracking()
+  return null
+}
 
 export default function App() {
   return (
     <BrowserRouter>
+      <RouteTracker />
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" element={<MainPage />} />
