@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useCart } from '../contexts/CartContext'
 import { formatPrice } from '../api/products'
 import { useModalAnimation } from '../hooks/useModalAnimation'

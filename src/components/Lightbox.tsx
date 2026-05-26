@@ -22,6 +22,8 @@ export function Lightbox({ images, index, onChange, onClose }: Props) {
     if (indexRef.current > 0) onChange(indexRef.current - 1)
   }
 
+  // Body scroll lock is handled by the parent modal — Lightbox doesn't touch
+  // document.body to avoid racing with the modal's effect cleanup.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -33,12 +35,9 @@ export function Lightbox({ images, index, onChange, onClose }: Props) {
         next()
       }
     }
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
     // Capture phase so this fires before any modal-level Escape handlers
     window.addEventListener('keydown', onKey, true)
     return () => {
-      document.body.style.overflow = prevOverflow
       window.removeEventListener('keydown', onKey, true)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
