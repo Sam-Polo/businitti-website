@@ -12,6 +12,10 @@ export default function ItemCardModal() {
   const [activeImage, setActiveImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [lightboxOpen, setLightboxOpen] = useState(false)
+  // Read latest lightboxOpen inside the key listener without re-binding the
+  // body-lock effect every time it toggles (which caused scroll lock to leak).
+  const lightboxOpenRef = useRef(lightboxOpen)
+  lightboxOpenRef.current = lightboxOpen
 
   useEffect(() => {
     if (!itemModalProduct) return
@@ -26,7 +30,7 @@ export default function ItemCardModal() {
     document.body.style.overflow = 'hidden'
     const onKey = (e: KeyboardEvent) => {
       // Skip while lightbox is open — it handles its own Escape (capture-phase listener).
-      if (lightboxOpen) return
+      if (lightboxOpenRef.current) return
       if (e.key === 'Escape') closeItem()
     }
     window.addEventListener('keydown', onKey)
@@ -34,7 +38,7 @@ export default function ItemCardModal() {
       document.body.style.overflow = prev
       window.removeEventListener('keydown', onKey)
     }
-  }, [itemModalProduct, closeItem, lightboxOpen])
+  }, [itemModalProduct, closeItem])
 
   if (!shouldRender || !itemModalProduct) return null
 
