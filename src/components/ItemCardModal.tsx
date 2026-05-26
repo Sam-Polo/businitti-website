@@ -3,6 +3,7 @@ import { useCart } from '../contexts/CartContext'
 import { formatPrice } from '../api/products'
 import { useModalAnimation } from '../hooks/useModalAnimation'
 import { RichText } from '../lib/RichText'
+import { Lightbox } from './Lightbox'
 import './ItemCardModal.css'
 
 export default function ItemCardModal() {
@@ -10,24 +11,30 @@ export default function ItemCardModal() {
   const { shouldRender, isClosing } = useModalAnimation(!!itemModalProduct)
   const [activeImage, setActiveImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
 
   useEffect(() => {
     if (!itemModalProduct) return
     setActiveImage(0)
     setQuantity(1)
+    setLightboxOpen(false)
   }, [itemModalProduct])
 
   useEffect(() => {
     if (!itemModalProduct) return
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeItem() }
+    const onKey = (e: KeyboardEvent) => {
+      // Skip while lightbox is open — it handles its own Escape (capture-phase listener).
+      if (lightboxOpen) return
+      if (e.key === 'Escape') closeItem()
+    }
     window.addEventListener('keydown', onKey)
     return () => {
       document.body.style.overflow = prev
       window.removeEventListener('keydown', onKey)
     }
-  }, [itemModalProduct, closeItem])
+  }, [itemModalProduct, closeItem, lightboxOpen])
 
   if (!shouldRender || !itemModalProduct) return null
 
@@ -42,6 +49,7 @@ export default function ItemCardModal() {
   }
 
   return (
+    <>
     <div className={`item-modal${isClosing ? ' is-closing' : ''}`} onClick={closeItem}>
       <div className="item-modal__card" onClick={(e) => e.stopPropagation()}>
         <button className="item-modal__close" onClick={closeItem} aria-label="Закрыть">
@@ -51,10 +59,22 @@ export default function ItemCardModal() {
         </button>
 
         <div className="item-modal__gallery">
-          <div
+          <button
+            type="button"
             className="item-modal__photo"
             style={mainImg ? { backgroundImage: `url(${mainImg})` } : undefined}
-          />
+            onClick={() => { if (mainImg) setLightboxOpen(true) }}
+            disabled={!mainImg}
+            aria-label="Открыть фото на весь экран"
+          >
+            {mainImg && (
+              <span className="item-modal__expand" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10 2H16V8M16 2L10 8M2 16H8M2 16V10M2 16L8 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+            )}
+          </button>
           {images.length > 1 && (
             <div className="item-modal__thumbs">
               {images.map((img, i) => (
@@ -114,5 +134,14 @@ export default function ItemCardModal() {
         </div>
       </div>
     </div>
+    {lightboxOpen && product.images.length > 0 && (
+      <Lightbox
+        images={product.images}
+        index={activeImage}
+        onChange={setActiveImage}
+        onClose={() => setLightboxOpen(false)}
+      />
+    )}
+    </>
   )
 }
