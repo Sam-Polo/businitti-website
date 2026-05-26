@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 
 declare global {
@@ -9,20 +9,28 @@ declare global {
 }
 
 // ─── ID счётчиков ───────────────────────────────────────
-// Заполнить после регистрации в Яндекс.Метрике и Google Analytics.
 // Должны совпадать с ID в index.html.
-const YM_ID = 0              // номер счётчика Яндекс.Метрики, напр. 99887766
+const YM_ID = 109368038      // номер счётчика Яндекс.Метрики
 const GA_ID = 'G-TPN1XT7ESK' // ID потока Google Analytics
 
 /**
  * Отправляет просмотр страницы в Метрику и GA при каждой смене роута.
  * Нужно потому что сайт — SPA: без этого счётчики засчитают только
  * первый заход, а переходы между страницами останутся невидимыми.
+ *
+ * Первый рендер пропускаем — стартовую страницу уже засчитали счётчики
+ * в index.html (ym init и gtag config). Иначе landing-страница задвоится.
  */
 export function usePageTracking() {
   const location = useLocation()
+  const isFirstRender = useRef(true)
 
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+
     const url = location.pathname + location.search
 
     if (YM_ID && typeof window.ym === 'function') {

@@ -126,6 +126,9 @@
   line-height: 22px;
   text-transform: uppercase;
   color: var(--color-text-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .item-modal__purchase {

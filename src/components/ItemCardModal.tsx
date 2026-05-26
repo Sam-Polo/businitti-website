@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useCart } from '../contexts/CartContext'
 import { formatPrice } from '../api/products'
 import { useModalAnimation } from '../hooks/useModalAnimation'
+import { RichText } from '../lib/RichText'
 import './ItemCardModal.css'
 
 export default function ItemCardModal() {
@@ -76,7 +77,9 @@ export default function ItemCardModal() {
           </div>
 
           {product.description && (
-            <p className="item-modal__desc">{product.description}</p>
+            <div className="item-modal__desc">
+              <RichText text={product.description} />
+            </div>
           )}
 
           <div className="item-modal__purchase">
