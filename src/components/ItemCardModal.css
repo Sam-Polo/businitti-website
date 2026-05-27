@@ -90,17 +90,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(0, 0, 0, 0.35);
+  background-color: rgba(0, 0, 0, 0);
   border-radius: 50%;
   color: #fff;
-  opacity: 0.6;
   pointer-events: none;
-  transition: opacity 200ms ease, background-color 200ms ease;
+  transition: background-color 200ms ease;
+}
+
+.item-modal__expand svg {
+  opacity: 0;
+  transition: opacity 200ms ease;
 }
 
 .item-modal__photo:hover .item-modal__expand {
-  opacity: 1;
-  background-color: rgba(0, 0, 0, 0.55);
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.item-modal__photo:hover .item-modal__expand svg {
+  opacity: 0.4;
 }
 
 .item-modal__thumbs {
