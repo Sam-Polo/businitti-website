@@ -365,6 +365,16 @@ export const CONTENT_SLOTS: ContentSlot[] = [
     order: 6,
   },
   {
+    key: 'links.messenger',
+    page: 'links',
+    pageTitle: 'Ссылки',
+    type: 'link',
+    label: '«Написать в мессенджер» — ссылка в письме',
+    description: 'Ссылка для текста «Написать в мессенджер» в письмах покупателям (подтверждение заказа и уведомление об отправке)',
+    defaultValue: 'https://t.me/aalyabeva',
+    order: 7,
+  },
+  {
     key: 'links.offer',
     page: 'links',
     pageTitle: 'Ссылки',
@@ -372,7 +382,7 @@ export const CONTENT_SLOTS: ContentSlot[] = [
     label: 'Договор оферты',
     description: 'Ссылка в футере и в модалке корзины',
     defaultValue: 'https://docs.google.com/document/d/1OcVT6PUUYYsxfYnuevi5C-HkD1KTaHlLULyfEryycEw/edit?usp=sharing',
-    order: 7,
+    order: 8,
   },
   {
     key: 'links.privacy',
@@ -382,7 +392,7 @@ export const CONTENT_SLOTS: ContentSlot[] = [
     label: 'Политика обработки персональных данных',
     description: 'Ссылка в футере и в модалке корзины',
     defaultValue: 'https://docs.google.com/document/d/1c8xVypvY3bue7uR5wYtYNz-S7g-tpFAXnSdlrwjCi_g/edit?usp=sharing',
-    order: 8,
+    order: 9,
   },
 ]
 

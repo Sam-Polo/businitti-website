@@ -3,6 +3,7 @@ import { createPaymentUrl, verifyResultSignature, verifySuccessSignature, buildR
 import { findOrderByInvId, fetchOrderWithItems, updateOrderStatus, decrementStockForOrder, updateOrderEmailStatus, getAuth } from '../orders-utils.js'
 import { sendEmail } from '../unisender.js'
 import { buildOrderEmailHtml, buildOrderEmailSubject } from '../order-email.js'
+import { fetchOverridesMap } from '../site-content-utils.js'
 import { logger } from '../logger.js'
 
 const router = Router()
@@ -119,11 +120,16 @@ router.post('/result', async (req: Request, res: Response) => {
         try {
           const full = await fetchOrderWithItems(auth, sheetId, order.id)
           if (full?.customer_email) {
+            let messengerLink: string | undefined
+            try {
+              const overrides = await fetchOverridesMap(sheetId)
+              messengerLink = overrides['links.messenger'] || undefined
+            } catch { /* fallback к SUPPORT_LINK из env */ }
             await sendEmail({
               to: full.customer_email,
               toName: full.customer_name,
               subject: buildOrderEmailSubject(full),
-              html: buildOrderEmailHtml(full),
+              html: buildOrderEmailHtml(full, { messengerLink }),
               replyTo: process.env.SUPPORT_EMAIL,
             })
             await updateOrderEmailStatus(auth, sheetId, order.id, true, '')

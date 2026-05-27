@@ -35,6 +35,7 @@ export default function CartModal() {
   const [email, setEmail] = useState('')
   const [delivery, setDelivery] = useState<DeliveryService>('cdek')
   const [address, setAddress] = useState('')
+  const [comment, setComment] = useState('')
   const [agreed, setAgreed] = useState(false)
   const [phoneError, setPhoneError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -82,6 +83,7 @@ export default function CartModal() {
         customer_email: email.trim(),
         delivery_service: delivery,
         delivery_address: address.trim(),
+        comment: comment.trim() || undefined,
         items: items.map((it) => ({ slug: it.slug, quantity: it.quantity })),
       })
       clear()
@@ -228,6 +230,17 @@ export default function CartModal() {
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 required
+              />
+            </label>
+
+            <label className="cart-modal__field">
+              <span className="cart-modal__label">Комментарий</span>
+              <textarea
+                className="cart-modal__input cart-modal__textarea"
+                placeholder="Пожелания к заказу, вопросы…"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                rows={3}
               />
             </label>
           </div>

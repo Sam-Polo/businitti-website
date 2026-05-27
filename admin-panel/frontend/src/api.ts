@@ -375,6 +375,7 @@ export type Order = {
   tracking_number?: string
   email_sent?: boolean
   email_error?: string
+  comment?: string
 }
 
 export type OrderItem = {

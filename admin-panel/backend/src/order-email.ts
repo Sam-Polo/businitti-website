@@ -19,19 +19,19 @@ function formatPrice(rub: number): string {
 
 // ─── Контакты для подписи (из env) ──────────────────────
 
-function getContacts() {
+function getContacts(messengerLink?: string) {
   return {
     siteUrl: process.env.SITE_URL || 'https://businitti.ru',
     supportEmail: process.env.SUPPORT_EMAIL || '',
     supportPhone: process.env.SUPPORT_PHONE || '',
-    supportLink: process.env.SUPPORT_LINK || '',
+    supportLink: messengerLink || process.env.SUPPORT_LINK || '',
   }
 }
 
 // ─── Шаблон письма (table-based для совместимости с почтовиками) ──
 
-export function buildOrderEmailHtml(order: OrderWithItems): string {
-  const contacts = getContacts()
+export function buildOrderEmailHtml(order: OrderWithItems, options?: { messengerLink?: string }): string {
+  const contacts = getContacts(options?.messengerLink)
   const itemsSum = order.items.reduce((s, it) => s + it.subtotal_rub, 0)
 
   const itemRows = order.items
@@ -140,6 +140,16 @@ export function buildOrderEmailHtml(order: OrderWithItems): string {
             </td>
           </tr>
 
+          <!-- comment -->
+          ${order.comment ? `
+          <tr>
+            <td style="padding: 32px 40px 0;">
+              <div style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: #888; margin-bottom: 10px;">Комментарий к заказу</div>
+              <div style="font-size: 15px; line-height: 22px; color: #2f2f2f;">${escapeHtml(order.comment)}</div>
+            </td>
+          </tr>
+          ` : ''}
+
           <!-- contacts -->
           ${contactsBlock ? `
           <tr>
@@ -232,8 +242,8 @@ function buildTrackingSection(order: OrderWithItems, trackingValue: string): str
   `
 }
 
-export function buildShippingEmailHtml(order: OrderWithItems, trackingNumber: string): string {
-  const contacts = getContacts()
+export function buildShippingEmailHtml(order: OrderWithItems, trackingNumber: string, options?: { messengerLink?: string }): string {
+  const contacts = getContacts(options?.messengerLink)
   const trackingSection = buildTrackingSection(order, trackingNumber)
 
   const contactsBlock = [

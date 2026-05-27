@@ -330,6 +330,15 @@ function OrderDetailModal({ orderId, onClose, onChanged }: {
               </div>
             )}
 
+            {order.comment && (
+              <>
+                <h3 style={{ marginTop: 20 }}>Комментарий</h3>
+                <div style={{ fontSize: '0.95em', lineHeight: 1.6, whiteSpace: 'pre-wrap', color: '#2f2f2f', background: '#fafafa', border: '1px solid #eee', borderRadius: 4, padding: '10px 14px' }}>
+                  {order.comment}
+                </div>
+              </>
+            )}
+
             {(order.status === 'new' || order.status === 'shipped') && order.email_sent === false && (
               <div style={{ marginTop: 16, padding: '12px 14px', background: '#fff5f5', border: '1px solid #f5c6cb', borderRadius: 4 }}>
                 <div style={{ fontSize: '0.9em', color: '#721c24', marginBottom: 8 }}>

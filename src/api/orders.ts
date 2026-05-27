@@ -15,6 +15,7 @@ export type CreateOrderInput = {
   customer_email: string
   delivery_service: DeliveryService
   delivery_address: string
+  comment?: string
   items: OrderItemInput[]
 }
 

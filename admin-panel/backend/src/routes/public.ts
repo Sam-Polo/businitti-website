@@ -272,6 +272,7 @@ router.post('/orders', orderLimiter, async (req, res) => {
     const customer_email = String(body.customer_email || '').trim()
     const delivery_service = String(body.delivery_service || '').trim() as DeliveryService
     const delivery_address = String(body.delivery_address || '').trim()
+    const comment = String(body.comment || '').trim() || undefined
     const itemsInput = Array.isArray(body.items) ? body.items : []
 
     if (!customer_name || !customer_phone || !customer_email) {
@@ -324,6 +325,7 @@ router.post('/orders', orderLimiter, async (req, res) => {
       customer_email,
       delivery_service,
       delivery_address,
+      comment,
       items: snapshotItems,
     })
 

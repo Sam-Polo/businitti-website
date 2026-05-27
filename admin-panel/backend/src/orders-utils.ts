@@ -74,6 +74,7 @@ export type Order = {
   tracking_number?: string
   email_sent?: boolean
   email_error?: string
+  comment?: string
 }
 
 export type OrderWithItems = Order & { items: OrderItem[] }
@@ -85,7 +86,7 @@ const ORDERS_HEADERS = [
   'id', 'display_id', 'inv_id', 'created_at', 'updated_at', 'status',
   'customer_name', 'customer_phone', 'customer_email',
   'delivery_service', 'delivery_address', 'delivery_rub', 'total_rub', 'tracking_number',
-  'email_sent', 'email_error'
+  'email_sent', 'email_error', 'comment'
 ]
 
 const ORDER_ITEMS_HEADERS = [
@@ -172,6 +173,7 @@ function parseOrderRow(row: any[], idx: Record<string, number>): Order | null {
       return undefined // нет записи (старый заказ или ещё не обрабатывался)
     })(),
     email_error: String(row[idx.email_error] ?? '') || undefined,
+    comment: idx.comment !== undefined ? (String(row[idx.comment] ?? '') || undefined) : undefined,
   }
 }
 
@@ -269,6 +271,7 @@ export async function createOrder(
     customer_email: string
     delivery_service: DeliveryService
     delivery_address: string
+    comment?: string
     items: Array<Omit<OrderItem, 'order_id'>>
   }
 ): Promise<OrderWithItems> {
@@ -297,6 +300,7 @@ export async function createOrder(
     delivery_address: data.delivery_address,
     delivery_rub,
     total_rub,
+    comment: data.comment || undefined,
   }
 
   const orderRow = ORDERS_HEADERS.map((h) => (order as any)[h] ?? '')
