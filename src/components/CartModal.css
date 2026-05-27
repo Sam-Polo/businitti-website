@@ -228,8 +228,6 @@
 .cart-modal__textarea {
   resize: vertical;
   min-height: 72px;
-  font-family: inherit;
-  font-size: inherit;
   line-height: 1.5;
 }
 

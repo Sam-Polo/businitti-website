@@ -237,7 +237,7 @@ export default function CartModal() {
               <span className="cart-modal__label">Комментарий</span>
               <textarea
                 className="cart-modal__input cart-modal__textarea"
-                placeholder="Пожелания к заказу, вопросы…"
+                placeholder="Пожелания к заказу"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 rows={3}
