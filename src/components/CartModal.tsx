@@ -271,7 +271,7 @@ export default function CartModal() {
             />
             <span className="cart-modal__check-mark" />
             <span className="cart-modal__agree-text">
-              Согласен с обработкой персональных данных
+              Даю согласие на обработку персональных данных
             </span>
           </label>
 
