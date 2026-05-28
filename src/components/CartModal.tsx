@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useCart } from '../contexts/CartContext'
 import { useExternalLinks } from '../config/links'
+import { useSiteContent } from '../contexts/SiteContentContext'
 import { formatPrice } from '../api/products'
 import { createOrder, fetchDeliveryPrices, fetchOrdersStatus, type DeliveryPrices, type DeliveryService, type OrdersStatus } from '../api/orders'
 import { useModalAnimation } from '../hooks/useModalAnimation'
@@ -27,6 +28,7 @@ function formatReopenDate(iso: string): string {
 
 export default function CartModal() {
   const externalLinks = useExternalLinks()
+  const cartNotice = useSiteContent('checkout.cart_notice', 'Сборка и отправка заказа осуществляется в течение 2–5 дней')
   const { isCartOpen, closeCart, items, setQuantity, removeItem, totalPrice, clear } = useCart()
   const { shouldRender, isClosing } = useModalAnimation(isCartOpen)
 
@@ -246,7 +248,7 @@ export default function CartModal() {
             </label>
           </div>
 
-          <p className="cart-modal__notice">Сборка и отправка заказа осуществляется в течение 2–5 дней</p>
+          <p className="cart-modal__notice">{cartNotice}</p>
 
           <label className="cart-modal__agree">
             <input

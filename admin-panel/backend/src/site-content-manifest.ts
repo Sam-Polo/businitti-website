@@ -53,6 +53,8 @@ const ORIG_ABOUT_GALLERY_TEXT =
 
 const ORIG_ABOUT_CLOSING = 'С любовью к вам,\nBUSINITTI'
 
+const ORIG_CART_NOTICE = 'Сборка и отправка заказа осуществляется в течение 2–5 дней'
+
 export const CONTENT_SLOTS: ContentSlot[] = [
   // ===== Главная =====
   {
@@ -301,6 +303,18 @@ export const CONTENT_SLOTS: ContentSlot[] = [
     label: 'Совет 4',
     defaultValue: ORIG_TIP_4,
     order: 5,
+  },
+
+  // ===== Оформление заказа =====
+  {
+    key: 'checkout.cart_notice',
+    page: 'checkout',
+    pageTitle: 'Оформление',
+    type: 'text',
+    label: 'Уведомление в окне оформления заказа',
+    description: 'Текст под полем «Пожелания к заказу» в корзине',
+    defaultValue: ORIG_CART_NOTICE,
+    order: 1,
   },
 
   // ===== Ссылки (общие для всего сайта) =====
