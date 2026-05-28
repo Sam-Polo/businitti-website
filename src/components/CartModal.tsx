@@ -37,6 +37,7 @@ export default function CartModal() {
   const [address, setAddress] = useState('')
   const [comment, setComment] = useState('')
   const [agreed, setAgreed] = useState(false)
+  const [agreedPersonalData, setAgreedPersonalData] = useState(false)
   const [phoneError, setPhoneError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -67,7 +68,7 @@ export default function CartModal() {
 
   const phoneDigits = phone.replace(/\D/g, '')
   const isPhoneValid = phoneDigits.length >= 10
-  const canSubmit = !submitting && items.length > 0 && agreed && name.trim() && phone.trim() && isPhoneValid && email.trim() && address.trim()
+  const canSubmit = !submitting && items.length > 0 && agreed && agreedPersonalData && name.trim() && phone.trim() && isPhoneValid && email.trim() && address.trim()
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -259,6 +260,18 @@ export default function CartModal() {
               <a href={externalLinks.privacy} target="_blank" rel="noopener noreferrer">Политикой обработки персональных данных</a>
               {' '}и{' '}
               <a href={externalLinks.offer} target="_blank" rel="noopener noreferrer">договором оферты</a>
+            </span>
+          </label>
+
+          <label className="cart-modal__agree">
+            <input
+              type="checkbox"
+              checked={agreedPersonalData}
+              onChange={(e) => setAgreedPersonalData(e.target.checked)}
+            />
+            <span className="cart-modal__check-mark" />
+            <span className="cart-modal__agree-text">
+              Согласен с обработкой персональных данных
             </span>
           </label>
 
