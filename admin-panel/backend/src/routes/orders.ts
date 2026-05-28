@@ -19,12 +19,15 @@ const router = express.Router()
 
 router.use(requireAuth)
 
-async function getMessengerLink(sheetId: string): Promise<string | undefined> {
+async function getEmailContactOptions(sheetId: string): Promise<{ messengerLink?: string; supportPhone?: string }> {
   try {
     const overrides = await fetchOverridesMap(sheetId)
-    return overrides['links.messenger'] || undefined
+    return {
+      messengerLink: overrides['links.messenger'] || undefined,
+      supportPhone: overrides['links.phone'] || undefined,
+    }
   } catch {
-    return undefined
+    return {}
   }
 }
 
@@ -175,12 +178,12 @@ router.post('/:id/ship', async (req, res) => {
     try {
       const order = await fetchOrderWithItems(auth, sheetId, req.params.id)
       if (order?.customer_email) {
-        const messengerLink = await getMessengerLink(sheetId)
+        const emailOpts = await getEmailContactOptions(sheetId)
         await sendEmail({
           to: order.customer_email,
           toName: order.customer_name,
           subject: buildShippingEmailSubject(order),
-          html: buildShippingEmailHtml(order, trackingNumber, { messengerLink }),
+          html: buildShippingEmailHtml(order, trackingNumber, emailOpts),
           replyTo: process.env.SUPPORT_EMAIL,
         })
         await updateOrderEmailStatus(auth, sheetId, req.params.id, true, '')
@@ -209,15 +212,15 @@ router.post('/:id/resend-email', async (req, res) => {
     if (!order) return res.status(404).json({ error: 'not_found' })
     if (!order.customer_email) return res.status(400).json({ error: 'no_customer_email' })
 
-    const messengerLink = await getMessengerLink(sheetId)
+    const emailOpts = await getEmailContactOptions(sheetId)
     let subject = ''
     let html = ''
     if (order.status === 'shipped' && order.tracking_number) {
       subject = buildShippingEmailSubject(order)
-      html = buildShippingEmailHtml(order, order.tracking_number, { messengerLink })
+      html = buildShippingEmailHtml(order, order.tracking_number, emailOpts)
     } else if (order.status === 'new' || order.status === 'shipped') {
       subject = buildOrderEmailSubject(order)
-      html = buildOrderEmailHtml(order, { messengerLink })
+      html = buildOrderEmailHtml(order, emailOpts)
     } else {
       return res.status(400).json({ error: 'order_status_not_eligible_for_email' })
     }

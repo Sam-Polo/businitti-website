@@ -19,19 +19,19 @@ function formatPrice(rub: number): string {
 
 // ─── Контакты для подписи (из env) ──────────────────────
 
-function getContacts(messengerLink?: string) {
+function getContacts(options?: { messengerLink?: string; supportPhone?: string }) {
   return {
     siteUrl: process.env.SITE_URL || 'https://businitti.ru',
     supportEmail: process.env.SUPPORT_EMAIL || '',
-    supportPhone: process.env.SUPPORT_PHONE || '',
-    supportLink: messengerLink || process.env.SUPPORT_LINK || '',
+    supportPhone: options?.supportPhone || process.env.SUPPORT_PHONE || '',
+    supportLink: options?.messengerLink || process.env.SUPPORT_LINK || '',
   }
 }
 
 // ─── Шаблон письма (table-based для совместимости с почтовиками) ──
 
-export function buildOrderEmailHtml(order: OrderWithItems, options?: { messengerLink?: string }): string {
-  const contacts = getContacts(options?.messengerLink)
+export function buildOrderEmailHtml(order: OrderWithItems, options?: { messengerLink?: string; supportPhone?: string }): string {
+  const contacts = getContacts(options)
   const itemsSum = order.items.reduce((s, it) => s + it.subtotal_rub, 0)
 
   const itemRows = order.items
@@ -51,7 +51,7 @@ export function buildOrderEmailHtml(order: OrderWithItems, options?: { messenger
     .join('')
 
   const contactsBlock = [
-    contacts.supportPhone ? `<a href="tel:${escapeHtml(contacts.supportPhone.replace(/\s+/g, ''))}" style="color: #2f2f2f; text-decoration: none;">${escapeHtml(contacts.supportPhone)}</a>` : '',
+    contacts.supportPhone ? `<a href="tel:${escapeHtml(contacts.supportPhone.replace(/[^\d+]/g, ''))}" style="color: #2f2f2f; text-decoration: none;">${escapeHtml(contacts.supportPhone)}</a>` : '',
     contacts.supportEmail ? `<a href="mailto:${escapeHtml(contacts.supportEmail)}" style="color: #2f2f2f; text-decoration: none;">${escapeHtml(contacts.supportEmail)}</a>` : '',
     contacts.supportLink ? `<a href="${escapeHtml(contacts.supportLink)}" style="color: #2f2f2f; text-decoration: none;">Написать в мессенджер</a>` : '',
   ]
@@ -242,12 +242,12 @@ function buildTrackingSection(order: OrderWithItems, trackingValue: string): str
   `
 }
 
-export function buildShippingEmailHtml(order: OrderWithItems, trackingNumber: string, options?: { messengerLink?: string }): string {
-  const contacts = getContacts(options?.messengerLink)
+export function buildShippingEmailHtml(order: OrderWithItems, trackingNumber: string, options?: { messengerLink?: string; supportPhone?: string }): string {
+  const contacts = getContacts(options)
   const trackingSection = buildTrackingSection(order, trackingNumber)
 
   const contactsBlock = [
-    contacts.supportPhone ? `<a href="tel:${escapeHtml(contacts.supportPhone.replace(/\s+/g, ''))}" style="color: #2f2f2f; text-decoration: none;">${escapeHtml(contacts.supportPhone)}</a>` : '',
+    contacts.supportPhone ? `<a href="tel:${escapeHtml(contacts.supportPhone.replace(/[^\d+]/g, ''))}" style="color: #2f2f2f; text-decoration: none;">${escapeHtml(contacts.supportPhone)}</a>` : '',
     contacts.supportEmail ? `<a href="mailto:${escapeHtml(contacts.supportEmail)}" style="color: #2f2f2f; text-decoration: none;">${escapeHtml(contacts.supportEmail)}</a>` : '',
     contacts.supportLink ? `<a href="${escapeHtml(contacts.supportLink)}" style="color: #2f2f2f; text-decoration: none;">Написать в мессенджер</a>` : '',
   ].filter(Boolean).join(' &nbsp;·&nbsp; ')

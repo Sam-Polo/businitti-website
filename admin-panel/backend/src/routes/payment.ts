@@ -120,16 +120,19 @@ router.post('/result', async (req: Request, res: Response) => {
         try {
           const full = await fetchOrderWithItems(auth, sheetId, order.id)
           if (full?.customer_email) {
-            let messengerLink: string | undefined
+            let emailOpts: { messengerLink?: string; supportPhone?: string } = {}
             try {
               const overrides = await fetchOverridesMap(sheetId)
-              messengerLink = overrides['links.messenger'] || undefined
-            } catch { /* fallback к SUPPORT_LINK из env */ }
+              emailOpts = {
+                messengerLink: overrides['links.messenger'] || undefined,
+                supportPhone: overrides['links.phone'] || undefined,
+              }
+            } catch { /* fallback к env */ }
             await sendEmail({
               to: full.customer_email,
               toName: full.customer_name,
               subject: buildOrderEmailSubject(full),
-              html: buildOrderEmailHtml(full, { messengerLink }),
+              html: buildOrderEmailHtml(full, emailOpts),
               replyTo: process.env.SUPPORT_EMAIL,
             })
             await updateOrderEmailStatus(auth, sheetId, order.id, true, '')
