@@ -162,6 +162,13 @@ SAMPLE_ITEMS = [
 
 # ─── Telegram-команды ─────────────────────────────────────────────────────────
 
+async def cmd_start(update: Update, _ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    if not is_admin(update.effective_user.id):
+        await update.message.reply_text(ACCESS_DENIED)
+        return
+    await update.message.reply_text("Список доступных команд — /help")
+
+
 async def cmd_help(update: Update, _ctx: ContextTypes.DEFAULT_TYPE) -> None:
     if not is_admin(update.effective_user.id):
         await update.message.reply_text(ACCESS_DENIED)
@@ -317,6 +324,7 @@ def main() -> None:
 
     # Telegram-бот
     app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app.add_handler(CommandHandler("start", cmd_start))
     app.add_handler(CommandHandler("help", cmd_help))
     app.add_handler(CommandHandler("new", cmd_new))
     app.add_handler(CommandHandler("orders", cmd_orders))

@@ -38,7 +38,12 @@ jobs:
           script: |
             set -e
             cd /opt/businitti-bot
-            python3 -m pip install -r requirements.txt --quiet
-            pm2 restart businitti-bot --update-env || \
-              pm2 start bot.py --name businitti-bot --interpreter python3
+            # создаём venv при первом деплое
+            if [ ! -d "venv" ]; then
+              python3 -m venv venv
+            fi
+            venv/bin/pip install -r requirements.txt --quiet
+            pm2 describe businitti-bot > /dev/null 2>&1 \
+              && pm2 restart businitti-bot --update-env \
+              || pm2 start bot.py --name businitti-bot --interpreter venv/bin/python3
             pm2 save
