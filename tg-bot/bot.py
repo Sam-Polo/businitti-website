@@ -20,6 +20,10 @@ import os
 import logging
 import threading
 from datetime import datetime
+from pathlib import Path
+
+from dotenv import load_dotenv
+load_dotenv(Path(__file__).parent / ".env")
 
 import requests
 from flask import Flask, request, jsonify
