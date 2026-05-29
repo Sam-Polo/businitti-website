@@ -26,6 +26,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent / ".env")
 
 import requests
+import httpx
 from flask import Flask, request, jsonify
 from telegram import BotCommand, Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
@@ -323,10 +324,10 @@ def _send_telegram(chat_id: str, text: str) -> None:
     if not BOT_TOKEN:
         raise RuntimeError("TELEGRAM_BOT_TOKEN not set")
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    proxies = {"http": PROXY_URL, "https": PROXY_URL} if PROXY_URL else None
-    resp = requests.post(url, json={"chat_id": chat_id, "text": text, "parse_mode": "HTML"},
-                         timeout=10, proxies=proxies)
-    resp.raise_for_status()
+    proxy_kwargs = {"proxy": PROXY_URL} if PROXY_URL else {}
+    with httpx.Client(timeout=15, **proxy_kwargs) as client:
+        resp = client.post(url, json={"chat_id": chat_id, "text": text, "parse_mode": "HTML"})
+        resp.raise_for_status()
 
 
 def run_flask() -> None:
