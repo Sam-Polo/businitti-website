@@ -43,6 +43,11 @@ ADMIN_API_URL = os.environ.get("ADMIN_API_URL", "http://127.0.0.1:4001").rstrip(
 TG_BOT_PORT = int(os.environ.get("TG_BOT_PORT", "4002"))
 SITE_URL = os.environ.get("SITE_URL", "https://businitti.ru")
 
+# HTTP_PROXY_URL имеет приоритет; если не задан — используем SOCKS5_PROXY_URL
+_http_proxy = os.environ.get("HTTP_PROXY_URL", "").strip()
+_socks_proxy = os.environ.get("SOCKS5_PROXY_URL", "").strip()
+PROXY_URL: str = _http_proxy or _socks_proxy  # пустая строка = без прокси
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
 
@@ -304,7 +309,9 @@ def _send_telegram(chat_id: str, text: str) -> None:
     if not BOT_TOKEN:
         raise RuntimeError("TELEGRAM_BOT_TOKEN not set")
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    resp = requests.post(url, json={"chat_id": chat_id, "text": text, "parse_mode": "HTML"}, timeout=10)
+    proxies = {"http": PROXY_URL, "https": PROXY_URL} if PROXY_URL else None
+    resp = requests.post(url, json={"chat_id": chat_id, "text": text, "parse_mode": "HTML"},
+                         timeout=10, proxies=proxies)
     resp.raise_for_status()
 
 
@@ -327,7 +334,11 @@ def main() -> None:
     log.info("HTTP server started on 127.0.0.1:%d", TG_BOT_PORT)
 
     # Telegram-бот
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    builder = ApplicationBuilder().token(BOT_TOKEN)
+    if PROXY_URL:
+        log.info("using proxy: %s", PROXY_URL)
+        builder = builder.proxy(PROXY_URL).get_updates_proxy(PROXY_URL)
+    app = builder.build()
     app.add_handler(CommandHandler("start", cmd_start))
     app.add_handler(CommandHandler("help", cmd_help))
     app.add_handler(CommandHandler("new", cmd_new))
