@@ -187,6 +187,7 @@ async def cmd_help(update: Update, _ctx: ContextTypes.DEFAULT_TYPE) -> None:
         "/new — новые заказы (статус «Новый»)\n"
         "/orders — последние 5 заказов\n"
         "/status — статус сайта и бэкенда\n"
+        "/test_notif — тестовое уведомление о заказе\n"
         "/help — эта справка"
     )
     await update.message.reply_text(text, parse_mode="HTML")
@@ -225,6 +226,19 @@ async def cmd_orders(update: Update, _ctx: ContextTypes.DEFAULT_TYPE) -> None:
         await update.message.reply_text("\n".join(lines), parse_mode="HTML")
     except Exception as e:
         log.error("cmd_orders error: %s", e)
+        await update.message.reply_text(f"❌ Ошибка: {e}")
+
+
+async def cmd_test_notif(update: Update, _ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    if not is_admin(update.effective_user.id):
+        await update.message.reply_text(ACCESS_DENIED)
+        return
+    try:
+        sample = dict(SAMPLE_ORDER, created_at=datetime.utcnow().isoformat() + "Z")
+        text = format_order_message(sample, SAMPLE_ITEMS)
+        await update.message.reply_text(text, parse_mode="HTML")
+    except Exception as e:
+        log.error("cmd_test_notif error: %s", e)
         await update.message.reply_text(f"❌ Ошибка: {e}")
 
 
@@ -344,6 +358,7 @@ def main() -> None:
     app.add_handler(CommandHandler("new", cmd_new))
     app.add_handler(CommandHandler("orders", cmd_orders))
     app.add_handler(CommandHandler("status", cmd_status))
+    app.add_handler(CommandHandler("test_notif", cmd_test_notif))
 
     async def register_commands(app):  # type: ignore[override]
         await app.bot.set_my_commands([
@@ -351,6 +366,7 @@ def main() -> None:
             BotCommand("new", "Новые заказы"),
             BotCommand("orders", "Последние 5 заказов"),
             BotCommand("status", "Статус сайта"),
+            BotCommand("test_notif", "Тестовое уведомление о заказе"),
         ])
         log.info("bot commands registered")
 

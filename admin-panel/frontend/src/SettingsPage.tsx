@@ -306,8 +306,9 @@ function TelegramCard({ showToast }: { showToast: (m: string, t: 'success' | 'er
         <div className="content-slot-titles">
           <div className="content-slot-label">Telegram-уведомления</div>
           <div className="content-slot-desc">
-            Chat ID личного сообщения или группы, куда бот отправляет уведомления о новых заказах.
-            Узнать свой Chat ID можно через <a href="https://t.me/userinfobot" target="_blank" rel="noreferrer">@userinfobot</a>.
+            Куда бот отправляет уведомления о новых заказах. Для канала или группы — <code>@username</code>.
+            Для личной переписки username не работает — нужен числовой Chat ID
+            (узнать через <a href="https://t.me/userinfobot" target="_blank" rel="noreferrer">@userinfobot</a>).
           </div>
         </div>
         {chatId ? (
@@ -322,17 +323,17 @@ function TelegramCard({ showToast }: { showToast: (m: string, t: 'success' | 'er
       ) : (
         <>
           <label className="paired-cta-field">
-            <span className="paired-cta-field-label">Chat ID</span>
+            <span className="paired-cta-field-label">Username или Chat ID</span>
             <input
               type="text"
               value={chatId}
               onChange={(e) => setChatId(e.target.value)}
               className="content-slot-input"
-              placeholder="например: 123456789 или -1001234567890"
+              placeholder="@channel или 123456789"
               style={{ maxWidth: 320 }}
             />
           </label>
-          <div className="content-slot-actions" style={{ flexDirection: 'row', gap: 12 }}>
+          <div className="content-slot-actions" style={{ flexDirection: 'row', gap: 12, marginTop: 12 }}>
             <button className="btn-order-ship" disabled={saving} onClick={handleSave}>
               {saving ? 'Сохранение...' : 'Сохранить'}
             </button>
