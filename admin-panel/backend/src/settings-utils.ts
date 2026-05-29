@@ -157,3 +157,12 @@ export async function saveAdminCreds(sheetId: string, creds: AdminCreds): Promis
   await setSetting(sheetId, 'admin_username', creds.username)
   await setSetting(sheetId, 'admin_password_hash', creds.passwordHash)
 }
+
+export async function fetchTelegramChatId(sheetId: string): Promise<string> {
+  const all = await fetchAllSettings(sheetId)
+  return (all['telegram_chat_id'] || '').trim()
+}
+
+export async function saveTelegramChatId(sheetId: string, chatId: string): Promise<void> {
+  await setSetting(sheetId, 'telegram_chat_id', chatId.trim())
+}

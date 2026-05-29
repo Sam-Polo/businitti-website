@@ -7,6 +7,8 @@ import {
   saveDeliveryPriceOverrides,
   fetchAdminCreds,
   saveAdminCreds,
+  fetchTelegramChatId,
+  saveTelegramChatId,
 } from '../settings-utils.js'
 import { DELIVERY_PRICES, invalidateDeliveryPricesCache } from '../orders-utils.js'
 import pino from 'pino'
@@ -152,6 +154,59 @@ router.post('/change-password', async (req, res) => {
   } catch (error: any) {
     logger.error({ error: error?.message }, 'ошибка смены пароля')
     return res.status(500).json({ error: error?.message || 'Ошибка смены пароля' })
+  }
+})
+
+// ===== Telegram: chat ID =====
+
+router.get('/telegram', async (_req, res) => {
+  try {
+    const sheetId = getSheetId(res); if (!sheetId) return
+    const chatId = await fetchTelegramChatId(sheetId)
+    return res.json({ chatId })
+  } catch (error: any) {
+    logger.error({ error: error?.message }, 'ошибка загрузки telegram chat_id')
+    return res.status(500).json({ error: error?.message || 'Ошибка загрузки настроек Telegram' })
+  }
+})
+
+router.put('/telegram', async (req, res) => {
+  try {
+    const sheetId = getSheetId(res); if (!sheetId) return
+    const { chatId } = req.body || {}
+    if (typeof chatId !== 'string') {
+      return res.status(400).json({ error: 'chatId must be a string' })
+    }
+    await saveTelegramChatId(sheetId, chatId)
+    return res.json({ success: true })
+  } catch (error: any) {
+    logger.error({ error: error?.message }, 'ошибка сохранения telegram chat_id')
+    return res.status(500).json({ error: error?.message || 'Ошибка сохранения настроек Telegram' })
+  }
+})
+
+router.post('/telegram/test', async (_req, res) => {
+  try {
+    const sheetId = getSheetId(res); if (!sheetId) return
+    const chatId = await fetchTelegramChatId(sheetId)
+    if (!chatId) {
+      return res.status(400).json({ error: 'Telegram chat ID не настроен' })
+    }
+    const botUrl = process.env.TG_BOT_URL || 'http://127.0.0.1:4002'
+    const response = await fetch(`${botUrl}/test_notif`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId }),
+      signal: AbortSignal.timeout(15_000),
+    })
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({})) as any
+      return res.status(502).json({ error: body?.error || 'Бот вернул ошибку' })
+    }
+    return res.json({ success: true })
+  } catch (error: any) {
+    logger.error({ error: error?.message }, 'ошибка отправки тестового уведомления')
+    return res.status(500).json({ error: error?.message || 'Ошибка отправки тестового уведомления' })
   }
 })
 

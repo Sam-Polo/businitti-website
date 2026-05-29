@@ -6,7 +6,7 @@ import { buildReceipt, createPaymentUrl } from '../robokassa.js'
 import { orderLimiter } from '../rate-limit.js'
 import { fetchOverridesMap, type SiteContentMap } from '../site-content-utils.js'
 import { fetchCategoriesFromSheet, type Category } from '../categories-utils.js'
-import { fetchOrdersSettingsFromSheet } from '../settings-utils.js'
+import { fetchOrdersSettingsFromSheet, fetchTelegramChatId } from '../settings-utils.js'
 
 const router = express.Router()
 
@@ -358,10 +358,28 @@ router.post('/orders', orderLimiter, async (req, res) => {
       total_rub: order.total_rub,
       payment_url: payment.paymentUrl,
     })
+
+    // fire-and-forget: уведомление в Telegram (не влияет на ответ клиенту)
+    notifyTelegram(sheetId, order, snapshotItems).catch((err) =>
+      logger.warn({ err: err?.message }, 'telegram notification failed')
+    )
   } catch (error: any) {
     logger.error({ error: error?.message }, 'ошибка создания заказа')
     res.status(500).json({ error: 'failed_to_create_order' })
   }
 })
+
+async function notifyTelegram(sheetId: string, order: any, items: any[]): Promise<void> {
+  const chatId = await fetchTelegramChatId(sheetId)
+  if (!chatId) return
+
+  const botUrl = process.env.TG_BOT_URL || 'http://127.0.0.1:4002'
+  await fetch(`${botUrl}/notify`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, order, items }),
+    signal: AbortSignal.timeout(10_000),
+  })
+}
 
 export default router

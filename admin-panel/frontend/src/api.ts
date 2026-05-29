@@ -312,6 +312,23 @@ export const api = {
     })
   },
 
+  // настройки: Telegram
+  async getTelegramSettings(): Promise<{ chatId: string }> {
+    return fetchWithAuth('/api/settings/telegram')
+  },
+
+  async saveTelegramSettings(chatId: string) {
+    return fetchWithAuth('/api/settings/telegram', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chatId }),
+    })
+  },
+
+  async testTelegramNotification() {
+    return fetchWithAuth('/api/settings/telegram/test', { method: 'POST' })
+  },
+
   // настройки: смена пароля
   async changePassword(currentPassword: string, newPassword: string, newUsername?: string) {
     return fetchWithAuth('/api/settings/change-password', {

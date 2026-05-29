@@ -47,6 +47,7 @@ export default function SettingsPage({ onNavigate, newCount }: {
         <div className="content-slots-list">
           <DeliveryPricesCard showToast={showToast} />
           <OrdersStatusCard showToast={showToast} />
+          <TelegramCard showToast={showToast} />
           <PasswordCard showToast={showToast} />
         </div>
       </div>
@@ -243,6 +244,100 @@ function OrdersStatusCard({ showToast }: { showToast: (m: string, t: 'success' |
           <div className="content-slot-actions" style={{ flexDirection: 'row', marginTop: 12 }}>
             <button className="btn-order-ship" disabled={saving} onClick={handleSave}>
               {saving ? 'Сохранение...' : 'Сохранить'}
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+function TelegramCard({ showToast }: { showToast: (m: string, t: 'success' | 'error') => void }) {
+  const [chatId, setChatId] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [testing, setTesting] = useState(false)
+
+  const load = async () => {
+    setLoading(true)
+    try {
+      const data = await api.getTelegramSettings()
+      setChatId(data.chatId || '')
+    } catch (e: any) {
+      showToast(e?.message || 'Ошибка загрузки', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { load() }, [])
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      await api.saveTelegramSettings(chatId.trim())
+      showToast('Telegram Chat ID сохранён', 'success')
+    } catch (e: any) {
+      showToast(e?.message || 'Ошибка сохранения', 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleTest = async () => {
+    if (!chatId.trim()) {
+      showToast('Сначала укажите и сохраните Chat ID', 'error')
+      return
+    }
+    setTesting(true)
+    try {
+      await api.testTelegramNotification()
+      showToast('Тестовое уведомление отправлено', 'success')
+    } catch (e: any) {
+      showToast(e?.message || 'Ошибка отправки', 'error')
+    } finally {
+      setTesting(false)
+    }
+  }
+
+  return (
+    <div className="content-slot-card">
+      <div className="content-slot-header">
+        <div className="content-slot-titles">
+          <div className="content-slot-label">Telegram-уведомления</div>
+          <div className="content-slot-desc">
+            Chat ID личного сообщения или группы, куда бот отправляет уведомления о новых заказах.
+            Узнать свой Chat ID можно через <a href="https://t.me/userinfobot" target="_blank" rel="noreferrer">@userinfobot</a>.
+          </div>
+        </div>
+        {chatId ? (
+          <span className="content-slot-badge">настроено</span>
+        ) : (
+          <span className="content-slot-badge content-slot-badge-original">не настроено</span>
+        )}
+      </div>
+
+      {loading ? (
+        <div className="loading">Загрузка...</div>
+      ) : (
+        <>
+          <label className="paired-cta-field">
+            <span className="paired-cta-field-label">Chat ID</span>
+            <input
+              type="text"
+              value={chatId}
+              onChange={(e) => setChatId(e.target.value)}
+              className="content-slot-input"
+              placeholder="например: 123456789 или -1001234567890"
+              style={{ maxWidth: 320 }}
+            />
+          </label>
+          <div className="content-slot-actions" style={{ flexDirection: 'row', gap: 12 }}>
+            <button className="btn-order-ship" disabled={saving} onClick={handleSave}>
+              {saving ? 'Сохранение...' : 'Сохранить'}
+            </button>
+            <button className="btn-order-secondary" disabled={testing} onClick={handleTest}>
+              {testing ? 'Отправка...' : 'Тест уведомления'}
             </button>
           </div>
         </>

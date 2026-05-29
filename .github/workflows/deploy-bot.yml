@@ -1,0 +1,44 @@
+name: Deploy Telegram Bot to Server
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tg-bot/**'
+      - '.github/workflows/deploy-bot.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- Копируем файлы бота на сервер ---
+      - name: Upload bot files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          source: tg-bot/*
+          target: /opt/businitti-bot/
+          strip_components: 1
+
+      # --- Устанавливаем зависимости и перезапускаем ---
+      - name: Install dependencies and restart bot
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script: |
+            set -e
+            cd /opt/businitti-bot
+            python3 -m pip install -r requirements.txt --quiet
+            pm2 restart businitti-bot --update-env || \
+              pm2 start bot.py --name businitti-bot --interpreter python3
+            pm2 save

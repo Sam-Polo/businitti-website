@@ -58,6 +58,7 @@ import paymentRoutes from './routes/payment.js'
 import publicRoutes from './routes/public.js'
 import ordersRoutes from './routes/orders.js'
 import contentRoutes from './routes/content.js'
+import internalRoutes from './routes/internal.js'
 
 app.use('/api/public', publicRoutes)
 app.use('/api/auth', authRoutes)
@@ -69,6 +70,7 @@ app.use('/api/settings', settingsRoutes)
 app.use('/api/categories', categoriesRoutes)
 app.use('/api/payment', paymentRoutes)
 app.use('/api/content', contentRoutes)
+app.use('/api/internal', internalRoutes)
 
 app.listen(PORT, () => {
   logger.info(`Админ-панель бэкенд запущен на порту ${PORT}`)
