@@ -64,6 +64,7 @@ export default function ItemCardModal() {
 
         <div className="item-modal__gallery">
           <button
+            key={activeImage}
             type="button"
             className="item-modal__photo"
             style={mainImg ? { backgroundImage: `url(${mainImg})` } : undefined}
