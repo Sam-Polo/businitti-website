@@ -18,11 +18,15 @@ router.post('/login', loginLimiter, async (req, res) => {
     const sheetId = process.env.GOOGLE_SHEET_ID
     let ok = false
     let effectiveUsername = ''
+    let sheetsHasCreds = false // в Sheets уже сохранена учётка администратора
+    let sheetsReadOk = false   // чтение Sheets прошло без ошибки
 
     if (sheetId) {
       try {
         const creds = await fetchAdminCreds(sheetId)
+        sheetsReadOk = true
         if (creds) {
+          sheetsHasCreds = true
           if (username === creds.username && verifyPasswordHash(password, creds.passwordHash)) {
             ok = true
             effectiveUsername = creds.username
@@ -33,8 +37,12 @@ router.post('/login', loginLimiter, async (req, res) => {
       }
     }
 
-    // 2) фолбэк на .env — если в Sheets ничего нет (или не совпало)
-    if (!ok) {
+    // 2) .env-фолбэк — это БУТСТРАП для первичной настройки. Работает, только если Sheets
+    //    не настроен вовсе, либо успешно прочитан и учётки в нём ещё нет. Как только пароль
+    //    задан через панель (admin_password_hash появился в Sheets) — фолбэк отключается,
+    //    иначе дефолтный admin/admin остаётся открытым бэкдором рядом с кастомным паролем.
+    const sheetsBlocksFallback = !!sheetId && (!sheetsReadOk || sheetsHasCreds)
+    if (!ok && !sheetsBlocksFallback) {
       const envUser = process.env.ADMIN_USERNAME || 'admin'
       const envPass = process.env.ADMIN_PASSWORD || 'admin'
       if (username === envUser && password === envPass) {

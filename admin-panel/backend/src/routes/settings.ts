@@ -122,18 +122,27 @@ router.post('/change-password', async (req, res) => {
       ? newUsername.trim()
       : null
 
-    // проверка текущего пароля: сначала Sheets, иначе env
+    // проверка текущего пароля: сначала Sheets, env — только как бутстрап (пока учётки в Sheets нет)
     let ok = false
     let currentUsername = ''
+    let sheetsHasCreds = false
+    let sheetsReadOk = false
     try {
       const creds = await fetchAdminCreds(sheetId)
-      if (creds && verifyPasswordHash(currentPassword, creds.passwordHash)) {
-        ok = true
-        currentUsername = creds.username
+      sheetsReadOk = true
+      if (creds) {
+        sheetsHasCreds = true
+        if (verifyPasswordHash(currentPassword, creds.passwordHash)) {
+          ok = true
+          currentUsername = creds.username
+        }
       }
     } catch { /* ignore */ }
 
-    if (!ok) {
+    // env-фолбэк отключается, как только в Sheets появилась учётка (или Sheets недоступен) —
+    // чтобы дефолтный admin/admin нельзя было использовать как «текущий» пароль
+    const sheetsBlocksFallback = !sheetsReadOk || sheetsHasCreds
+    if (!ok && !sheetsBlocksFallback) {
       const envUser = process.env.ADMIN_USERNAME || 'admin'
       const envPass = process.env.ADMIN_PASSWORD || 'admin'
       if (currentPassword === envPass) {
