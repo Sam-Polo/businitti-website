@@ -8,6 +8,7 @@ import RecommendationsPage from './pages/RecommendationsPage'
 import ContactsPage from './pages/ContactsPage'
 import CatalogPage from './pages/CatalogPage'
 import CategoryPage from './pages/CategoryPage'
+import ProductModalRoute from './components/ProductModalRoute'
 import PaymentResultPage from './pages/PaymentResultPage'
 import NotFoundPage from './pages/NotFoundPage'
 import { usePageTracking } from './hooks/usePageTracking'
@@ -31,7 +32,10 @@ export default function App() {
           <Route path="/recommendations" element={<RecommendationsPage />} />
           <Route path="/contacts" element={<ContactsPage />} />
           <Route path="/catalog" element={<CatalogPage />} />
-          <Route path="/category/:slug" element={<CategoryPage />} />
+          {/* Товар — вложенный роут: категория остаётся под модалкой, не перемонтируется */}
+          <Route path="/category/:slug" element={<CategoryPage />}>
+            <Route path=":productSlug" element={<ProductModalRoute />} />
+          </Route>
           <Route path="/payment/success" element={<PaymentResultPage variant="success" />} />
           <Route path="/payment/fail" element={<PaymentResultPage variant="fail" />} />
           <Route path="*" element={<NotFoundPage />} />

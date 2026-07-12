@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, Outlet, useParams } from 'react-router-dom'
 import { useExternalLinks } from '../config/links'
 import { fetchProductsByCategory, formatPrice, type Product } from '../api/products'
 import { useCategories } from '../contexts/CategoriesContext'
 import { useCart } from '../contexts/CartContext'
+import { productPath } from '../hooks/useProductRoute'
 import { useSiteContent } from '../contexts/SiteContentContext'
 import { RichText } from '../lib/RichText'
 import { RevealImage } from '../lib/RevealImage'
@@ -27,7 +28,7 @@ const HOME_CONTACTS_DESC_DEFAULT =
 export default function CategoryPage() {
   const { slug } = useParams<{ slug: string }>()
 
-  const { openItem, openCart, totalCount } = useCart()
+  const { openCart, totalCount } = useCart()
   const externalLinks = useExternalLinks()
   const contactsImage = useSiteContent('category.contacts_image', contactsImgDefault)
   const contactsDesc = useSiteContent('home.contacts_desc', HOME_CONTACTS_DESC_DEFAULT)
@@ -93,12 +94,12 @@ export default function CategoryPage() {
                 const price = product.discount_price_rub ?? product.price_rub
                 const image = product.images[0]
                 return (
-                  <button
+                  <Link
                     key={product.slug}
-                    type="button"
+                    to={productPath(slug ?? '', product.slug)}
+                    state={{ product }}
                     className="product-card reveal"
                     style={{ ['--i' as string]: i % 6 }}
-                    onClick={() => openItem(product)}
                   >
                     {image ? (
                       <RevealImage className="product-card__image" src={image} alt="" />
@@ -116,7 +117,7 @@ export default function CategoryPage() {
                         )}
                       </div>
                     </div>
-                  </button>
+                  </Link>
                 )
               })}
             </div>
@@ -157,6 +158,9 @@ export default function CategoryPage() {
         </svg>
         <span key={totalCount} className="cart-button__badge badge-pulse">{totalCount}</span>
       </button>}
+
+      {/* Вложенный роут товара /category/:slug/:productSlug — управляет модалкой, ничего не рисует */}
+      <Outlet />
     </main>
   )
 }

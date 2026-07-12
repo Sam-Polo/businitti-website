@@ -1,14 +1,16 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useCart } from '../contexts/CartContext'
-import { formatPrice } from '../api/products'
+import { formatPrice, type Product } from '../api/products'
 import { useModalAnimation } from '../hooks/useModalAnimation'
+import { useCloseProduct } from '../hooks/useProductRoute'
 import { RichText } from '../lib/RichText'
 import { Lightbox } from './Lightbox'
 import './ItemCardModal.css'
 
 export default function ItemCardModal() {
-  const { itemModalProduct, closeItem, addItem } = useCart()
+  const { itemModalProduct, addItem } = useCart()
   const { shouldRender, isClosing } = useModalAnimation(!!itemModalProduct)
+  const closeProduct = useCloseProduct()
   const [activeImage, setActiveImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [lightboxOpen, setLightboxOpen] = useState(false)
@@ -17,6 +19,25 @@ export default function ItemCardModal() {
   const lightboxOpenRef = useRef(lightboxOpen)
   lightboxOpenRef.current = lightboxOpen
 
+  // Уход с /product/:slug сразу зануляет товар, но JSX должен дожить до конца
+  // анимации закрытия — поэтому держим последний показанный в state.
+  const [product, setProduct] = useState<Product | null>(itemModalProduct)
+  useEffect(() => {
+    if (itemModalProduct) setProduct(itemModalProduct)
+  }, [itemModalProduct])
+
+  // Повторный клик по крестику/фону не должен уводить назад дважды.
+  const closeRequestedRef = useRef(false)
+  useEffect(() => {
+    if (itemModalProduct) closeRequestedRef.current = false
+  }, [itemModalProduct])
+
+  const handleClose = useCallback(() => {
+    if (closeRequestedRef.current || !product) return
+    closeRequestedRef.current = true
+    closeProduct()
+  }, [product, closeProduct])
+
   useEffect(() => {
     if (!itemModalProduct) return
     setActiveImage(0)
@@ -24,39 +45,45 @@ export default function ItemCardModal() {
     setLightboxOpen(false)
   }, [itemModalProduct])
 
+  // Фон держим заблокированным всю жизнь модалки, включая анимацию закрытия.
   useEffect(() => {
-    if (!itemModalProduct) return
+    if (!shouldRender) return
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [shouldRender])
+
+  useEffect(() => {
+    if (!itemModalProduct) return
     const onKey = (e: KeyboardEvent) => {
       // Skip while lightbox is open — it handles its own Escape (capture-phase listener).
       if (lightboxOpenRef.current) return
-      if (e.key === 'Escape') closeItem()
+      if (e.key === 'Escape') handleClose()
     }
     window.addEventListener('keydown', onKey)
     return () => {
-      document.body.style.overflow = prev
       window.removeEventListener('keydown', onKey)
     }
-  }, [itemModalProduct, closeItem])
+  }, [itemModalProduct, handleClose])
 
-  if (!shouldRender || !itemModalProduct) return null
+  if (!shouldRender || !product) return null
 
-  const product = itemModalProduct
   const price = product.discount_price_rub ?? product.price_rub
   const images = product.images.length > 0 ? product.images : [undefined]
   const mainImg = images[activeImage]
 
   const handleAdd = () => {
     addItem(product, quantity)
-    closeItem()
+    handleClose()
   }
 
   return (
     <>
-    <div className={`item-modal${isClosing ? ' is-closing' : ''}`} onClick={closeItem}>
+    <div className={`item-modal${isClosing ? ' is-closing' : ''}`} onClick={handleClose}>
       <div className="item-modal__card" onClick={(e) => e.stopPropagation()}>
-        <button className="item-modal__close" onClick={closeItem} aria-label="Закрыть">
+        <button className="item-modal__close" onClick={handleClose} aria-label="Закрыть">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M4 4L20 20M20 4L4 20" stroke="#2F2F2F" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
