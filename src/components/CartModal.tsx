@@ -102,7 +102,7 @@ export default function CartModal() {
         comment: comment.trim() || undefined,
         items: items.map((it) => ({ slug: it.slug, quantity: it.quantity })),
       })
-      trackOrderCreated(result.inv_id, items, result.total_rub)
+      trackOrderCreated(result.total_rub)
       clear()
       closeCart()
       // редирект на страницу оплаты Робокассы

@@ -114,27 +114,13 @@ export function trackBeginCheckout(items: CartItem[], totalRub: number) {
   })
 }
 
-// ─── Покупка ────────────────────────────────────────────
-// Конверсию считаем в момент создания заказа, а НЕ на /payment/success:
-// с платёжной страницы Робокассы покупатель часто уходит, не вернувшись на
-// сайт (закрыл вкладку, оплатил в приложении банка), поэтому редирект-based
-// purchase систематически недосчитывал бы оплаты. Здесь считаем «оформленный
-// заказ» = целевое действие для Директа. Точный сигнал «реально оплачено»
-// есть на бэке (webhook Робокассы) — при желании его можно догружать
-// офлайн-конверсией в Метрику, см. project-yandex-direct в памяти.
+// ─── Оформление заказа ──────────────────────────────────
+// Это ещё НЕ покупка: заказ создан, но может быть не оплачен или пересоздан.
+// Поэтому тут только микро-цель воронки order_created. Реальную оплату
+// (paid-only, ровно один раз) фиксирует бэк по webhook Робокассы —
+// см. project-yandex-direct в памяти.
 
-/** Заказ оформлен и отправлен на оплату: цели + e-commerce purchase. */
-export function trackOrderCreated(invId: number, items: CartItem[], totalRub: number) {
-  const id = String(invId)
-  const products = items.map((it) => fromCartItem(it, it.quantity))
-
+/** Заказ оформлен и отправлен на оплату Робокассы. */
+export function trackOrderCreated(totalRub: number) {
   ymGoal('order_created', { order_price: totalRub, currency: 'RUB' })
-  ymGoal('purchase', { order_price: totalRub, currency: 'RUB' })
-  ymEcommerce('purchase', { actionField: { id, revenue: totalRub }, products })
-  gaEvent('purchase', {
-    transaction_id: id,
-    currency: 'RUB',
-    value: totalRub,
-    items: toGaItems(products),
-  })
 }
