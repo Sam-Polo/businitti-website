@@ -273,6 +273,9 @@ router.post('/orders', orderLimiter, async (req, res) => {
     const delivery_service = String(body.delivery_service || '').trim() as DeliveryService
     const delivery_address = String(body.delivery_address || '').trim()
     const comment = String(body.comment || '').trim() || undefined
+    // ClientID Метрики / GA4 для серверной офлайн-конверсии purchase (best-effort)
+    const metrika_client_id = String(body.metrika_client_id || '').trim().slice(0, 64) || undefined
+    const ga_client_id = String(body.ga_client_id || '').trim().slice(0, 64) || undefined
     const itemsInput = Array.isArray(body.items) ? body.items : []
 
     if (!customer_name || !customer_phone || !customer_email) {
@@ -326,6 +329,8 @@ router.post('/orders', orderLimiter, async (req, res) => {
       delivery_service,
       delivery_address,
       comment,
+      metrika_client_id,
+      ga_client_id,
       items: snapshotItems,
     })
 

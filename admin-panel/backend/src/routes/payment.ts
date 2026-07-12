@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express'
 import { createPaymentUrl, verifyResultSignature, verifySuccessSignature, buildReceipt } from '../robokassa.js'
-import { findOrderByInvId, fetchOrderWithItems, updateOrderStatus, decrementStockForOrder, updateOrderEmailStatus, getAuth } from '../orders-utils.js'
+import { findOrderByInvId, fetchOrderWithItems, fetchOrderItems, updateOrderStatus, decrementStockForOrder, updateOrderEmailStatus, getAuth } from '../orders-utils.js'
+import { sendPurchaseConversion } from '../analytics-conversions.js'
 import { sendEmail } from '../unisender.js'
 import { buildOrderEmailHtml, buildOrderEmailSubject } from '../order-email.js'
 import { fetchOverridesMap } from '../site-content-utils.js'
@@ -115,6 +116,31 @@ router.post('/result', async (req: Request, res: Response) => {
           await decrementStockForOrder(auth, sheetId, order.id)
         } catch (stockErr: any) {
           logger.error({ err: stockErr?.message, orderId: order.id }, 'не удалось уменьшить stock')
+        }
+
+        // Покупка в Метрику/GA4 — только здесь, по факту оплаты. Гард по статусу
+        // pending_payment выше делает это ровно один раз на заказ.
+        try {
+          let convItems: Array<{ id: string; name: string; price: number; quantity: number }> = []
+          try {
+            const items = await fetchOrderItems(auth, sheetId, order.id)
+            convItems = items.map((it) => ({
+              id: it.product_slug,
+              name: it.product_title,
+              price: it.price_rub,
+              quantity: it.quantity,
+            }))
+          } catch { /* без разбивки по товарам — не критично */ }
+          await sendPurchaseConversion({
+            invId: invIdNum,
+            revenue: order.total_rub,
+            currency: 'RUB',
+            metrikaClientId: order.metrika_client_id,
+            gaClientId: order.ga_client_id,
+            items: convItems,
+          })
+        } catch (convErr: any) {
+          logger.error({ err: convErr?.message, orderId: order.id }, 'не удалось отправить конверсию в аналитику')
         }
 
         try {

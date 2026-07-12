@@ -75,6 +75,8 @@ export type Order = {
   email_sent?: boolean
   email_error?: string
   comment?: string
+  metrika_client_id?: string // ClientID Метрики — для серверной офлайн-конверсии purchase
+  ga_client_id?: string      // client_id GA4 — для Measurement Protocol
 }
 
 export type OrderWithItems = Order & { items: OrderItem[] }
@@ -86,7 +88,7 @@ const ORDERS_HEADERS = [
   'id', 'display_id', 'inv_id', 'created_at', 'updated_at', 'status',
   'customer_name', 'customer_phone', 'customer_email',
   'delivery_service', 'delivery_address', 'delivery_rub', 'total_rub', 'tracking_number',
-  'email_sent', 'email_error', 'comment'
+  'email_sent', 'email_error', 'comment', 'metrika_client_id', 'ga_client_id'
 ]
 
 const ORDER_ITEMS_HEADERS = [
@@ -174,6 +176,8 @@ function parseOrderRow(row: any[], idx: Record<string, number>): Order | null {
     })(),
     email_error: String(row[idx.email_error] ?? '') || undefined,
     comment: idx.comment !== undefined ? (String(row[idx.comment] ?? '') || undefined) : undefined,
+    metrika_client_id: idx.metrika_client_id !== undefined ? (String(row[idx.metrika_client_id] ?? '') || undefined) : undefined,
+    ga_client_id: idx.ga_client_id !== undefined ? (String(row[idx.ga_client_id] ?? '') || undefined) : undefined,
   }
 }
 
@@ -272,6 +276,8 @@ export async function createOrder(
     delivery_service: DeliveryService
     delivery_address: string
     comment?: string
+    metrika_client_id?: string
+    ga_client_id?: string
     items: Array<Omit<OrderItem, 'order_id'>>
   }
 ): Promise<OrderWithItems> {
@@ -301,6 +307,8 @@ export async function createOrder(
     delivery_rub,
     total_rub,
     comment: data.comment || undefined,
+    metrika_client_id: data.metrika_client_id || undefined,
+    ga_client_id: data.ga_client_id || undefined,
   }
 
   const orderRow = ORDERS_HEADERS.map((h) => (order as any)[h] ?? '')

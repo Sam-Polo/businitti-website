@@ -17,6 +17,8 @@ export type CreateOrderInput = {
   delivery_address: string
   comment?: string
   items: OrderItemInput[]
+  metrika_client_id?: string
+  ga_client_id?: string
 }
 
 export type CreateOrderResponse = {

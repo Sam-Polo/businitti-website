@@ -124,3 +124,35 @@ export function trackBeginCheckout(items: CartItem[], totalRub: number) {
 export function trackOrderCreated(totalRub: number) {
   ymGoal('order_created', { order_price: totalRub, currency: 'RUB' })
 }
+
+// ─── ClientID для серверной конверсии ───────────────────
+// Бэк по webhook Робокассы шлёт purchase в Метрику/GA4 только по факту оплаты.
+// Чтобы связать оплату с посетителем, при оформлении заказа снимаем ClientID
+// и передаём его на бэк вместе с заказом. Оба геттера асинхронные (колбэк),
+// с таймаутом-фолбэком: если счётчик заблокирован/не готов — вернём undefined,
+// заказ всё равно создастся, просто без серверной конверсии.
+
+function readClientId(has: boolean, invoke: (cb: (id: string) => void) => void, timeoutMs: number): Promise<string | undefined> {
+  return new Promise((resolve) => {
+    if (!has) return resolve(undefined)
+    let settled = false
+    const done = (v?: string) => { if (!settled) { settled = true; resolve(v) } }
+    const t = setTimeout(() => done(undefined), timeoutMs)
+    try {
+      invoke((id) => { clearTimeout(t); done(id || undefined) })
+    } catch {
+      clearTimeout(t)
+      done(undefined)
+    }
+  })
+}
+
+/** ClientID Яндекс.Метрики. */
+export function getMetrikaClientId(timeoutMs = 800): Promise<string | undefined> {
+  return readClientId(typeof window.ym === 'function', (cb) => window.ym!(YM_ID, 'getClientID', cb), timeoutMs)
+}
+
+/** client_id GA4. */
+export function getGaClientId(timeoutMs = 800): Promise<string | undefined> {
+  return readClientId(typeof window.gtag === 'function', (cb) => window.gtag!('get', GA_ID, 'client_id', cb), timeoutMs)
+}

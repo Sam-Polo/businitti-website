@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useCart } from '../contexts/CartContext'
-import { trackBeginCheckout, trackCartQuantity, trackOrderCreated, trackRemoveFromCart } from '../lib/analytics'
+import { getGaClientId, getMetrikaClientId, trackBeginCheckout, trackCartQuantity, trackOrderCreated, trackRemoveFromCart } from '../lib/analytics'
 import { useExternalLinks } from '../config/links'
 import { useSiteContent } from '../contexts/SiteContentContext'
 import { formatPrice } from '../api/products'
@@ -93,6 +93,8 @@ export default function CartModal() {
     setSubmitError(null)
 
     try {
+      // ClientID для серверной конверсии (best-effort, не блокирует заказ)
+      const [metrikaClientId, gaClientId] = await Promise.all([getMetrikaClientId(), getGaClientId()])
       const result = await createOrder({
         customer_name: name.trim(),
         customer_phone: phone.trim(),
@@ -101,6 +103,8 @@ export default function CartModal() {
         delivery_address: address.trim(),
         comment: comment.trim() || undefined,
         items: items.map((it) => ({ slug: it.slug, quantity: it.quantity })),
+        metrika_client_id: metrikaClientId,
+        ga_client_id: gaClientId,
       })
       trackOrderCreated(result.total_rub)
       clear()
