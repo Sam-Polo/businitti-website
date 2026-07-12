@@ -115,74 +115,26 @@ export function trackBeginCheckout(items: CartItem[], totalRub: number) {
 }
 
 // ─── Покупка ────────────────────────────────────────────
-// purchase шлём на /payment/success, но к этому моменту корзина уже очищена,
-// поэтому перед редиректом на Робокассу сохраняем снапшот заказа в localStorage.
-// Отправленные inv_id тоже запоминаем — перезагрузка success-страницы
-// не должна задваивать покупку.
+// Конверсию считаем в момент создания заказа, а НЕ на /payment/success:
+// с платёжной страницы Робокассы покупатель часто уходит, не вернувшись на
+// сайт (закрыл вкладку, оплатил в приложении банка), поэтому редирект-based
+// purchase систематически недосчитывал бы оплаты. Здесь считаем «оформленный
+// заказ» = целевое действие для Директа. Точный сигнал «реально оплачено»
+// есть на бэке (webhook Робокассы) — при желании его можно догружать
+// офлайн-конверсией в Метрику, см. project-yandex-direct в памяти.
 
-const PENDING_ORDER_KEY = 'businitti.analytics.pending_order'
-const SENT_PURCHASES_KEY = 'businitti.analytics.sent_purchases'
-
-type PendingOrder = {
-  invId: string
-  products: EcomProduct[]
-  revenue: number // итог с доставкой — столько списывает Робокасса
-}
-
-/** Заказ создан, уходим на оплату: цель order_created + снапшот для purchase. */
+/** Заказ оформлен и отправлен на оплату: цели + e-commerce purchase. */
 export function trackOrderCreated(invId: number, items: CartItem[], totalRub: number) {
+  const id = String(invId)
+  const products = items.map((it) => fromCartItem(it, it.quantity))
+
   ymGoal('order_created', { order_price: totalRub, currency: 'RUB' })
-  const pending: PendingOrder = {
-    invId: String(invId),
-    products: items.map((it) => fromCartItem(it, it.quantity)),
-    revenue: totalRub,
-  }
-  try {
-    localStorage.setItem(PENDING_ORDER_KEY, JSON.stringify(pending))
-  } catch { /* приватный режим — не будет ecommerce purchase, только цель */ }
-}
-
-function loadSentPurchases(): string[] {
-  try {
-    const data = JSON.parse(localStorage.getItem(SENT_PURCHASES_KEY) || '[]')
-    return Array.isArray(data) ? data.filter((x) => typeof x === 'string') : []
-  } catch {
-    return []
-  }
-}
-
-/**
- * Успешная оплата: цель purchase + e-commerce purchase по снапшоту заказа.
- * Без снапшота (оплату завершили в другом браузере) шлём только цель.
- */
-export function trackPurchase(invId: string) {
-  const sent = loadSentPurchases()
-  if (sent.includes(invId)) return
-
-  let pending: PendingOrder | null = null
-  try {
-    const raw = localStorage.getItem(PENDING_ORDER_KEY)
-    if (raw) pending = JSON.parse(raw)
-  } catch { /* битый снапшот — шлём только цель */ }
-
-  const matched = pending && pending.invId === invId && Array.isArray(pending.products)
-  if (matched) {
-    ymEcommerce('purchase', {
-      actionField: { id: invId, revenue: pending!.revenue },
-      products: pending!.products,
-    })
-    gaEvent('purchase', {
-      transaction_id: invId,
-      currency: 'RUB',
-      value: pending!.revenue,
-      items: toGaItems(pending!.products),
-    })
-    try { localStorage.removeItem(PENDING_ORDER_KEY) } catch { /* ignore */ }
-  }
-
-  ymGoal('purchase', matched ? { order_price: pending!.revenue, currency: 'RUB' } : undefined)
-
-  try {
-    localStorage.setItem(SENT_PURCHASES_KEY, JSON.stringify([...sent, invId].slice(-20)))
-  } catch { /* ignore */ }
+  ymGoal('purchase', { order_price: totalRub, currency: 'RUB' })
+  ymEcommerce('purchase', { actionField: { id, revenue: totalRub }, products })
+  gaEvent('purchase', {
+    transaction_id: id,
+    currency: 'RUB',
+    value: totalRub,
+    items: toGaItems(products),
+  })
 }
