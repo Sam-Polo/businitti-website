@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { fetchProductBySlug } from '../api/products'
 import { useCart } from '../contexts/CartContext'
 import { trackPageView } from '../hooks/usePageTracking'
+import { trackProductView } from '../lib/analytics'
 import type { ProductRouteState } from '../hooks/useProductRoute'
 
 const SITE_TITLE = 'Businitti — украшения ручной работы'
@@ -65,6 +66,7 @@ export default function ProductModalRoute() {
     if (hitKeyRef.current === location.key) return
     hitKeyRef.current = location.key
     trackPageView(location.pathname + location.search, title)
+    trackProductView(itemModalProduct)
   }, [itemModalProduct, productSlug, location.key, location.pathname, location.search])
 
   return null

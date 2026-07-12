@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useCart } from '../contexts/CartContext'
 import { formatPrice, type Product } from '../api/products'
+import { trackAddToCart } from '../lib/analytics'
 import { useModalAnimation } from '../hooks/useModalAnimation'
 import { useCloseProduct } from '../hooks/useProductRoute'
 import { RichText } from '../lib/RichText'
@@ -75,6 +76,7 @@ export default function ItemCardModal() {
   const mainImg = images[activeImage]
 
   const handleAdd = () => {
+    trackAddToCart(product, quantity)
     addItem(product, quantity)
     handleClose()
   }

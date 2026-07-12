@@ -1,5 +1,6 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useCart } from '../contexts/CartContext'
+import { trackBeginCheckout, trackCartQuantity, trackOrderCreated, trackRemoveFromCart } from '../lib/analytics'
 import { useExternalLinks } from '../config/links'
 import { useSiteContent } from '../contexts/SiteContentContext'
 import { formatPrice } from '../api/products'
@@ -51,6 +52,18 @@ export default function CartModal() {
     fetchOrdersStatus().then(setOrdersStatus).catch(() => {/* по умолчанию открыты */})
   }, [])
 
+  // Цель «начало оформления» — один раз на каждое открытие непустой корзины.
+  const checkoutTrackedRef = useRef(false)
+  useEffect(() => {
+    if (!isCartOpen) {
+      checkoutTrackedRef.current = false
+      return
+    }
+    if (checkoutTrackedRef.current || items.length === 0) return
+    checkoutTrackedRef.current = true
+    trackBeginCheckout(items, totalPrice)
+  }, [isCartOpen, items, totalPrice])
+
   useEffect(() => {
     if (!isCartOpen) return
     const prev = document.body.style.overflow
@@ -89,6 +102,7 @@ export default function CartModal() {
         comment: comment.trim() || undefined,
         items: items.map((it) => ({ slug: it.slug, quantity: it.quantity })),
       })
+      trackOrderCreated(result.inv_id, items, result.total_rub)
       clear()
       closeCart()
       // редирект на страницу оплаты Робокассы
@@ -127,13 +141,19 @@ export default function CartModal() {
                   <div className="cart-modal__item-qty">
                     <button
                       type="button"
-                      onClick={() => setQuantity(it.slug, it.quantity - 1)}
+                      onClick={() => {
+                        trackCartQuantity(it, -1)
+                        setQuantity(it.slug, it.quantity - 1)
+                      }}
                       aria-label="Уменьшить"
                     >−</button>
                     <span>{it.quantity}</span>
                     <button
                       type="button"
-                      onClick={() => setQuantity(it.slug, it.quantity + 1)}
+                      onClick={() => {
+                        trackCartQuantity(it, 1)
+                        setQuantity(it.slug, it.quantity + 1)
+                      }}
                       aria-label="Увеличить"
                     >+</button>
                   </div>
@@ -142,7 +162,10 @@ export default function CartModal() {
                 <button
                   type="button"
                   className="cart-modal__item-remove"
-                  onClick={() => removeItem(it.slug)}
+                  onClick={() => {
+                    trackRemoveFromCart(it)
+                    removeItem(it.slug)
+                  }}
                   aria-label="Удалить из корзины"
                 >
                   <svg width="11" height="13" viewBox="0 0 11 13" fill="none" xmlns="http://www.w3.org/2000/svg">

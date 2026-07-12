@@ -1,18 +1,7 @@
 import { useEffect } from 'react'
 import { useLocation, useMatch } from 'react-router-dom'
 import { PRODUCT_ROUTE_PATTERN } from './useProductRoute'
-
-declare global {
-  interface Window {
-    ym?: (...args: unknown[]) => void
-    gtag?: (...args: unknown[]) => void
-  }
-}
-
-// ─── ID счётчиков ───────────────────────────────────────
-// Должны совпадать с ID в index.html.
-const YM_ID = 109368038      // номер счётчика Яндекс.Метрики
-const GA_ID = 'G-TPN1XT7ESK' // ID потока Google Analytics
+import { YM_ID, GA_ID } from '../lib/analytics'
 
 // URL, с которым открыли сайт, уже посчитали счётчики в index.html
 // (ym init и gtag config). Его первый показ пропускаем, чтобы не задваивать

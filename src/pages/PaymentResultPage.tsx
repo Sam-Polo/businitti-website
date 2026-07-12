@@ -1,4 +1,6 @@
+import { useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { trackPurchase } from '../lib/analytics'
 import './PaymentResultPage.css'
 
 type Props = {
@@ -10,6 +12,11 @@ export default function PaymentResultPage({ variant }: Props) {
   const invId = searchParams.get('invId') || ''
 
   const isSuccess = variant === 'success'
+
+  // Цель purchase + e-commerce purchase; дедуп по invId внутри trackPurchase.
+  useEffect(() => {
+    if (isSuccess && invId) trackPurchase(invId)
+  }, [isSuccess, invId])
 
   return (
     <main className={`payment-result payment-result--${variant}`}>
