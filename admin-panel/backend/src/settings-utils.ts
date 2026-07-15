@@ -13,6 +13,8 @@ import { logger } from './logger.js'
  *   - delivery_yandex_price (number)
  *   - admin_username (string)
  *   - admin_password_hash ("scrypt:salt:hash")
+ *   - sale_order (список slug'ов через запятую — заданный вручную порядок товаров в
+ *     виртуальной категории `sale`; товары не из списка идут в конец)
  */
 
 const SHEET_NAME = 'settings'
@@ -165,4 +167,20 @@ export async function fetchTelegramChatId(sheetId: string): Promise<string> {
 
 export async function saveTelegramChatId(sheetId: string, chatId: string): Promise<void> {
   await setSetting(sheetId, 'telegram_chat_id', chatId.trim())
+}
+
+/**
+ * Порядок товаров в виртуальной категории `sale` — список slug'ов.
+ * Хранится строкой через запятую (slug'и матчат `^[a-z0-9_-]+$`, запятая безопасна).
+ */
+export async function fetchSaleOrder(sheetId: string): Promise<string[]> {
+  const all = await fetchAllSettings(sheetId)
+  const raw = (all['sale_order'] || '').trim()
+  if (!raw) return []
+  return raw.split(',').map((s) => s.trim()).filter(Boolean)
+}
+
+export async function saveSaleOrder(sheetId: string, slugs: string[]): Promise<void> {
+  const clean = slugs.map((s) => String(s).trim()).filter(Boolean)
+  await setSetting(sheetId, 'sale_order', clean.join(','))
 }

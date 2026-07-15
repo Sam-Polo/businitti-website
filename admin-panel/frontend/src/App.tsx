@@ -123,6 +123,19 @@ type Product = {
   orderInCategory?: Record<string, number>
 }
 
+// процент скидки 0..1 — совпадает с логикой сервера (public.ts), для сборки виртуальной
+// категории `sale`: в неё попадают товары со скидкой
+function discountPct(p: Product): number {
+  if (!p.discount_price_rub || p.discount_price_rub <= 0) return 0
+  if (!p.price_rub || p.price_rub <= 0) return 0
+  if (p.discount_price_rub >= p.price_rub) return 0
+  return (p.price_rub - p.discount_price_rub) / p.price_rub
+}
+
+function hasDiscount(p: Product): boolean {
+  return discountPct(p) > 0
+}
+
 function LoginForm({ onLogin }: { onLogin: () => void }) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -201,6 +214,8 @@ function ProductsList({ onNavigate, newOrdersCount }: { onNavigate?: (page: Admi
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
   const [isReorderProductsMode, setIsReorderProductsMode] = useState(false)
   const [reorderedProductsByCategory, setReorderedProductsByCategory] = useState<Record<string, Product[]>>({})
+  // заданный вручную порядок товаров в виртуальной категории sale (список slug'ов)
+  const [saleOrder, setSaleOrder] = useState<string[]>([])
   const [isSavingProductsOrder, setIsSavingProductsOrder] = useState(false)
   const [showScrollTop, setShowScrollTop] = useState(false)
 
@@ -223,9 +238,13 @@ function ProductsList({ onNavigate, newOrdersCount }: { onNavigate?: (page: Admi
     try {
       setLoading(true)
       setError('')
-      const data = await api.getProducts()
+      const [data, saleOrderData] = await Promise.all([
+        api.getProducts(),
+        api.getSaleOrder().catch(() => ({ order: [] as string[] })),
+      ])
       const productsList = data.products || []
       setProducts(productsList)
+      setSaleOrder(saleOrderData.order || [])
       setSelectedProductSlugs(new Set()) // сбрасываем выделение при обновлении
       return productsList
     } catch (err: any) {
@@ -343,42 +362,66 @@ function ProductsList({ onNavigate, newOrdersCount }: { onNavigate?: (page: Admi
   }
 
   // категории для фильтра: из API; если пусто — из товаров (fallback).
-  // sale исключаем — там нет реально привязанных товаров (виртуальная категория).
+  // sale включаем — товары в неё собираются по наличию скидки (виртуальная категория),
+  // выбор sale позволяет задать их порядок drag&drop'ом.
   const categoriesForFilter = categories.length > 0
-    ? categories.filter((c) => c.key !== 'sale').map((c) => c.key)
+    ? categories.map((c) => c.key)
     : Array.from(new Set(products.flatMap((p) => p.categories || [p.category]))).sort()
 
-  // фильтруем товары по категории и поисковому запросу (название, описание, артикул, цена)
-  const filteredProducts = products.filter(p => {
-    const productCats = p.categories || [p.category]
-    const matchesCategory = selectedCategory === 'all' || productCats.includes(selectedCategory)
+  const isSaleView = selectedCategory === 'sale'
+
+  // совпадение с поисковым запросом (название, описание, артикул, цена)
+  const matchesSearch = (p: Product): boolean => {
     const q = searchArticle.trim().toLowerCase()
-    if (!q) return matchesCategory
-    const matchesQuery =
+    if (!q) return true
+    return Boolean(
       (p.title && p.title.toLowerCase().includes(q)) ||
       (p.description && p.description.toLowerCase().includes(q)) ||
       (p.article && p.article.toLowerCase().includes(q)) ||
       (p.price_rub !== undefined && String(p.price_rub).includes(q)) ||
       (p.discount_price_rub !== undefined && String(p.discount_price_rub).includes(q))
-    return matchesCategory && matchesQuery
+    )
+  }
+
+  // фильтруем товары по категории и поисковому запросу.
+  // sale — виртуальная категория: товары в неё попадают по наличию скидки.
+  const filteredProducts = products.filter(p => {
+    if (!matchesSearch(p)) return false
+    if (isSaleView) return hasDiscount(p)
+    const productCats = p.categories || [p.category]
+    return selectedCategory === 'all' || productCats.includes(selectedCategory)
   })
 
-  // группируем по категориям и сортируем по порядку в листе (orderInCategory), чтобы порядок не «улетал»
-  const groupedProducts = filteredProducts.reduce((acc, product) => {
-    const productCats = product.categories || [product.category]
-    for (const cat of productCats) {
-      if (!acc[cat]) acc[cat] = []
-      acc[cat].push(product)
-    }
-    return acc
-  }, {} as Record<string, Product[]>)
-  // в каждой категории сортируем по orderInCategory[cat] (порядок строк в таблице)
-  for (const cat of Object.keys(groupedProducts)) {
-    groupedProducts[cat].sort((a, b) => {
-      const orderA = a.orderInCategory?.[cat] ?? 9999
-      const orderB = b.orderInCategory?.[cat] ?? 9999
-      return orderA - orderB
+  // группируем по категориям и сортируем внутри каждой
+  let groupedProducts: Record<string, Product[]>
+  if (isSaleView) {
+    // sale: один блок; порядок — заданный вручную (saleOrder), не расставленные в конце
+    // по убыванию скидки (совпадает с сортировкой публичного /api/public/products?category=sale)
+    const orderIndex = new Map(saleOrder.map((slug, i) => [slug, i]))
+    const saleSorted = [...filteredProducts].sort((a, b) => {
+      const ia = orderIndex.has(a.slug) ? (orderIndex.get(a.slug) as number) : Number.POSITIVE_INFINITY
+      const ib = orderIndex.has(b.slug) ? (orderIndex.get(b.slug) as number) : Number.POSITIVE_INFINITY
+      if (ia !== ib) return ia - ib
+      return discountPct(b) - discountPct(a)
     })
+    groupedProducts = saleSorted.length > 0 ? { sale: saleSorted } : {}
+  } else {
+    // сортируем по порядку строк в листе (orderInCategory), чтобы порядок не «улетал»
+    groupedProducts = filteredProducts.reduce((acc, product) => {
+      const productCats = product.categories || [product.category]
+      for (const cat of productCats) {
+        if (!acc[cat]) acc[cat] = []
+        acc[cat].push(product)
+      }
+      return acc
+    }, {} as Record<string, Product[]>)
+    for (const cat of Object.keys(groupedProducts)) {
+      groupedProducts[cat].sort((a, b) => {
+        const orderA = a.orderInCategory?.[cat] ?? 9999
+        const orderB = b.orderInCategory?.[cat] ?? 9999
+        return orderA - orderB
+      })
+    }
   }
 
   // отслеживание прокрутки для кнопки "вверх"
@@ -459,7 +502,13 @@ function ProductsList({ onNavigate, newOrdersCount }: { onNavigate?: (page: Admi
       })
 
       await Promise.all(reorderPromises)
-      
+
+      // sale — виртуальная категория: её порядок хранится отдельно (saleOrder), а не в
+      // порядке строк products. Обновляем локально, чтобы вид не откатился до фоновой перезагрузки.
+      if (reorderedProductsByCategory['sale']) {
+        setSaleOrder(reorderedProductsByCategory['sale'].map(p => p.slug))
+      }
+
       // обновляем локальное состояние products с новым порядком из reorderedProductsByCategory
       // чтобы избежать визуального "прыжка" при перезагрузке
       setProducts(prevProducts => {

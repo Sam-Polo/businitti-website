@@ -10,6 +10,8 @@ import {
   reorderProductsInSheet
 } from '../sheets-utils.js'
 import { fetchCategoriesFromSheet } from '../categories-utils.js'
+import { saveSaleOrder } from '../settings-utils.js'
+import { invalidateSaleOrderCache } from './public.js'
 import pino from 'pino'
 
 const logger = pino()
@@ -350,14 +352,22 @@ router.post('/reorder', async (req, res) => {
     }
 
     const { category, slugs } = req.body
-    
+
     if (!category || !Array.isArray(slugs) || slugs.length === 0) {
       return res.status(400).json({ error: 'invalid_request' })
     }
 
+    // sale — виртуальная категория без листа: порядок храним списком slug'ов в settings
+    if (category === 'sale') {
+      await saveSaleOrder(sheetId, slugs)
+      invalidateSaleOrderCache()
+      logger.info({ count: slugs.length }, 'порядок товаров sale обновлён')
+      return res.json({ success: true })
+    }
+
     const auth = getAuthFromEnv()
     const normalizedCategory = normalizeSheetName(category)
-    
+
     await reorderProductsInSheet(auth, sheetId, normalizedCategory, slugs)
     
     logger.info({ category: normalizedCategory, count: slugs.length }, 'порядок товаров обновлен')

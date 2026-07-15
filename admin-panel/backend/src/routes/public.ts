@@ -6,7 +6,7 @@ import { buildReceipt, createPaymentUrl } from '../robokassa.js'
 import { orderLimiter } from '../rate-limit.js'
 import { fetchOverridesMap, type SiteContentMap } from '../site-content-utils.js'
 import { fetchCategoriesFromSheet, type Category } from '../categories-utils.js'
-import { fetchOrdersSettingsFromSheet, fetchTelegramChatId } from '../settings-utils.js'
+import { fetchOrdersSettingsFromSheet, fetchTelegramChatId, fetchSaleOrder } from '../settings-utils.js'
 
 const router = express.Router()
 
@@ -115,6 +115,27 @@ export function invalidateCategoriesCache() {
   categoriesCache = null
 }
 
+// кеш порядка товаров в sale (60 сек) — заданный вручную порядок из листа settings
+let saleOrderCache: { data: string[]; expiresAt: number } | null = null
+async function getSaleOrderCached(): Promise<string[]> {
+  const now = Date.now()
+  if (saleOrderCache && saleOrderCache.expiresAt > now) return saleOrderCache.data
+  const sheetId = process.env.GOOGLE_SHEET_ID
+  if (!sheetId) return []
+  try {
+    const data = await fetchSaleOrder(sheetId)
+    saleOrderCache = { data, expiresAt: now + CACHE_TTL_MS }
+    return data
+  } catch (err: any) {
+    logger.warn({ err: err?.message }, 'не удалось загрузить порядок sale')
+    return []
+  }
+}
+
+export function invalidateSaleOrderCache() {
+  saleOrderCache = null
+}
+
 // GET /api/public/categories — список категорий с заголовками и описанием
 router.get('/categories', async (_req, res) => {
   try {
@@ -214,9 +235,18 @@ router.get('/products', async (req, res) => {
     }
 
     if (category === 'sale') {
+      // порядок: сначала расставленные вручную (settings.sale_order), затем остальные
+      // по убыванию процента скидки
+      const order = await getSaleOrderCached()
+      const orderIndex = new Map(order.map((slug, i) => [slug, i]))
       const saleItems = available
         .filter(hasDiscount)
-        .sort((a, b) => discountPct(b) - discountPct(a))
+        .sort((a, b) => {
+          const ia = orderIndex.has(a.slug) ? (orderIndex.get(a.slug) as number) : Number.POSITIVE_INFINITY
+          const ib = orderIndex.has(b.slug) ? (orderIndex.get(b.slug) as number) : Number.POSITIVE_INFINITY
+          if (ia !== ib) return ia - ib
+          return discountPct(b) - discountPct(a)
+        })
         .map(toPublic)
       res.json({ products: saleItems })
       return

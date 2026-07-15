@@ -9,6 +9,7 @@ import {
   saveAdminCreds,
   fetchTelegramChatId,
   saveTelegramChatId,
+  fetchSaleOrder,
 } from '../settings-utils.js'
 import { DELIVERY_PRICES, invalidateDeliveryPricesCache } from '../orders-utils.js'
 import pino from 'pino'
@@ -103,6 +104,20 @@ router.put('/delivery-prices', async (req, res) => {
   } catch (error: any) {
     logger.error({ error: error?.message }, 'ошибка сохранения цен доставки')
     return res.status(500).json({ error: error?.message || 'Ошибка сохранения цен доставки' })
+  }
+})
+
+// ===== Порядок товаров в виртуальной категории sale =====
+// Сохранение идёт через POST /api/products/reorder (category=sale); здесь только чтение.
+
+router.get('/sale-order', async (_req, res) => {
+  try {
+    const sheetId = getSheetId(res); if (!sheetId) return
+    const order = await fetchSaleOrder(sheetId)
+    return res.json({ order })
+  } catch (error: any) {
+    logger.error({ error: error?.message }, 'ошибка загрузки порядка sale')
+    return res.status(500).json({ error: error?.message || 'Ошибка загрузки порядка sale' })
   }
 })
 

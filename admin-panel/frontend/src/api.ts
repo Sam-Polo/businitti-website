@@ -129,13 +129,18 @@ export const api = {
     })
   },
 
-  // переупорядочивание товаров в категории
+  // переупорядочивание товаров в категории (category=sale — виртуальная, порядок в settings)
   async reorderProducts(category: string, slugs: string[]) {
     return fetchWithAuth('/api/products/reorder', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ category, slugs })
     })
+  },
+
+  // текущий порядок товаров в виртуальной категории sale (список slug'ов)
+  async getSaleOrder(): Promise<{ order: string[] }> {
+    return fetchWithAuth('/api/settings/sale-order')
   },
 
   // загрузка фото в Uploadcare (таймаут 2 мин — большие фото по медленной сети)
