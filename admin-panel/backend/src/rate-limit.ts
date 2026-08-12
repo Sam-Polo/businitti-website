@@ -17,3 +17,13 @@ export const orderLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: 'too_many_orders' },
 })
+
+// Лимит на страницу перехода к оплате: каждый заход читает заказ из Sheets.
+// Запас большой — покупатель может открывать ссылку несколько раз (и повторно из письма).
+export const paymentPageLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 60,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: 'Слишком много запросов, попробуйте позже',
+})

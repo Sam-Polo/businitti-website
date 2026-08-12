@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express'
-import { createPaymentUrl, verifyResultSignature, verifySuccessSignature, buildReceipt } from '../robokassa.js'
-import { findOrderByInvId, fetchOrderWithItems, fetchOrderItems, updateOrderStatus, decrementStockForOrder, updateOrderEmailStatus, getAuth, type OrderItem } from '../orders-utils.js'
+import { createPaymentUrl, createPaymentForm, verifyResultSignature, verifySuccessSignature, buildReceipt } from '../robokassa.js'
+import { findOrderByInvId, fetchOrderWithItems, fetchOrderItems, updateOrderStatus, decrementStockForOrder, updateOrderEmailStatus, getAuth, DELIVERY_LABELS, type OrderItem } from '../orders-utils.js'
+import { paymentPageLimiter } from '../rate-limit.js'
 import { sendPurchaseConversion } from '../analytics-conversions.js'
 import { notifyTelegramOrder } from '../telegram-notify.js'
 import { sendEmail } from '../unisender.js'
@@ -41,6 +42,113 @@ router.post('/create', (req: Request, res: Response) => {
   } catch (err: any) {
     logger.error({ err: err.message }, 'ошибка создания платежа')
     res.status(500).json({ error: 'Ошибка создания платежа' })
+  }
+})
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+}
+
+/** Минимальная страница-заглушка с сообщением покупателю */
+function infoPage(title: string, text: string, link?: { href: string; label: string }): string {
+  return `<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>${escapeHtml(title)}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#2F2F2F;background:#FAF8F5;padding:24px}
+.card{max-width:420px;text-align:center}h1{font-size:20px;font-weight:600;margin:0 0 12px}
+a{display:inline-block;margin-top:20px;padding:12px 24px;background:#2F2F2F;color:#fff;border-radius:8px;text-decoration:none}</style>
+</head><body><div class="card"><h1>${escapeHtml(title)}</h1><p>${escapeHtml(text)}</p>${
+    link ? `<a href="${escapeHtml(link.href)}">${escapeHtml(link.label)}</a>` : ''
+  }</div></body></html>`
+}
+
+/**
+ * GET /api/payment/pay/:invId
+ * Страница перехода к оплате: сабмитит параметры в Робокассу POST-формой.
+ *
+ * Зачем не прямая ссылка: у Робокассы query ограничен ~2048 символами, а чек занимает
+ * ~280 символов на позицию — корзина от 6 товаров превращалась в 404 вместо оплаты.
+ * Тело POST такого ограничения не имеет.
+ *
+ * Ссылка постоянная и привязана к заказу — её можно открыть повторно или отправить
+ * покупателю, который не довёл оплату до конца.
+ */
+router.get('/pay/:invId', paymentPageLimiter, async (req: Request, res: Response) => {
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
+  try {
+    const invId = Number(req.params.invId)
+    const sheetId = process.env.GOOGLE_SHEET_ID
+    if (!Number.isFinite(invId) || invId <= 0 || !sheetId) {
+      return res.status(400).send(infoPage('Ссылка не работает', 'Проверьте адрес или оформите заказ заново.',
+        { href: frontendUrl, label: 'В магазин' }))
+    }
+
+    const auth = getAuth()
+    const order = await findOrderByInvId(auth, sheetId, invId)
+    if (!order) {
+      return res.status(404).send(infoPage('Заказ не найден', 'Возможно, ссылка устарела.',
+        { href: frontendUrl, label: 'В магазин' }))
+    }
+    if (order.status === 'cancelled' || order.status === 'refunded') {
+      return res.status(410).send(infoPage('Заказ отменён', 'Этот заказ больше нельзя оплатить.',
+        { href: frontendUrl, label: 'В магазин' }))
+    }
+    if (order.status !== 'pending_payment') {
+      // уже оплачен — не даём заплатить второй раз
+      return res.redirect(`${frontendUrl}/payment/success?invId=${invId}`)
+    }
+
+    const items = await fetchOrderItems(auth, sheetId, order.id)
+    if (items.length === 0) {
+      logger.error({ orderId: order.id, invId }, 'у заказа нет позиций — нечего оплачивать')
+      return res.status(500).send(infoPage('Не удалось открыть оплату', 'Напишите нам, и мы поможем завершить заказ.',
+        { href: frontendUrl, label: 'В магазин' }))
+    }
+
+    const receipt = buildReceipt(
+      items.map((it) => ({ name: it.product_title, quantity: it.quantity, price: it.price_rub })),
+      order.delivery_rub > 0
+        ? { name: DELIVERY_LABELS[order.delivery_service] || 'Доставка', price: order.delivery_rub }
+        : undefined
+    )
+
+    const form = createPaymentForm({
+      outSum: order.total_rub,
+      invId: order.inv_id,
+      description: `Заказ #${order.display_id}`,
+      email: order.customer_email,
+      receipt,
+    })
+
+    const inputs = Object.entries(form.fields)
+      .map(([name, value]) => `<input type="hidden" name="${escapeHtml(name)}" value="${escapeHtml(value)}">`)
+      .join('\n    ')
+
+    // автосабмит; кнопка остаётся видимой запасным вариантом, если скрипт не отработал
+    res.set('Cache-Control', 'no-store').send(`<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>Переход к оплате</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#2F2F2F;background:#FAF8F5;padding:24px}
+.card{max-width:420px;text-align:center}p{margin:0 0 20px}
+button{padding:12px 24px;background:#2F2F2F;color:#fff;border:0;border-radius:8px;font-size:16px;cursor:pointer}</style>
+</head><body>
+  <div class="card">
+    <p>Открываем защищённую страницу оплаты Робокассы…</p>
+    <form id="pay" method="POST" action="${escapeHtml(form.actionUrl)}" accept-charset="utf-8">
+    ${inputs}
+      <button type="submit">Перейти к оплате</button>
+    </form>
+  </div>
+  <script>document.getElementById('pay').submit()</script>
+</body></html>`)
+  } catch (err: any) {
+    logger.error({ err: err?.message, invId: req.params.invId }, 'ошибка страницы перехода к оплате')
+    res.status(500).send(infoPage('Не удалось открыть оплату', 'Попробуйте ещё раз через минуту.',
+      { href: frontendUrl, label: 'В магазин' }))
   }
 })
 

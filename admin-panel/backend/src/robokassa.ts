@@ -31,6 +31,13 @@ export type PaymentResult = {
   invId?: number
 }
 
+/** Параметры формы оплаты: POST-версия ссылки (без ограничения на длину query) */
+export type PaymentForm = {
+  actionUrl: string
+  fields: Record<string, string>
+  invId?: number
+}
+
 // ─── Конфигурация ────────────────────────────────────────
 
 /**
@@ -84,9 +91,9 @@ function md5(data: string): string {
 // ─── Генерация ссылки на оплату ─────────────────────────
 
 /**
- * Создаёт URL для перенаправления покупателя на страницу оплаты Робокассы
+ * Собирает набор параметров платежа (одинаковый для GET-ссылки и POST-формы).
  */
-export function createPaymentUrl(params: CreatePaymentParams): PaymentResult {
+function buildPaymentFields(params: CreatePaymentParams): Record<string, string> {
   const { login, password1, isTest } = getConfig()
 
   const outSum = params.outSum.toFixed(2)
@@ -103,43 +110,50 @@ export function createPaymentUrl(params: CreatePaymentParams): PaymentResult {
   signParts += `:${password1}`
   signParts += formatShpParams(params.shpParams)
 
-  const signature = md5(signParts)
+  const fields: Record<string, string> = {
+    MerchantLogin: login,
+    OutSum: outSum,
+    SignatureValue: md5(signParts),
+  }
+  if (params.invId !== undefined) fields.InvId = String(params.invId)
+  if (params.description) fields.Description = params.description
+  if (params.email) fields.Email = params.email
+  // сырой JSON: URLSearchParams/форма закодируют его сами
+  if (params.receipt) fields.Receipt = JSON.stringify(params.receipt)
+  if (isTest) fields.IsTest = '1'
+  if (params.shpParams) Object.assign(fields, params.shpParams)
 
-  // Формирование URL
-  const urlParams = new URLSearchParams()
-  urlParams.set('MerchantLogin', login)
-  urlParams.set('OutSum', outSum)
-  if (params.invId !== undefined) {
-    urlParams.set('InvId', String(params.invId))
-  }
-  urlParams.set('SignatureValue', signature)
+  return fields
+}
 
-  if (params.description) {
-    urlParams.set('Description', params.description)
-  }
-  if (params.email) {
-    urlParams.set('Email', params.email)
-  }
-  if (params.receipt) {
-    // URLSearchParams сам сделает URL-encoding при toString() — передаём сырой JSON
-    urlParams.set('Receipt', JSON.stringify(params.receipt))
-  }
-  if (isTest) {
-    urlParams.set('IsTest', '1')
-  }
-
-  // Shp_ параметры
-  if (params.shpParams) {
-    for (const [key, value] of Object.entries(params.shpParams)) {
-      urlParams.set(key, value)
-    }
-  }
-
+/**
+ * Создаёт URL для перенаправления покупателя на страницу оплаты Робокассы.
+ *
+ * ВНИМАНИЕ: query у Робокассы ограничен ~2048 символами, а чек (`Receipt`) занимает
+ * ~280 символов на позицию — с корзиной от 6 товаров ссылка отдаёт 404. Для покупателя
+ * используем POST-форму (`createPaymentForm`), этот вариант остался для коротких платежей
+ * без чека (`POST /api/payment/create`).
+ */
+export function createPaymentUrl(params: CreatePaymentParams): PaymentResult {
+  const fields = buildPaymentFields(params)
+  const urlParams = new URLSearchParams(fields)
   const paymentUrl = `${PAYMENT_URL}?${urlParams.toString()}`
 
-  logger.info({ invId: params.invId, outSum, isTest }, 'создана ссылка на оплату Робокассы')
+  logger.info({ invId: params.invId, outSum: fields.OutSum, len: paymentUrl.length }, 'создана ссылка на оплату Робокассы')
 
   return { paymentUrl, invId: params.invId }
+}
+
+/**
+ * То же самое, но для отправки POST-формой — на длину тела ограничений нет,
+ * поэтому чек любой корзины уходит целиком.
+ */
+export function createPaymentForm(params: CreatePaymentParams): PaymentForm {
+  const fields = buildPaymentFields(params)
+
+  logger.info({ invId: params.invId, outSum: fields.OutSum }, 'создана POST-форма оплаты Робокассы')
+
+  return { actionUrl: PAYMENT_URL, fields, invId: params.invId }
 }
 
 // ─── Проверка подписи Result URL ────────────────────────

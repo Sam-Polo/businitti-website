@@ -2,7 +2,6 @@ import express from 'express'
 import { fetchProductsFromSheet, type SheetProduct } from '../sheets.js'
 import { logger } from '../logger.js'
 import { createOrder, getAuth, DELIVERY_LABELS, getEffectiveDeliveryPrices, type DeliveryService } from '../orders-utils.js'
-import { buildReceipt, createPaymentUrl } from '../robokassa.js'
 import { orderLimiter } from '../rate-limit.js'
 import { fetchOverridesMap, type SiteContentMap } from '../site-content-utils.js'
 import { fetchCategoriesFromSheet, type Category } from '../categories-utils.js'
@@ -364,26 +363,12 @@ router.post('/orders', orderLimiter, async (req, res) => {
       items: snapshotItems,
     })
 
-    // формируем чек для самозанятого (tax: "none") — товары + доставка
-    const receipt = buildReceipt(
-      snapshotItems.map((it) => ({
-        name: it.product_title,
-        quantity: it.quantity,
-        price: it.price_rub,
-      })),
-      order.delivery_rub > 0
-        ? { name: DELIVERY_LABELS[delivery_service], price: order.delivery_rub }
-        : undefined
-    )
-
-    // строим URL Робокассы
-    const payment = createPaymentUrl({
-      outSum: order.total_rub,
-      invId: order.inv_id,
-      description: `Заказ #${order.display_id}`,
-      email: customer_email,
-      receipt,
-    })
+    // Ведём покупателя не прямой ссылкой на Робокассу, а через свою страницу:
+    // она сабмитит те же параметры POST-формой. Прямая GET-ссылка ломается на
+    // корзине от ~6 позиций (чек не влезает в 2048 символов query — Робокасса отдаёт 404).
+    // Ссылка постоянная: её можно переоткрыть или отправить покупателю повторно.
+    const baseUrl = process.env.PUBLIC_API_URL || `${req.protocol}://${req.get('host')}`
+    const payment_url = `${baseUrl}/api/payment/pay/${order.inv_id}`
 
     res.json({
       order_id: order.id,
@@ -391,7 +376,7 @@ router.post('/orders', orderLimiter, async (req, res) => {
       inv_id: order.inv_id,
       delivery_rub: order.delivery_rub,
       total_rub: order.total_rub,
-      payment_url: payment.paymentUrl,
+      payment_url,
     })
 
     // Уведомления в Telegram здесь НЕТ намеренно: заказ только создан и ещё не оплачен.
