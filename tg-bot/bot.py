@@ -111,8 +111,14 @@ def format_order_message(order: dict, items: list) -> str:
     delivery = DELIVERY_LABELS.get(order.get("delivery_service", ""), "—")
     status = STATUS_LABELS.get(order.get("status", ""), order.get("status", "—"))
 
+    # уведомления шлёт бэкенд только по факту оплаты (webhook Робокассы),
+    # поэтому статус тут в норме всегда «Новый» — помечаем оплату явно
+    header = f"🛍 <b>Новый заказ #{order.get('display_id', '?')}</b>"
+    if order.get("status") == "new":
+        header += "\n💳 <b>Оплачен</b>"
+
     lines = [
-        f"🛍 <b>Новый заказ #{order.get('display_id', '?')}</b>",
+        header,
         "",
         f"👤 <b>Покупатель:</b> {order.get('customer_name', '—')}",
         f"📞 <b>Телефон:</b> {order.get('customer_phone', '—')}",

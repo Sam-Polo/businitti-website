@@ -1,7 +1,8 @@
 import { Router, Request, Response } from 'express'
 import { createPaymentUrl, verifyResultSignature, verifySuccessSignature, buildReceipt } from '../robokassa.js'
-import { findOrderByInvId, fetchOrderWithItems, fetchOrderItems, updateOrderStatus, decrementStockForOrder, updateOrderEmailStatus, getAuth } from '../orders-utils.js'
+import { findOrderByInvId, fetchOrderWithItems, fetchOrderItems, updateOrderStatus, decrementStockForOrder, updateOrderEmailStatus, getAuth, type OrderItem } from '../orders-utils.js'
 import { sendPurchaseConversion } from '../analytics-conversions.js'
+import { notifyTelegramOrder } from '../telegram-notify.js'
 import { sendEmail } from '../unisender.js'
 import { buildOrderEmailHtml, buildOrderEmailSubject } from '../order-email.js'
 import { fetchOverridesMap } from '../site-content-utils.js'
@@ -112,25 +113,32 @@ router.post('/result', async (req: Request, res: Response) => {
         await updateOrderStatus(auth, sheetId, order.id, 'new')
         logger.info({ orderId: order.id, InvId }, 'заказ переведён в new (оплачен)')
 
+        // позиции нужны и уведомлению в Telegram, и разбивке purchase по товарам
+        let items: OrderItem[] = []
+        try {
+          items = await fetchOrderItems(auth, sheetId, order.id)
+        } catch (itemsErr: any) {
+          logger.error({ err: itemsErr?.message, orderId: order.id }, 'не удалось загрузить позиции заказа')
+        }
+
+        // Уведомление владельцу — только здесь, по факту оплаты: заказ в pending_payment
+        // готовить рано. Гард по статусу выше делает это ровно один раз на заказ.
+        await notifyTelegramOrder(sheetId, { ...order, status: 'new' }, items)
+
         try {
           await decrementStockForOrder(auth, sheetId, order.id)
         } catch (stockErr: any) {
           logger.error({ err: stockErr?.message, orderId: order.id }, 'не удалось уменьшить stock')
         }
 
-        // Покупка в Метрику/GA4 — только здесь, по факту оплаты. Гард по статусу
-        // pending_payment выше делает это ровно один раз на заказ.
+        // Покупка в Метрику/GA4 — только здесь, по факту оплаты.
         try {
-          let convItems: Array<{ id: string; name: string; price: number; quantity: number }> = []
-          try {
-            const items = await fetchOrderItems(auth, sheetId, order.id)
-            convItems = items.map((it) => ({
-              id: it.product_slug,
-              name: it.product_title,
-              price: it.price_rub,
-              quantity: it.quantity,
-            }))
-          } catch { /* без разбивки по товарам — не критично */ }
+          const convItems = items.map((it) => ({
+            id: it.product_slug,
+            name: it.product_title,
+            price: it.price_rub,
+            quantity: it.quantity,
+          }))
           await sendPurchaseConversion({
             invId: invIdNum,
             revenue: order.total_rub,
