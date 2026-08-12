@@ -369,7 +369,23 @@ function OrderDetailModal({ orderId, onClose, onChanged }: {
                     />
                   )}
                   <div style={{ flex: 1 }}>
-                    <div className="bn-display" style={{ fontSize: '1.05em', textTransform: 'uppercase' }}>{item.product_title}</div>
+                    <div className="bn-display" style={{ fontSize: '1.05em', textTransform: 'uppercase' }}>
+                      {item.product_title}
+                      {item.is_preorder && (
+                        <span style={{
+                          marginLeft: 8,
+                          padding: '2px 8px',
+                          fontSize: '0.7em',
+                          letterSpacing: '0.04em',
+                          color: '#bf9243',
+                          border: '1px solid #bf9243',
+                          borderRadius: 4,
+                          verticalAlign: 'middle',
+                        }}>
+                          предзаказ
+                        </span>
+                      )}
+                    </div>
                     {item.product_article && (
                       <div style={{ fontSize: '0.85em', opacity: 0.7 }}>Артикул: {item.product_article}</div>
                     )}

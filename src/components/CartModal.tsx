@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { useCart } from '../contexts/CartContext'
+import { cartItemMaxQuantity, useCart } from '../contexts/CartContext'
 import { getGaClientId, getMetrikaClientId, trackBeginCheckout, trackCartQuantity, trackOrderCreated, trackRemoveFromCart } from '../lib/analytics'
 import { useExternalLinks } from '../config/links'
 import { useSiteContent } from '../contexts/SiteContentContext'
@@ -78,6 +78,10 @@ export default function CartModal() {
 
   if (!shouldRender) return null
 
+  // если весь заказ — предзаказ, сроки сборки/отправки из админки не показываем:
+  // они относятся к товарам в наличии
+  const allPreorder = items.length > 0 && items.every((it) => it.preorder)
+
   const deliveryPrice = deliveryPrices[delivery].price
   const grandTotal = totalPrice + (items.length > 0 ? deliveryPrice : 0)
 
@@ -142,6 +146,7 @@ export default function CartModal() {
                 />
                 <div className="cart-modal__item-info">
                   <p className="cart-modal__item-title">{it.title}</p>
+                  {it.preorder && <p className="cart-modal__item-preorder">Предзаказ</p>}
                   <div className="cart-modal__item-qty">
                     <button
                       type="button"
@@ -158,6 +163,7 @@ export default function CartModal() {
                         trackCartQuantity(it, 1)
                         setQuantity(it.slug, it.quantity + 1)
                       }}
+                      disabled={it.quantity >= cartItemMaxQuantity(it)}
                       aria-label="Увеличить"
                     >+</button>
                   </div>
@@ -275,7 +281,7 @@ export default function CartModal() {
             </label>
           </div>
 
-          <p className="cart-modal__notice">{cartNotice}</p>
+          {!allPreorder && <p className="cart-modal__notice">{cartNotice}</p>}
 
           <label className="cart-modal__agree">
             <input

@@ -130,12 +130,22 @@ def format_order_message(order: dict, items: list) -> str:
         "<b>Состав заказа:</b>",
     ]
 
+    has_preorder = False
     for item in items:
         article = item.get("product_article") or ""
         article_str = f" ({article})" if article else ""
         qty = item.get("quantity", 1)
         subtotal = item.get("subtotal_rub", 0)
-        lines.append(f"  • {item.get('product_title', '—')}{article_str} × {qty} — {fmt_rub(subtotal)}")
+        # позиция с остатком 0 — оформлена предзаказом, отправить сразу не выйдет
+        preorder_str = " ⏳ <b>предзаказ</b>" if item.get("is_preorder") else ""
+        if preorder_str:
+            has_preorder = True
+        lines.append(
+            f"  • {item.get('product_title', '—')}{article_str} × {qty} — {fmt_rub(subtotal)}{preorder_str}"
+        )
+
+    if has_preorder:
+        lines += ["", "⏳ <b>В заказе есть предзаказ</b> — товар нужно изготовить"]
 
     lines += [
         "",
@@ -173,7 +183,7 @@ SAMPLE_ITEMS = [
     {"product_title": "Кольцо «Луна» серебро", "product_article": "RNG-001",
      "price_rub": 2000, "quantity": 1, "subtotal_rub": 2000},
     {"product_title": "Браслет «Волна» золото", "product_article": "BRC-007",
-     "price_rub": 2000, "quantity": 1, "subtotal_rub": 2000},
+     "price_rub": 2000, "quantity": 1, "subtotal_rub": 2000, "is_preorder": True},
 ]
 
 # ─── Telegram-команды ─────────────────────────────────────────────────────────

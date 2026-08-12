@@ -409,6 +409,8 @@ export type OrderItem = {
   price_rub: number
   quantity: number
   subtotal_rub: number
+  /** позиция оформлена как предзаказ (на момент заказа остаток был 0) */
+  is_preorder?: boolean
 }
 
 export type OrderWithItems = Order & { items: OrderItem[] }

@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import type { Product } from '../api/products'
+import { availableStock, type Product } from '../api/products'
 
 export type CartItem = {
   slug: string
@@ -7,6 +7,15 @@ export type CartItem = {
   price_rub: number
   image?: string
   quantity: number
+  /** снимок на момент добавления: товар кончился и заказывается предзаказом */
+  preorder?: boolean
+  /** снимок остатка; undefined = учёта нет (ручная сборка) или корзина из старой версии */
+  stock?: number
+}
+
+// сколько ещё можно взять этой позиции (предзаказ и ручная сборка не ограничены)
+export function cartItemMaxQuantity(item: Pick<CartItem, 'stock' | 'preorder'>): number {
+  return availableStock(item)
 }
 
 type CartContextValue = {
@@ -60,9 +69,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) => {
       const existing = prev.find((it) => it.slug === product.slug)
       const price = product.discount_price_rub ?? product.price_rub
+      // остаток мог измениться с прошлого добавления — берём свежий снимок товара
+      const max = availableStock(product)
       if (existing) {
         return prev.map((it) =>
-          it.slug === product.slug ? { ...it, quantity: it.quantity + quantity } : it,
+          it.slug === product.slug
+            ? {
+                ...it,
+                quantity: Math.min(it.quantity + quantity, max),
+                preorder: product.preorder,
+                stock: product.stock,
+              }
+            : it,
         )
       }
       return [
@@ -72,7 +90,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
           title: product.title,
           price_rub: price,
           image: product.images[0],
-          quantity,
+          quantity: Math.min(quantity, max),
+          preorder: product.preorder,
+          stock: product.stock,
         },
       ]
     })
@@ -86,7 +106,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) =>
       quantity <= 0
         ? prev.filter((it) => it.slug !== slug)
-        : prev.map((it) => (it.slug === slug ? { ...it, quantity } : it)),
+        : prev.map((it) =>
+            it.slug === slug ? { ...it, quantity: Math.min(quantity, cartItemMaxQuantity(it)) } : it,
+          ),
     )
   }, [])
 

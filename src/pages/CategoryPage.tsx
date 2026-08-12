@@ -106,6 +106,7 @@ export default function CategoryPage() {
                     ) : (
                       <div className="product-card__image" />
                     )}
+                    {product.preorder && <span className="product-card__badge">Предзаказ</span>}
                     <div className="product-card__info">
                       <p className="product-card__name">{product.title}</p>
                       <div className="product-card__price-wrap">

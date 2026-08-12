@@ -12,6 +12,19 @@ export type Product = {
   discount_price_rub?: number
   images: string[]
   article?: string
+  /** остаток — приходит только если он отслеживается в админке (иначе ручная сборка) */
+  stock?: number
+  /** остаток кончился (0) — товар доступен только по предзаказу */
+  preorder?: boolean
+}
+
+/**
+ * Сколько ещё можно положить в корзину.
+ * Предзаказ и товары без учёта остатка (ручная сборка) не ограничены.
+ */
+export function availableStock(product: Pick<Product, 'stock' | 'preorder'>): number {
+  if (product.preorder || typeof product.stock !== 'number') return Infinity
+  return Math.max(0, product.stock)
 }
 
 export async function fetchProductsByCategory(category: string): Promise<Product[]> {

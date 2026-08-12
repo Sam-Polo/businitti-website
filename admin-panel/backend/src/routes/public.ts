@@ -61,6 +61,15 @@ type PublicProduct = {
   discount_price_rub?: number
   images: string[]
   article?: string
+  /** остаток — только когда он отслеживается (пустая ячейка = ручная сборка, поле не отдаётся) */
+  stock?: number
+  /** остаток отслеживается и закончился — товар продаётся как предзаказ */
+  preorder: boolean
+}
+
+// остаток 0 (но не пустая ячейка) = товар кончился и продаётся по предзаказу
+export function isPreorder(p: SheetProduct): boolean {
+  return typeof p.stock === 'number' && p.stock <= 0
 }
 
 function toPublic(p: SheetProduct): PublicProduct {
@@ -74,14 +83,15 @@ function toPublic(p: SheetProduct): PublicProduct {
     discount_price_rub: p.discount_price_rub,
     images: p.images,
     article: p.article,
+    stock: typeof p.stock === 'number' ? Math.max(0, p.stock) : undefined,
+    preorder: isPreorder(p),
   }
 }
 
-// фильтр: только активные с положительным остатком
-function isAvailable(p: SheetProduct): boolean {
-  if (!p.active) return false
-  if (typeof p.stock === 'number' && p.stock <= 0) return false
-  return true
+// фильтр видимости: остаток 0 больше не прячет товар (это предзаказ),
+// убрать товар с сайта можно только флагом active
+function isVisible(p: SheetProduct): boolean {
+  return p.active
 }
 
 // сортировка по порядку строк в листе категории
@@ -146,11 +156,7 @@ router.get('/categories', async (_req, res) => {
     if (visible.some((c) => c.key === 'sale')) {
       try {
         const products = await getProductsCached()
-        const hasAnyDiscount = products.some(
-          (p) => p.active && (p.stock === undefined || p.stock > 0) &&
-            p.discount_price_rub !== undefined && p.discount_price_rub > 0 &&
-            p.discount_price_rub < p.price_rub,
-        )
+        const hasAnyDiscount = products.some((p) => isVisible(p) && hasDiscount(p))
         if (!hasAnyDiscount) {
           visible = visible.filter((c) => c.key !== 'sale')
         }
@@ -226,7 +232,7 @@ router.get('/products', async (req, res) => {
   try {
     const category = typeof req.query.category === 'string' ? req.query.category.trim() : ''
     const all = await getProductsCached()
-    const available = all.filter(isAvailable)
+    const available = all.filter(isVisible)
 
     if (!category) {
       res.json({ products: available.map(toPublic) })
@@ -270,7 +276,7 @@ router.get('/products/:slug', async (req, res) => {
     if (!slug) return res.status(400).json({ error: 'slug_required' })
 
     const all = await getProductsCached()
-    const product = all.find((p) => p.slug === slug && isAvailable(p))
+    const product = all.find((p) => p.slug === slug && isVisible(p))
 
     if (!product) return res.status(404).json({ error: 'not_found' })
     res.json({ product: toPublic(product) })
@@ -331,8 +337,11 @@ router.post('/orders', orderLimiter, async (req, res) => {
       const product = all.find((p) => p.slug === slug)
       if (!product) return res.status(400).json({ error: 'product_not_found', slug })
       if (!product.active) return res.status(400).json({ error: 'product_inactive', slug })
-      if (typeof product.stock === 'number' && product.stock < quantity) {
-        return res.status(400).json({ error: 'insufficient_stock', slug })
+      // предзаказ (остаток 0) заказывается любым количеством; у товара в наличии
+      // количество не может превышать остаток
+      const preorder = isPreorder(product)
+      if (!preorder && typeof product.stock === 'number' && product.stock < quantity) {
+        return res.status(400).json({ error: 'insufficient_stock', slug, available: product.stock })
       }
 
       const finalPrice = product.discount_price_rub && product.discount_price_rub > 0
@@ -347,6 +356,7 @@ router.post('/orders', orderLimiter, async (req, res) => {
         price_rub: finalPrice,
         quantity,
         subtotal_rub: finalPrice * quantity,
+        is_preorder: preorder || undefined,
       })
     }
 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useCart } from '../contexts/CartContext'
-import { formatPrice, type Product } from '../api/products'
+import { availableStock, formatPrice, type Product } from '../api/products'
 import { trackAddToCart } from '../lib/analytics'
 import { useModalAnimation } from '../hooks/useModalAnimation'
 import { useCloseProduct } from '../hooks/useProductRoute'
@@ -9,7 +9,7 @@ import { Lightbox } from './Lightbox'
 import './ItemCardModal.css'
 
 export default function ItemCardModal() {
-  const { itemModalProduct, addItem } = useCart()
+  const { itemModalProduct, addItem, items: cartItems } = useCart()
   const { shouldRender, isClosing } = useModalAnimation(!!itemModalProduct)
   const closeProduct = useCloseProduct()
   const [activeImage, setActiveImage] = useState(0)
@@ -75,9 +75,18 @@ export default function ItemCardModal() {
   const images = product.images.length > 0 ? product.images : [undefined]
   const mainImg = images[activeImage]
 
+  // остаток кончился → предзаказ; иначе нельзя набрать больше, чем есть,
+  // с учётом уже лежащего в корзине
+  const isPreorder = !!product.preorder
+  const inCart = cartItems.find((it) => it.slug === product.slug)?.quantity ?? 0
+  const maxQuantity = availableStock(product) - inCart
+  const soldOut = maxQuantity < 1
+  const cappedQuantity = soldOut ? 1 : Math.min(quantity, maxQuantity)
+
   const handleAdd = () => {
-    trackAddToCart(product, quantity)
-    addItem(product, quantity)
+    if (soldOut) return
+    trackAddToCart(product, cappedQuantity)
+    addItem(product, cappedQuantity)
     handleClose()
   }
 
@@ -142,28 +151,45 @@ export default function ItemCardModal() {
                 type="button"
                 className="item-modal__qty-btn"
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                disabled={soldOut}
                 aria-label="Уменьшить"
               >−</button>
-              <span className="item-modal__qty-value">{quantity}</span>
+              <span className="item-modal__qty-value">{cappedQuantity}</span>
               <button
                 type="button"
                 className="item-modal__qty-btn"
-                onClick={() => setQuantity((q) => q + 1)}
+                onClick={() => setQuantity((q) => Math.min(q + 1, maxQuantity))}
+                disabled={soldOut || cappedQuantity >= maxQuantity}
                 aria-label="Увеличить"
               >+</button>
             </div>
             <div className="item-modal__price-wrap">
               <p className={`item-modal__price${product.discount_price_rub ? ' item-modal__price--new' : ''}`}>
-                {formatPrice(price * quantity)}
+                {formatPrice(price * cappedQuantity)}
               </p>
               {product.discount_price_rub && (
-                <p className="item-modal__price item-modal__price--old">{formatPrice(product.price_rub * quantity)}</p>
+                <p className="item-modal__price item-modal__price--old">{formatPrice(product.price_rub * cappedQuantity)}</p>
               )}
             </div>
           </div>
 
-          <button className="item-modal__add" onClick={handleAdd}>
-            Добавить в корзину
+          {isPreorder && (
+            <p className="item-modal__stock-note">
+              Товара сейчас нет в наличии — оформите предзаказ, мы изготовим его для вас
+            </p>
+          )}
+          {!isPreorder && Number.isFinite(maxQuantity) && cappedQuantity >= maxQuantity && (
+            <p className="item-modal__stock-note">
+              {soldOut ? 'Всё, что есть в наличии, уже в корзине' : `В наличии ${maxQuantity} шт.`}
+            </p>
+          )}
+
+          <button
+            className={`item-modal__add${isPreorder ? ' item-modal__add--preorder' : ''}`}
+            onClick={handleAdd}
+            disabled={soldOut}
+          >
+            {isPreorder ? 'Предзаказ' : 'Добавить в корзину'}
           </button>
         </div>
       </div>

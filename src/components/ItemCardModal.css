@@ -212,6 +212,20 @@
   text-align: center;
 }
 
+.item-modal__qty-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* подпись про остаток/предзаказ под блоком с ценой */
+.item-modal__stock-note {
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 18px;
+  color: rgba(47, 47, 47, 0.55);
+  margin-top: -4px;
+}
+
 .item-modal__price-wrap {
   display: flex;
   align-items: baseline;
@@ -252,6 +266,24 @@
 
 .item-modal__add:hover {
   background-color: var(--color-accent-hover);
+}
+
+/* предзаказ — та же кнопка, но приглушённая: почти белая с тонкой рамкой */
+.item-modal__add--preorder {
+  background-color: #f2efee;
+  border: 1px solid rgba(47, 47, 47, 0.25);
+  color: rgba(47, 47, 47, 0.85);
+}
+
+.item-modal__add--preorder:hover {
+  background-color: #ebe7e6;
+}
+
+.item-modal__add:disabled {
+  background-color: #f2efee;
+  border: 1px solid rgba(47, 47, 47, 0.12);
+  color: rgba(47, 47, 47, 0.35);
+  cursor: default;
 }
 
 /* ===== Mobile ===== */

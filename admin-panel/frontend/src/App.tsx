@@ -136,6 +136,17 @@ function hasDiscount(p: Product): boolean {
   return discountPct(p) > 0
 }
 
+// остаток: пусто = ручная сборка (не отслеживается), 0 = кончился и продаётся по предзаказу
+function StockLabel({ stock }: { stock?: number }) {
+  if (stock === undefined || stock === null) {
+    return <span style={{ opacity: 0.7 }}>Остаток: ручная сборка</span>
+  }
+  if (stock <= 0) {
+    return <span style={{ color: '#bf9243', fontWeight: 600 }}>Остаток: 0 — предзаказ</span>
+  }
+  return <span>Остаток: {stock} шт.</span>
+}
+
 function LoginForm({ onLogin }: { onLogin: () => void }) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -859,6 +870,7 @@ function ProductsList({ onNavigate, newOrdersCount }: { onNavigate?: (page: Admi
                                 `${product.price_rub} ₽`
                               )}
                             </span>
+                            <StockLabel stock={product.stock} />
                             <span className={product.active ? 'active' : 'inactive'}>
                               {product.active ? 'Активен' : 'Неактивен'}
                             </span>
@@ -1249,12 +1261,16 @@ function ProductModal({
               </div>
               
               
-              {product.stock !== undefined && (
-                <div className="detail-row">
-                  <span className="detail-label">Остаток:</span>
-                  <span className="detail-value">{product.stock}</span>
-                </div>
-              )}
+              <div className="detail-row">
+                <span className="detail-label">Остаток:</span>
+                <span className="detail-value">
+                  {product.stock === undefined || product.stock === null
+                    ? 'ручная сборка (не отслеживается)'
+                    : product.stock <= 0
+                      ? '0 — продаётся по предзаказу'
+                      : `${product.stock} шт.`}
+                </span>
+              </div>
               
               <div className="detail-row">
                 <span className="detail-label">Статус:</span>
@@ -1446,6 +1462,7 @@ function SortableProductCard({
                 `${product.price_rub} ₽`
               )}
             </span>
+            <StockLabel stock={product.stock} />
             <span className={product.active ? 'active' : 'inactive'}>
               {product.active ? 'Активен' : 'Неактивен'}
             </span>
@@ -1991,6 +2008,10 @@ function ProductFormModal({
                 onChange={(e) => handleChange('stock', e.target.value !== '' ? parseInt(e.target.value) : undefined)}
                 placeholder="Количество товара в наличии"
               />
+              <small style={{ color: '#666' }}>
+                0 — товар кончился, на сайте продаётся по предзаказу. Пусто — ручная сборка,
+                остаток не считается. Убрать товар с сайта совсем — статус «Неактивен».
+              </small>
             </div>
           </div>
 

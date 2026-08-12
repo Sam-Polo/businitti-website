@@ -55,6 +55,8 @@ export type OrderItem = {
   price_rub: number
   quantity: number
   subtotal_rub: number
+  /** позиция оформлена как предзаказ (на момент заказа остаток товара был 0) */
+  is_preorder?: boolean
 }
 
 export type Order = {
@@ -93,7 +95,7 @@ const ORDERS_HEADERS = [
 
 const ORDER_ITEMS_HEADERS = [
   'order_id', 'product_slug', 'product_title', 'product_article', 'product_image',
-  'price_rub', 'quantity', 'subtotal_rub'
+  'price_rub', 'quantity', 'subtotal_rub', 'is_preorder'
 ]
 
 // проверка/создание листов для заказов
@@ -130,22 +132,26 @@ export async function ensureOrdersSheets(auth: any, sheetId: string): Promise<vo
   }
 
   // миграция: обновляем заголовки если не хватает колонок
-  if (existing.has(ORDERS_SHEET)) {
+  for (const [sheetName, headers] of [
+    [ORDERS_SHEET, ORDERS_HEADERS] as const,
+    [ORDER_ITEMS_SHEET, ORDER_ITEMS_HEADERS] as const,
+  ]) {
+    if (!existing.has(sheetName)) continue
     const headerRes = await sheets.spreadsheets.values.get({
       spreadsheetId: sheetId,
-      range: `${ORDERS_SHEET}!A1:Z1`
+      range: `${sheetName}!A1:Z1`
     })
     const currentHeaders = (headerRes.data.values?.[0] || []).map((h: string) => String(h).trim().toLowerCase())
     const needsMigration = currentHeaders.length > 0 &&
-      ORDERS_HEADERS.some((h) => !currentHeaders.includes(h))
+      headers.some((h) => !currentHeaders.includes(h))
     if (needsMigration) {
       await sheets.spreadsheets.values.update({
         spreadsheetId: sheetId,
-        range: `${ORDERS_SHEET}!A1`,
+        range: `${sheetName}!A1`,
         valueInputOption: 'USER_ENTERED',
-        requestBody: { values: [ORDERS_HEADERS] }
+        requestBody: { values: [headers] }
       })
-      logger.info('лист orders: заголовки обновлены')
+      logger.info({ sheetName }, 'заголовки обновлены')
     }
   }
 }
@@ -184,6 +190,8 @@ function parseOrderRow(row: any[], idx: Record<string, number>): Order | null {
 function parseItemRow(row: any[], idx: Record<string, number>): OrderItem | null {
   const order_id = String(row[idx.order_id] ?? '').trim()
   if (!order_id) return null
+  // колонка появилась позже — у старых заказов её нет, значит предзаказа не было
+  const preorderRaw = String(row[idx.is_preorder] ?? '').trim().toLowerCase()
   return {
     order_id,
     product_slug: String(row[idx.product_slug] ?? ''),
@@ -193,6 +201,7 @@ function parseItemRow(row: any[], idx: Record<string, number>): OrderItem | null
     price_rub: Number(row[idx.price_rub]) || 0,
     quantity: Number(row[idx.quantity]) || 0,
     subtotal_rub: Number(row[idx.subtotal_rub]) || 0,
+    is_preorder: preorderRaw === 'true' || preorderRaw === '1' || preorderRaw === 'да' ? true : undefined,
   }
 }
 
@@ -321,7 +330,10 @@ export async function createOrder(
 
   const itemRows = data.items.map((it) => {
     const full: OrderItem = { ...it, order_id: id }
-    return ORDER_ITEMS_HEADERS.map((h) => (full as any)[h] ?? '')
+    // is_preorder пишем как "true"/пусто — в таблице это читается лучше, чем FALSE в каждой строке
+    return ORDER_ITEMS_HEADERS.map((h) =>
+      h === 'is_preorder' ? (full.is_preorder ? 'true' : '') : ((full as any)[h] ?? '')
+    )
   })
   if (itemRows.length > 0) {
     await sheets.spreadsheets.values.append({
@@ -566,6 +578,7 @@ export async function decrementStockForOrder(
           const stockNum = Number(stockRaw.replace(',', '.'))
           if (!Number.isFinite(stockNum)) break
           const newStock = Math.max(0, stockNum - item.quantity)
+          if (newStock === stockNum) break // предзаказ (остаток уже 0) — записывать нечего
           const colLetter = String.fromCharCode(65 + stockIdx)
           await sheets.spreadsheets.values.update({
             spreadsheetId: sheetId,
