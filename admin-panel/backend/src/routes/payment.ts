@@ -5,7 +5,7 @@ import { paymentPageLimiter } from '../rate-limit.js'
 import { sendPurchaseConversion } from '../analytics-conversions.js'
 import { notifyTelegramOrder } from '../telegram-notify.js'
 import { sendEmail } from '../unisender.js'
-import { buildOrderEmailHtml, buildOrderEmailSubject } from '../order-email.js'
+import { buildOrderEmailHtml, buildOrderEmailSubject, type EmailOptions } from '../order-email.js'
 import { fetchOverridesMap } from '../site-content-utils.js'
 import { logger } from '../logger.js'
 
@@ -262,14 +262,16 @@ router.post('/result', async (req: Request, res: Response) => {
         try {
           const full = await fetchOrderWithItems(auth, sheetId, order.id)
           if (full?.customer_email) {
-            let emailOpts: { messengerLink?: string; supportPhone?: string } = {}
+            let emailOpts: EmailOptions = {}
             try {
               const overrides = await fetchOverridesMap(sheetId)
               emailOpts = {
                 messengerLink: overrides['links.messenger'] || undefined,
                 supportPhone: overrides['links.phone'] || undefined,
+                // тексты письма, отредактированные в админке (слоты email.*)
+                content: overrides,
               }
-            } catch { /* fallback к env */ }
+            } catch { /* fallback к env и зашитым текстам */ }
             await sendEmail({
               to: full.customer_email,
               toName: full.customer_name,

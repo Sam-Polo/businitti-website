@@ -12,19 +12,21 @@ import {
   type OrderStatus,
 } from '../orders-utils.js'
 import { sendEmail } from '../unisender.js'
-import { buildOrderEmailHtml, buildOrderEmailSubject, buildShippingEmailHtml, buildShippingEmailSubject } from '../order-email.js'
+import { buildOrderEmailHtml, buildOrderEmailSubject, buildShippingEmailHtml, buildShippingEmailSubject, type EmailOptions } from '../order-email.js'
 import { fetchOverridesMap } from '../site-content-utils.js'
 
 const router = express.Router()
 
 router.use(requireAuth)
 
-async function getEmailContactOptions(sheetId: string): Promise<{ messengerLink?: string; supportPhone?: string }> {
+// контакты для подписи + редактируемые тексты писем (слоты email.*) из листа site_content
+async function getEmailContactOptions(sheetId: string): Promise<EmailOptions> {
   try {
     const overrides = await fetchOverridesMap(sheetId)
     return {
       messengerLink: overrides['links.messenger'] || undefined,
       supportPhone: overrides['links.phone'] || undefined,
+      content: overrides,
     }
   } catch {
     return {}

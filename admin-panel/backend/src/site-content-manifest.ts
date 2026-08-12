@@ -55,6 +55,17 @@ const ORIG_ABOUT_CLOSING = 'С любовью к вам,\nBUSINITTI'
 
 const ORIG_CART_NOTICE = 'Сборка и отправка заказа осуществляется в течение 2–5 дней'
 
+// Тексты писем клиенту. Экспортируются, потому что `order-email.ts` берёт их же как фолбэк,
+// когда переопределения в Sheets нет — единственный источник правды.
+// `[[…]]` — розовый акцент, пустая строка — новый абзац (как в текстах на сайте).
+export const ORIG_EMAIL_PAID_HEADING = 'Спасибо за заказ!'
+export const ORIG_EMAIL_PAID_NOTICE =
+  'Мы соберём и отправим заказ в течение [[2–5 дней]]. Когда посылка уйдёт в службу доставки — пришлём трек-номер на этот же email.'
+export const ORIG_EMAIL_SHIPPED_HEADING = 'Ваш заказ отправлен!'
+export const ORIG_EMAIL_SHIPPED_NOTICE =
+  'Обычно посылки доставляются в течение [[2–7 рабочих дней]] с момента отправки.'
+export const ORIG_EMAIL_FOOTER_NOTE = 'Это автоматическое уведомление. Отвечать на него не нужно.'
+
 export const CONTENT_SLOTS: ContentSlot[] = [
   // ===== Главная =====
   {
@@ -315,6 +326,58 @@ export const CONTENT_SLOTS: ContentSlot[] = [
     description: 'Текст под полем «Пожелания к заказу» в корзине',
     defaultValue: ORIG_CART_NOTICE,
     order: 1,
+  },
+
+  // ===== Письма клиенту =====
+  {
+    key: 'email.paid.heading',
+    page: 'email',
+    pageTitle: 'Письма',
+    type: 'text',
+    label: 'Письмо об оплате: заголовок',
+    description: 'Крупная строка вверху письма, которое уходит после оплаты заказа',
+    defaultValue: ORIG_EMAIL_PAID_HEADING,
+    order: 1,
+  },
+  {
+    key: 'email.paid.notice',
+    page: 'email',
+    pageTitle: 'Письма',
+    type: 'text',
+    label: 'Письмо об оплате: сроки сборки',
+    description: 'Розовая плашка под составом заказа — что будет дальше и когда',
+    defaultValue: ORIG_EMAIL_PAID_NOTICE,
+    order: 2,
+  },
+  {
+    key: 'email.shipped.heading',
+    page: 'email',
+    pageTitle: 'Письма',
+    type: 'text',
+    label: 'Письмо об отправке: заголовок',
+    description: 'Крупная строка вверху письма с трек-номером',
+    defaultValue: ORIG_EMAIL_SHIPPED_HEADING,
+    order: 3,
+  },
+  {
+    key: 'email.shipped.notice',
+    page: 'email',
+    pageTitle: 'Письма',
+    type: 'text',
+    label: 'Письмо об отправке: сроки доставки',
+    description: 'Розовая плашка под адресом доставки',
+    defaultValue: ORIG_EMAIL_SHIPPED_NOTICE,
+    order: 4,
+  },
+  {
+    key: 'email.footer_note',
+    page: 'email',
+    pageTitle: 'Письма',
+    type: 'text',
+    label: 'Подпись внизу писем',
+    description: 'Мелкая строка под письмом — одинаковая в обоих письмах',
+    defaultValue: ORIG_EMAIL_FOOTER_NOTE,
+    order: 5,
   },
 
   // ===== Ссылки (общие для всего сайта) =====

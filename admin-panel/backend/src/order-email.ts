@@ -1,6 +1,20 @@
 import type { OrderWithItems } from './orders-utils.js'
 import { DELIVERY_LABELS } from './orders-utils.js'
+import type { SiteContentMap } from './site-content-utils.js'
+import {
+  ORIG_EMAIL_PAID_HEADING,
+  ORIG_EMAIL_PAID_NOTICE,
+  ORIG_EMAIL_SHIPPED_HEADING,
+  ORIG_EMAIL_SHIPPED_NOTICE,
+  ORIG_EMAIL_FOOTER_NOTE,
+} from './site-content-manifest.js'
 
+export type EmailOptions = {
+  messengerLink?: string
+  supportPhone?: string
+  /** переопределения контента из админки (лист site_content); без них берутся тексты по умолчанию */
+  content?: SiteContentMap
+}
 
 // ─── Утилиты ────────────────────────────────────────────
 
@@ -17,9 +31,47 @@ function formatPrice(rub: number): string {
   return `${Math.round(rub).toLocaleString('ru-RU')} ₽`
 }
 
+// ─── Редактируемые тексты писем ─────────────────────────
+
+const ACCENT_COLOR = '#f5a2b7'
+
+/** текст слота из админки; пустой/отсутствующий override — фолбэк из манифеста */
+function slotText(options: EmailOptions | undefined, key: string, fallback: string): string {
+  const value = options?.content?.[key]
+  return value && value.trim() ? value.trim() : fallback
+}
+
+/**
+ * Разметка как в текстах на сайте (`RichText`): `[[…]]` → розовый акцент,
+ * одиночный перенос строки → `<br>`. Экранируем до подстановки тегов —
+ * текст приходит из админки и в письмо попадает как есть.
+ *
+ * `boldAccent` — для мелкого текста на розовой плашке: там розовый на розовом
+ * читается слабо, поэтому акцент ещё и полужирный (раньше в этом месте был `<strong>`).
+ */
+function inlineHtml(text: string, opts: { boldAccent?: boolean } = {}): string {
+  const style = opts.boldAccent
+    ? `color: ${ACCENT_COLOR}; font-weight: 600;`
+    : `color: ${ACCENT_COLOR};`
+  return escapeHtml(text.replace(/\r\n/g, '\n').trim())
+    .replace(/\n/g, '<br>')
+    .replace(/\[\[([\s\S]+?)\]\]/g, `<span style="${style}">$1</span>`)
+}
+
+/** то же, но пустая строка разбивает текст на абзацы */
+function richHtml(text: string, opts: { boldAccent?: boolean } = {}): string {
+  return text
+    .replace(/\r\n/g, '\n')
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map((p, i) => `<div style="${i > 0 ? 'margin-top: 10px;' : ''}">${inlineHtml(p, opts)}</div>`)
+    .join('')
+}
+
 // ─── Контакты для подписи (из env) ──────────────────────
 
-function getContacts(options?: { messengerLink?: string; supportPhone?: string }) {
+function getContacts(options?: EmailOptions) {
   return {
     siteUrl: process.env.SITE_URL || 'https://businitti.ru',
     supportEmail: process.env.SUPPORT_EMAIL || '',
@@ -28,9 +80,33 @@ function getContacts(options?: { messengerLink?: string; supportPhone?: string }
   }
 }
 
+/** мелкая строка под письмом — одинаковая в обоих шаблонах */
+function footerNoteBlock(options?: EmailOptions): string {
+  const note = slotText(options, 'email.footer_note', ORIG_EMAIL_FOOTER_NOTE)
+  if (!note) return ''
+  return `
+        <div style="margin-top: 16px; font-size: 12px; color: #aaa; text-align: center;">
+          ${inlineHtml(note)}
+        </div>`
+}
+
+/** розовая плашка с текстом из админки */
+function noticeBlock(options: EmailOptions | undefined, key: string, fallback: string): string {
+  const notice = slotText(options, key, fallback)
+  if (!notice) return ''
+  return `
+          <tr>
+            <td style="padding: 32px 40px 0;">
+              <div style="background-color: rgba(245, 162, 183, 0.10); border-left: 3px solid #f5a2b7; padding: 16px 18px; font-size: 14px; line-height: 21px; color: #2f2f2f;">
+                ${richHtml(notice, { boldAccent: true })}
+              </div>
+            </td>
+          </tr>`
+}
+
 // ─── Шаблон письма (table-based для совместимости с почтовиками) ──
 
-export function buildOrderEmailHtml(order: OrderWithItems, options?: { messengerLink?: string; supportPhone?: string }): string {
+export function buildOrderEmailHtml(order: OrderWithItems, options?: EmailOptions): string {
   const contacts = getContacts(options)
   const itemsSum = order.items.reduce((s, it) => s + it.subtotal_rub, 0)
 
@@ -81,7 +157,7 @@ export function buildOrderEmailHtml(order: OrderWithItems, options?: { messenger
           <!-- title -->
           <tr>
             <td style="padding: 36px 40px 8px; text-align: center;">
-              <h1 style="margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 28px; font-weight: normal; color: #2f2f2f;">Спасибо за заказ!</h1>
+              <h1 style="margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 28px; font-weight: normal; color: #2f2f2f;">${inlineHtml(slotText(options, 'email.paid.heading', ORIG_EMAIL_PAID_HEADING))}</h1>
               <p style="margin: 12px 0 0; font-size: 15px; color: #888;">Заказ <strong style="color: #2f2f2f;">#${order.display_id}</strong> принят и оплачен</p>
             </td>
           </tr>
@@ -131,14 +207,7 @@ export function buildOrderEmailHtml(order: OrderWithItems, options?: { messenger
           </tr>
 
           <!-- notice -->
-          <tr>
-            <td style="padding: 32px 40px 0;">
-              <div style="background-color: rgba(245, 162, 183, 0.10); border-left: 3px solid #f5a2b7; padding: 16px 18px; font-size: 14px; line-height: 21px; color: #2f2f2f;">
-                Мы соберём и отправим заказ в течение <strong>2&ndash;5 дней</strong>.
-                Когда посылка уйдёт в службу доставки — пришлём трек-номер на этот же email.
-              </div>
-            </td>
-          </tr>
+          ${noticeBlock(options, 'email.paid.notice', ORIG_EMAIL_PAID_NOTICE)}
 
           <!-- comment -->
           ${order.comment ? `
@@ -168,10 +237,7 @@ export function buildOrderEmailHtml(order: OrderWithItems, options?: { messenger
           </tr>
 
         </table>
-
-        <div style="margin-top: 16px; font-size: 12px; color: #aaa; text-align: center;">
-          Это автоматическое уведомление. Отвечать на него не нужно.
-        </div>
+${footerNoteBlock(options)}
       </td>
     </tr>
   </table>
@@ -242,7 +308,7 @@ function buildTrackingSection(order: OrderWithItems, trackingValue: string): str
   `
 }
 
-export function buildShippingEmailHtml(order: OrderWithItems, trackingNumber: string, options?: { messengerLink?: string; supportPhone?: string }): string {
+export function buildShippingEmailHtml(order: OrderWithItems, trackingNumber: string, options?: EmailOptions): string {
   const contacts = getContacts(options)
   const trackingSection = buildTrackingSection(order, trackingNumber)
 
@@ -275,7 +341,7 @@ export function buildShippingEmailHtml(order: OrderWithItems, trackingNumber: st
           <!-- title -->
           <tr>
             <td style="padding: 36px 40px 8px; text-align: center;">
-              <h1 style="margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 28px; font-weight: normal; color: #2f2f2f;">Ваш заказ отправлен!</h1>
+              <h1 style="margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 28px; font-weight: normal; color: #2f2f2f;">${inlineHtml(slotText(options, 'email.shipped.heading', ORIG_EMAIL_SHIPPED_HEADING))}</h1>
               <p style="margin: 12px 0 0; font-size: 15px; color: #888;">Заказ <strong style="color: #2f2f2f;">#${order.display_id}</strong> передан в службу доставки</p>
             </td>
           </tr>
@@ -296,13 +362,7 @@ export function buildShippingEmailHtml(order: OrderWithItems, trackingNumber: st
           </tr>
 
           <!-- notice -->
-          <tr>
-            <td style="padding: 32px 40px 0;">
-              <div style="background-color: rgba(245, 162, 183, 0.10); border-left: 3px solid #f5a2b7; padding: 16px 18px; font-size: 14px; line-height: 21px; color: #2f2f2f;">
-                Обычно посылки доставляются в течение <strong>2&ndash;7 рабочих дней</strong> с момента отправки.
-              </div>
-            </td>
-          </tr>
+          ${noticeBlock(options, 'email.shipped.notice', ORIG_EMAIL_SHIPPED_NOTICE)}
 
           <!-- contacts -->
           ${contactsBlock ? `
@@ -322,10 +382,7 @@ export function buildShippingEmailHtml(order: OrderWithItems, trackingNumber: st
           </tr>
 
         </table>
-
-        <div style="margin-top: 16px; font-size: 12px; color: #aaa; text-align: center;">
-          Это автоматическое уведомление. Отвечать на него не нужно.
-        </div>
+${footerNoteBlock(options)}
       </td>
     </tr>
   </table>
