@@ -61,6 +61,8 @@ const ORIG_CART_NOTICE = 'Сборка и отправка заказа осущ
 export const ORIG_EMAIL_PAID_HEADING = 'Спасибо за заказ!'
 export const ORIG_EMAIL_PAID_NOTICE =
   'Мы соберём и отправим заказ в течение [[2–5 дней]]. Когда посылка уйдёт в службу доставки — пришлём трек-номер на этот же email.'
+export const ORIG_EMAIL_PAID_PREORDER_NOTICE =
+  'Украшения из этого заказа мы делаем под заказ — свяжемся с вами и [[согласуем срок изготовления]]. Когда посылка уйдёт в службу доставки, пришлём трек-номер на этот же email.'
 export const ORIG_EMAIL_SHIPPED_HEADING = 'Ваш заказ отправлен!'
 export const ORIG_EMAIL_SHIPPED_NOTICE =
   'Обычно посылки доставляются в течение [[2–7 рабочих дней]] с момента отправки.'
@@ -350,6 +352,16 @@ export const CONTENT_SLOTS: ContentSlot[] = [
     order: 2,
   },
   {
+    key: 'email.paid.preorder_notice',
+    page: 'email',
+    pageTitle: 'Письма',
+    type: 'text',
+    label: 'Письмо об оплате: сроки для предзаказа',
+    description: 'Заменяет плашку выше, если весь заказ состоит из предзаказных товаров',
+    defaultValue: ORIG_EMAIL_PAID_PREORDER_NOTICE,
+    order: 3,
+  },
+  {
     key: 'email.shipped.heading',
     page: 'email',
     pageTitle: 'Письма',
@@ -357,7 +369,7 @@ export const CONTENT_SLOTS: ContentSlot[] = [
     label: 'Письмо об отправке: заголовок',
     description: 'Крупная строка вверху письма с трек-номером',
     defaultValue: ORIG_EMAIL_SHIPPED_HEADING,
-    order: 3,
+    order: 4,
   },
   {
     key: 'email.shipped.notice',
@@ -367,7 +379,7 @@ export const CONTENT_SLOTS: ContentSlot[] = [
     label: 'Письмо об отправке: сроки доставки',
     description: 'Розовая плашка под адресом доставки',
     defaultValue: ORIG_EMAIL_SHIPPED_NOTICE,
-    order: 4,
+    order: 5,
   },
   {
     key: 'email.footer_note',
@@ -377,7 +389,7 @@ export const CONTENT_SLOTS: ContentSlot[] = [
     label: 'Подпись внизу писем',
     description: 'Мелкая строка под письмом — одинаковая в обоих письмах',
     defaultValue: ORIG_EMAIL_FOOTER_NOTE,
-    order: 5,
+    order: 6,
   },
 
   // ===== Ссылки (общие для всего сайта) =====

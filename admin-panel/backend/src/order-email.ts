@@ -4,6 +4,7 @@ import type { SiteContentMap } from './site-content-utils.js'
 import {
   ORIG_EMAIL_PAID_HEADING,
   ORIG_EMAIL_PAID_NOTICE,
+  ORIG_EMAIL_PAID_PREORDER_NOTICE,
   ORIG_EMAIL_SHIPPED_HEADING,
   ORIG_EMAIL_SHIPPED_NOTICE,
   ORIG_EMAIL_FOOTER_NOTE,
@@ -110,6 +111,10 @@ export function buildOrderEmailHtml(order: OrderWithItems, options?: EmailOption
   const contacts = getContacts(options)
   const itemsSum = order.items.reduce((s, it) => s + it.subtotal_rub, 0)
 
+  // Правило то же, что в корзине на сайте: обещание «соберём за 2–5 дней» снимаем только
+  // когда весь заказ — предзаказ. В смешанном заказе есть что собирать в обычный срок.
+  const allPreorder = order.items.length > 0 && order.items.every((it) => it.is_preorder)
+
   const itemRows = order.items
     .map(
       (it) => `
@@ -207,7 +212,9 @@ export function buildOrderEmailHtml(order: OrderWithItems, options?: EmailOption
           </tr>
 
           <!-- notice -->
-          ${noticeBlock(options, 'email.paid.notice', ORIG_EMAIL_PAID_NOTICE)}
+          ${allPreorder
+            ? noticeBlock(options, 'email.paid.preorder_notice', ORIG_EMAIL_PAID_PREORDER_NOTICE)
+            : noticeBlock(options, 'email.paid.notice', ORIG_EMAIL_PAID_NOTICE)}
 
           <!-- comment -->
           ${order.comment ? `
