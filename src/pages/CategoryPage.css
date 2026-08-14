@@ -103,19 +103,19 @@
 .product-card__badge {
   position: absolute;
   top: 14px;
-  right: 14px;
+  left: 14px;
   z-index: 1;
-  padding: 6px 14px;
+  padding: 7px 16px;
   /* розовый на тон глубже брендового: белый текст на чистом --color-accent
      даёт контраст 1,9:1 и снова выглядит бледным */
   background-color: #e0708f;
   color: var(--color-text-inverse);
   font-family: var(--font-body);
-  font-size: 11px;
-  line-height: 14px;
+  font-size: 12px;
+  line-height: 15px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  border-radius: 0 10px 0 10px;
+  border-radius: 0 12px 0 12px;
   pointer-events: none;
 }
 
@@ -346,14 +346,12 @@
   }
 
   .product-card__badge {
-    /* отступ не уменьшаем: правый верхний угол фото скруглён на 36px,
-       при меньшем отступе бейдж вылезает за скругление */
-    top: 14px;
-    right: 14px;
-    padding: 5px 11px;
-    font-size: 10px;
-    line-height: 12px;
-    border-radius: 0 8px 0 8px;
+    top: 10px;
+    left: 10px;
+    padding: 6px 13px;
+    font-size: 11px;
+    line-height: 13px;
+    border-radius: 0 10px 0 10px;
   }
 
   .product-card__name {

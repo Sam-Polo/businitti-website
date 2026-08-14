@@ -1024,20 +1024,20 @@ body, button, input, textarea, select {
 }
 
 /* предзаказ (остаток 0) — плашка поверх фото, как на карточке в каталоге сайта.
-   Снизу справа: сверху уже живут чекбокс выделения и ручка перетаскивания. */
+   Снизу слева: сверху уже живут чекбокс выделения и ручка перетаскивания. */
 .product-preorder-badge {
   position: absolute;
   bottom: 10px;
-  right: 10px;
+  left: 10px;
   z-index: 10;
-  padding: 4px 12px;
+  padding: 5px 14px;
   /* на тон глубже, чем --bn-accent: белый текст на чистом акценте не читается */
   background: #e0708f;
   color: #fff;
   /* скругление как у карточки (--bn-radius-card): правый верхний и левый нижний */
-  border-radius: 0 10px 0 10px;
+  border-radius: 0 12px 0 12px;
   font-family: var(--bn-font-ui);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
