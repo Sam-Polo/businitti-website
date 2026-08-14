@@ -1031,8 +1031,9 @@ body, button, input, textarea, select {
   left: 10px;
   z-index: 10;
   padding: 4px 12px;
-  background: var(--bn-accent);
-  color: var(--bn-text);
+  /* на тон глубже, чем --bn-accent: белый текст на чистом акценте не читается */
+  background: #e0708f;
+  color: #fff;
   border-radius: 999px;
   font-family: var(--bn-font-ui);
   font-size: 0.68rem;

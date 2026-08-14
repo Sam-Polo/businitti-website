@@ -99,8 +99,10 @@
   left: 14px;
   z-index: 1;
   padding: 6px 14px;
-  background-color: var(--color-accent);
-  color: var(--color-text-primary);
+  /* розовый на тон глубже брендового: белый текст на чистом --color-accent
+     даёт контраст 1,9:1 и снова выглядит бледным */
+  background-color: #e0708f;
+  color: var(--color-text-inverse);
   font-family: var(--font-body);
   font-size: 11px;
   line-height: 14px;
