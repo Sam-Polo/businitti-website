@@ -103,7 +103,7 @@
 .product-card__badge {
   position: absolute;
   top: 14px;
-  left: 14px;
+  right: 14px;
   z-index: 1;
   padding: 6px 14px;
   /* розовый на тон глубже брендового: белый текст на чистом --color-accent
@@ -347,8 +347,10 @@
   }
 
   .product-card__badge {
-    top: 10px;
-    left: 10px;
+    /* отступ не уменьшаем: правый верхний угол фото скруглён на 36px,
+       при меньшем отступе бейдж вылезает за скругление */
+    top: 14px;
+    right: 14px;
     padding: 5px 11px;
     font-size: 10px;
     line-height: 12px;
