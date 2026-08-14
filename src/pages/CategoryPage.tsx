@@ -101,12 +101,14 @@ export default function CategoryPage() {
                     className="product-card reveal"
                     style={{ ['--i' as string]: i % 6 }}
                   >
-                    {image ? (
-                      <RevealImage className="product-card__image" src={image} alt="" />
-                    ) : (
-                      <div className="product-card__image" />
-                    )}
-                    {product.preorder && <span className="product-card__badge">Предзаказ</span>}
+                    <div className="product-card__media">
+                      {image ? (
+                        <RevealImage className="product-card__image" src={image} alt="" />
+                      ) : (
+                        <div className="product-card__image" />
+                      )}
+                      {product.preorder && <span className="product-card__badge">Предзаказ</span>}
+                    </div>
                     <div className="product-card__info">
                       <p className="product-card__name">{product.title}</p>
                       <div className="product-card__price-wrap">
