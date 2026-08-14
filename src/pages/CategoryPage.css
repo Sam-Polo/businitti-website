@@ -92,21 +92,22 @@
   transform: scale(1.02);
 }
 
-/* метка предзаказа поверх фото — приглушённая, не спорит с ценой */
+/* метка предзаказа поверх фото — плотная пилюля в брендовом розовом */
 .product-card__badge {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  padding: 5px 12px;
-  background-color: rgba(255, 255, 255, 0.88);
-  color: rgba(47, 47, 47, 0.75);
+  top: 14px;
+  left: 14px;
+  z-index: 1;
+  padding: 6px 14px;
+  background-color: var(--color-accent);
+  color: var(--color-text-primary);
   font-family: var(--font-body);
   font-size: 11px;
   line-height: 14px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  border: 1px solid rgba(47, 47, 47, 0.12);
-  border-radius: var(--border-radius-sm);
+  border-radius: 999px;
+  box-shadow: 0 2px 10px rgba(47, 47, 47, 0.18);
   pointer-events: none;
 }
 
@@ -334,6 +335,14 @@
 
   .product-card {
     width: 100%;
+  }
+
+  .product-card__badge {
+    top: 10px;
+    left: 10px;
+    padding: 5px 11px;
+    font-size: 10px;
+    line-height: 12px;
   }
 
   .product-card__name {

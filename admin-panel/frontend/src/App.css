@@ -1023,6 +1023,26 @@ body, button, input, textarea, select {
   white-space: nowrap;
 }
 
+/* предзаказ (остаток 0) — пилюля поверх фото, как на карточке в каталоге сайта.
+   Снизу слева: сверху уже живут чекбокс выделения и ручка перетаскивания. */
+.product-preorder-badge {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  z-index: 10;
+  padding: 4px 12px;
+  background: var(--bn-accent);
+  color: var(--bn-text);
+  border-radius: 999px;
+  font-family: var(--bn-font-ui);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(47, 47, 47, 0.18);
+}
+
 .no-image {
   color: #999;
   font-size: 0.9rem;

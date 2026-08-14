@@ -136,6 +136,17 @@ function hasDiscount(p: Product): boolean {
   return discountPct(p) > 0
 }
 
+// остаток 0 (но не пустая ячейка) — товар кончился и продаётся по предзаказу
+function isPreorder(p: Product): boolean {
+  return typeof p.stock === 'number' && p.stock <= 0
+}
+
+// плашка поверх фото в списке товаров
+function PreorderBadge({ product }: { product: Product }) {
+  if (!isPreorder(product)) return null
+  return <span className="product-preorder-badge">Предзаказ</span>
+}
+
 // остаток: пусто = ручная сборка (не отслеживается), 0 = кончился и продаётся по предзаказу
 function StockLabel({ stock }: { stock?: number }) {
   if (stock === undefined || stock === null) {
@@ -851,6 +862,7 @@ function ProductsList({ onNavigate, newOrdersCount }: { onNavigate?: (page: Admi
                           ) : (
                             <div className="no-image">Нет фото</div>
                           )}
+                          <PreorderBadge product={product} />
                         </div>
                         <div className="product-info">
                           <h3>{product.title}</h3>
@@ -1443,6 +1455,7 @@ function SortableProductCard({
           ) : (
             <div className="no-image">Нет фото</div>
           )}
+          <PreorderBadge product={product} />
         </div>
         <div className="product-info">
           <h3>{product.title}</h3>
