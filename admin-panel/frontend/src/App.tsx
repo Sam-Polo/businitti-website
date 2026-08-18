@@ -430,7 +430,12 @@ function ProductsList({ onNavigate, newOrdersCount }: { onNavigate?: (page: Admi
   } else {
     // сортируем по порядку строк в листе (orderInCategory), чтобы порядок не «улетал»
     groupedProducts = filteredProducts.reduce((acc, product) => {
-      const productCats = product.categories || [product.category]
+      const allCats = product.categories || [product.category]
+      // при выбранном фильтре товар показываем только в секции этой категории: иначе
+      // мультикатегорийный товар вытаскивает в выдачу секции остальных своих категорий
+      const productCats = selectedCategory === 'all'
+        ? allCats
+        : allCats.filter((c) => c === selectedCategory)
       for (const cat of productCats) {
         if (!acc[cat]) acc[cat] = []
         acc[cat].push(product)
