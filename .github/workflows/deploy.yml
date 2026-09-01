@@ -6,6 +6,7 @@ on:
     paths-ignore:
       - 'admin-panel/**'
       - 'figma/**'
+      - 'docs/**'
       - '*.md'
 
 jobs:
