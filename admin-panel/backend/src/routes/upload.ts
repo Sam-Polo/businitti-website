@@ -2,6 +2,7 @@ import express from 'express'
 import multer from 'multer'
 import { requireAuth } from '../auth.js'
 import { uploadToS3 } from '../s3.js'
+import { convertHeicToJpeg, detectImageFormat } from '../image-convert.js'
 import { logger } from '../logger.js'
 
 const router = express.Router()
@@ -11,20 +12,30 @@ router.use(requireAuth)
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg', 'image/jpg', 'image/png', 'image/webp',
+  'image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence'
+]
+// .heic/.heif пропускаем и по расширению: Windows не знает для них mimetype
+// и присылает пустую строку или application/octet-stream
+const ALLOWED_EXTENSIONS = /\.(jpe?g|png|webp|heic|heif)$/i
+const UNSUPPORTED_MESSAGE = 'Разрешены только изображения: JPG, PNG, WebP, HEIC'
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: MAX_FILE_SIZE },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
-    if (allowedTypes.includes(file.mimetype.toLowerCase())) {
+    // это только предварительный фильтр по заголовкам; настоящий формат
+    // определяется по сигнатуре уже загруженного буфера — см. detectImageFormat
+    if (ALLOWED_MIME_TYPES.includes(file.mimetype.toLowerCase()) || ALLOWED_EXTENSIONS.test(file.originalname)) {
       cb(null, true)
     } else {
-      cb(new Error('Разрешены только изображения: JPG, PNG, WebP'))
+      cb(new Error(UNSUPPORTED_MESSAGE))
     }
   }
 })
 
-// загрузка фото в Uploadcare + обработка ошибок multer
+// загрузка фото в S3 + обработка ошибок multer
 router.post(
   '/',
   (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -40,13 +51,21 @@ router.post(
       }
 
       const sizeMB = (req.file.size / (1024 * 1024)).toFixed(2)
-      logger.info({ name: req.file.originalname, sizeBytes: req.file.size, sizeMB }, 'файл принят, отправка в S3')
+      logger.info({ name: req.file.originalname, sizeBytes: req.file.size, sizeMB }, 'файл принят')
 
-      const fileUrl = await uploadToS3(
-        req.file.buffer,
-        req.file.originalname,
-        req.file.mimetype
-      )
+      const format = detectImageFormat(req.file.buffer)
+      if (!format) {
+        logger.warn({ name: req.file.originalname, mimetype: req.file.mimetype }, 'файл не похож на поддерживаемое изображение')
+        return res.status(400).json({ error: UNSUPPORTED_MESSAGE })
+      }
+
+      // HEIC браузеры (кроме Safari) не показывают — конвертируем в JPEG до заливки;
+      // остальным форматам чиним mimetype по сигнатуре, чтобы S3 отдавал верный Content-Type
+      const file = format === 'heif'
+        ? await convertHeicToJpeg(req.file.buffer, req.file.originalname)
+        : { buffer: req.file.buffer, fileName: req.file.originalname, mimeType: `image/${format}` }
+
+      const fileUrl = await uploadToS3(file.buffer, file.fileName, file.mimeType)
       res.json({ url: fileUrl })
     } catch (error: any) {
       const errMsg = error?.message

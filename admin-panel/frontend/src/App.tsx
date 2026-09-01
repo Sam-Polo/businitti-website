@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { api, getToken, saveToken, removeToken } from './api'
-import { generateSlug, formatArticle, parseArticle, normalizeArticle } from './utils'
+import { generateSlug, formatArticle, parseArticle, normalizeArticle, IMAGE_ACCEPT, IMAGE_FORMATS_HINT, isSupportedImageFile } from './utils'
 import CategoriesPage from './CategoriesPage'
 import OrdersPage from './OrdersPage'
 import StatsPage from './StatsPage'
@@ -1886,12 +1886,10 @@ function ProductFormModal({
     if (!files || files.length === 0) return
 
     Array.from(files).forEach(file => {
-      // поддерживаем jpeg, jpg, png, webp
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
-      if (allowedTypes.includes(file.type.toLowerCase())) {
+      if (isSupportedImageFile(file)) {
         handleFileUpload(file)
-      } else if (!file.type.startsWith('image/')) {
-        showToast('Поддерживаются только изображения: JPG, PNG, WebP', 'error')
+      } else {
+        showToast(`Поддерживаются только изображения: ${IMAGE_FORMATS_HINT}`, 'error')
       }
     })
 
@@ -2108,7 +2106,7 @@ function ProductFormModal({
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp"
+                accept={IMAGE_ACCEPT}
                 multiple
                 onChange={handleFileSelect}
                 style={{ display: 'none' }}

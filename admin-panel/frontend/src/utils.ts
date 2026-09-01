@@ -50,3 +50,17 @@ export function normalizeArticle(article: string | undefined): string | undefine
   return num != null ? formatArticle(num) : undefined
 }
 
+// форматы, которые принимает /api/upload; HEIC с айфонов бэкенд конвертирует в JPEG.
+// расширения в accept обязательны: Windows не знает mimetype для .heic, и без них
+// такие файлы не видны в диалоге выбора
+export const IMAGE_ACCEPT = 'image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.heic,.heif'
+
+export const IMAGE_FORMATS_HINT = 'JPG, PNG, WebP, HEIC'
+
+const IMAGE_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
+const IMAGE_EXTENSIONS = /\.(jpe?g|png|webp|heic|heif)$/i
+
+// у .heic браузер часто отдаёт пустой type или application/octet-stream — смотрим ещё и на имя
+export function isSupportedImageFile(file: File): boolean {
+  return IMAGE_MIME_TYPES.includes(file.type.toLowerCase()) || IMAGE_EXTENSIONS.test(file.name)
+}

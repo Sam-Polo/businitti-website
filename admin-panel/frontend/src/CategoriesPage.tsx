@@ -1,6 +1,7 @@
 import { Fragment, useState, useEffect, useRef, type ReactNode } from 'react'
 import { api, removeToken } from './api'
 import RichTextEditor from './RichTextEditor'
+import { IMAGE_ACCEPT, IMAGE_FORMATS_HINT, isSupportedImageFile } from './utils'
 import {
   DndContext,
   closestCenter,
@@ -338,12 +339,11 @@ function CategoriesPage({
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files?.length) return
-    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
     const file = files[0]
-    if (allowed.includes(file.type.toLowerCase())) {
+    if (isSupportedImageFile(file)) {
       handleFileUpload(file)
     } else {
-      showToast('Поддерживаются JPG, PNG, WebP', 'error')
+      showToast(`Поддерживаются ${IMAGE_FORMATS_HINT}`, 'error')
     }
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
@@ -528,7 +528,7 @@ function CategoriesPage({
                   type="file"
                   ref={fileInputRef}
                   id="category-image-input"
-                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  accept={IMAGE_ACCEPT}
                   onChange={handleFileSelect}
                   style={{ display: 'none' }}
                 />

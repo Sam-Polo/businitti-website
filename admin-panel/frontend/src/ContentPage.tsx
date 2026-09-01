@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api, removeToken, type ContentSlot } from './api'
 import RichTextEditor from './RichTextEditor'
+import { IMAGE_ACCEPT } from './utils'
 import './App.css'
 
 type NavPage = 'products' | 'categories' | 'orders' | 'stats' | 'content' | 'links' | 'settings'
@@ -213,7 +214,7 @@ function ContentSlotCard({
               {uploading ? 'Загрузка...' : 'Загрузить новое фото'}
               <input
                 type="file"
-                accept="image/*"
+                accept={IMAGE_ACCEPT}
                 disabled={uploading}
                 onChange={(e) => {
                   const f = e.target.files?.[0]
