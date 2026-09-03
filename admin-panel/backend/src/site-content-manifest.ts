@@ -55,6 +55,9 @@ const ORIG_ABOUT_CLOSING = 'С любовью к вам,\nBUSINITTI'
 
 const ORIG_CART_NOTICE = 'Сборка и отправка заказа осуществляется в течение 2–5 дней'
 
+const ORIG_PREORDER_NOTE =
+  'Товара сейчас нет в наличии — оформите предзаказ, мы изготовим его для вас'
+
 // Тексты писем клиенту. Экспортируются, потому что `order-email.ts` берёт их же как фолбэк,
 // когда переопределения в Sheets нет — единственный источник правды.
 // `[[…]]` — розовый акцент, пустая строка — новый абзац (как в текстах на сайте).
@@ -328,6 +331,16 @@ export const CONTENT_SLOTS: ContentSlot[] = [
     description: 'Текст под полем «Пожелания к заказу» в корзине',
     defaultValue: ORIG_CART_NOTICE,
     order: 1,
+  },
+  {
+    key: 'checkout.preorder_note',
+    page: 'checkout',
+    pageTitle: 'Оформление',
+    type: 'text',
+    label: 'Пояснение к предзаказу в карточке товара',
+    description: 'Строка под ценой, когда товара нет в наличии и его можно только заказать',
+    defaultValue: ORIG_PREORDER_NOTE,
+    order: 2,
   },
 
   // ===== Письма клиенту =====

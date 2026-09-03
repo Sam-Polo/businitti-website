@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useCart } from '../contexts/CartContext'
+import { useSiteContent } from '../contexts/SiteContentContext'
 import { availableStock, formatPrice, type Product } from '../api/products'
 import { trackAddToCart } from '../lib/analytics'
 import { useModalAnimation } from '../hooks/useModalAnimation'
@@ -8,10 +9,14 @@ import { RichText } from '../lib/RichText'
 import { Lightbox } from './Lightbox'
 import './ItemCardModal.css'
 
+const PREORDER_NOTE_DEFAULT =
+  'Товара сейчас нет в наличии — оформите предзаказ, мы изготовим его для вас'
+
 export default function ItemCardModal() {
   const { itemModalProduct, addItem, items: cartItems } = useCart()
   const { shouldRender, isClosing } = useModalAnimation(!!itemModalProduct)
   const closeProduct = useCloseProduct()
+  const preorderNote = useSiteContent('checkout.preorder_note', PREORDER_NOTE_DEFAULT)
   const [activeImage, setActiveImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [lightboxOpen, setLightboxOpen] = useState(false)
@@ -174,9 +179,7 @@ export default function ItemCardModal() {
           </div>
 
           {isPreorder && (
-            <p className="item-modal__stock-note">
-              Товара сейчас нет в наличии — оформите предзаказ, мы изготовим его для вас
-            </p>
+            <RichText text={preorderNote} paragraphClassName="item-modal__stock-note" />
           )}
           {!isPreorder && Number.isFinite(maxQuantity) && cappedQuantity >= maxQuantity && (
             <p className="item-modal__stock-note">
