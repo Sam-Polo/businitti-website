@@ -279,13 +279,9 @@ router.put('/:slug', async (req, res) => {
       return res.status(404).json({ error: 'product_not_found' })
     }
 
-    // проверка уникальности slug (если изменился)
-    if (productData.slug !== oldSlug) {
-      const slugExists = allProducts.some(p => p.slug === productData.slug && p.slug !== oldSlug)
-      if (slugExists) {
-        return res.status(400).json({ error: 'slug_already_exists' })
-      }
-    }
+    // slug у существующего товара заморожен — присланный клиентом игнорируем.
+    // Он уже разошёлся ссылками на сайте, лежит в корзинах покупателей (localStorage)
+    // и в settings.sale_order; смена названия ссылку ломать не должна.
 
     const auth = getAuthFromEnv()
     
@@ -301,7 +297,7 @@ router.put('/:slug', async (req, res) => {
     }
 
     const product = {
-      slug: productData.slug.trim(),
+      slug: oldProduct.slug,
       title: productData.title.trim(),
       description: productData.description?.trim() || undefined,
       category: normalizedCategoriesEdit[0],
@@ -334,7 +330,7 @@ router.put('/:slug', async (req, res) => {
       await appendProductToSheet(auth, sheetId, cat, { ...product, category: cat })
     }
 
-    logger.info({ oldSlug, newSlug: product.slug, categories: normalizedCategoriesEdit }, 'товар обновлен')
+    logger.info({ slug: product.slug, categories: normalizedCategoriesEdit }, 'товар обновлен')
     
     res.json({ success: true, product: { ...product, categories: normalizedCategoriesEdit } })
   } catch (error: any) {

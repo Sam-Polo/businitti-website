@@ -60,6 +60,9 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
       'article_already_exists': 'Артикул уже существует',
       'slug_already_exists': 'Slug уже существует',
       'invalid_category': 'Некорректная категория',
+      'invalid_key': 'Некорректный ключ категории',
+      'key_exists': 'Категория или лист с таким ключом уже есть',
+      'protected_key': 'У служебной категории ключ менять нельзя',
       'product_not_found': 'Товар не найден',
       'product_not_in_category': 'Товар не найден в указанной категории',
       'file_too_large': 'Файл слишком большой (максимум 10 МБ)',
@@ -235,6 +238,15 @@ export const api = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(input)
+    })
+  },
+
+  // смена ключа категории: это и ссылка на сайте, и имя листа с товарами в таблице
+  async renameCategory(key: string, newKey: string) {
+    return fetchWithAuth(`/api/categories/${encodeURIComponent(key)}/rename`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: newKey })
     })
   },
 

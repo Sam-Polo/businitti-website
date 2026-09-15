@@ -50,6 +50,12 @@ async function getProductsCached(): Promise<SheetProduct[]> {
   return products
 }
 
+// сброс кеша товаров — нужен после переименования категории: в кеше лежат
+// сохранённые имена листов (p.categories), и до истечения TTL сайт отдавал бы старый ключ
+export function invalidateProductsCache() {
+  cache = null
+}
+
 // публичный товар (без служебных полей)
 type PublicProduct = {
   id?: string

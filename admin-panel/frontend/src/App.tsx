@@ -1832,8 +1832,10 @@ function ProductFormModal({
     setFormData(prev => {
       const updated = { ...prev, [field]: value }
       
-      // автогенерация slug при изменении названия или артикула
-      if (field === 'title' || field === 'article') {
+      // автогенерация slug при изменении названия или артикула — только у нового товара.
+      // У существующего slug заморожен: он уже разошёлся ссылками, лежит в корзинах
+      // покупателей (localStorage) и в порядке категории «Скидки» (settings.sale_order)
+      if (!isEdit && (field === 'title' || field === 'article')) {
         if (updated.title && updated.article) {
           updated.slug = generateSlug(updated.title, updated.article)
         }
@@ -2033,7 +2035,7 @@ function ProductFormModal({
 
           <div className="form-row">
             <div className="form-group">
-              <label>Slug {isEdit ? '(авто)' : '*'}</label>
+              <label>Slug {isEdit ? '(не меняется)' : '*'}</label>
               <input
                 type="text"
                 value={formData.slug || ''}
@@ -2041,6 +2043,7 @@ function ProductFormModal({
                 placeholder="Генерируется автоматически"
                 className="readonly-input"
               />
+              {isEdit && <small style={{ color: '#666' }}>Ссылка на товар. Не меняется при переименовании, чтобы не ломать выданные ссылки и корзины покупателей.</small>}
             </div>
             
             <div className="form-group">

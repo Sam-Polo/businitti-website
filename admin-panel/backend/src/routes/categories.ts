@@ -5,10 +5,11 @@ import {
   saveCategoriesToSheet,
   countProductsInCategorySheet,
   deleteCategorySheet,
+  renameCategorySheet,
   PROTECTED_KEYS,
   type Category
 } from '../categories-utils.js'
-import { invalidateCategoriesCache } from './public.js'
+import { invalidateCategoriesCache, invalidateProductsCache } from './public.js'
 import pino from 'pino'
 
 const logger = pino()
@@ -131,6 +132,63 @@ router.post('/', async (req, res) => {
   } catch (error: any) {
     logger.error({ error: error?.message }, 'ошибка создания категории')
     return res.status(500).json({ error: error?.message || 'Ошибка создания категории' })
+  }
+})
+
+// переименование ключа категории: key — это и slug в URL сайта, и имя листа с товарами,
+// поэтому меняем их вместе. Товары трогать не нужно: категория товара определяется листом,
+// в котором лежит его строка, отдельной колонки с категорией в листах нет.
+router.post('/:key/rename', async (req, res) => {
+  try {
+    const sheetId = getSheetId(res); if (!sheetId) return
+    const fromKey = normalizeKey(req.params.key)
+    const toKey = normalizeKey((req.body || {}).key)
+
+    if (!isValidKey(toKey)) {
+      return res.status(400).json({ error: 'invalid_key' })
+    }
+    if (PROTECTED_KEYS.has(fromKey) || PROTECTED_KEYS.has(toKey)) {
+      return res.status(403).json({ error: 'protected_key' })
+    }
+    if (fromKey === toKey) {
+      return res.json({ success: true, key: toKey })
+    }
+
+    const existing = await fetchCategoriesFromSheet(sheetId)
+    const current = existing.find((c) => c.key === fromKey)
+    if (!current) {
+      return res.status(404).json({ error: 'not_found' })
+    }
+    if (existing.some((c) => c.key === toKey)) {
+      return res.status(409).json({ error: 'key_exists' })
+    }
+
+    await renameCategorySheet(sheetId, fromKey, toKey)
+
+    // строку в листе categories пишем только после успешного переименования листа.
+    // Если запись всё же упадёт — откатываем имя листа, иначе key и лист разъедутся
+    // и товары категории пропадут с сайта.
+    try {
+      const next = existing.map((c) => (c.key === fromKey ? { ...c, key: toKey } : c))
+      await saveCategoriesToSheet(sheetId, next)
+    } catch (e: any) {
+      logger.error({ fromKey, toKey, error: e?.message }, 'не удалось записать новый ключ — откатываем имя листа')
+      try {
+        await renameCategorySheet(sheetId, toKey, fromKey)
+      } catch (rollbackError: any) {
+        logger.error({ fromKey, toKey, error: rollbackError?.message }, 'откат имени листа не удался')
+      }
+      throw e
+    }
+
+    invalidateCategoriesCache()
+    invalidateProductsCache()
+    logger.info({ fromKey, toKey }, 'ключ категории изменён')
+    return res.json({ success: true, key: toKey })
+  } catch (error: any) {
+    const msg = error?.message === 'sheet_name_taken' ? 'key_exists' : (error?.message || 'Ошибка переименования категории')
+    logger.error({ error: error?.message }, 'ошибка переименования категории')
+    return res.status(msg === 'key_exists' ? 409 : 500).json({ error: msg })
   }
 })
 

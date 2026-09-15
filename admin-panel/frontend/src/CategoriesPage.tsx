@@ -51,6 +51,7 @@ function transliterate(input: string): string {
     .replace(/^-+|-+$/g, '')          // обрезаем дефисы по краям
     .replace(/-{2,}/g, '-')           // схлопываем подряд идущие
     .slice(0, 40)
+    .replace(/-+$/, '')               // обрезка могла оставить дефис на конце
 }
 
 // рендер описания категории в таблице с поддержкой [[ ]] и переносов строк
@@ -201,7 +202,9 @@ function CategoriesPage({
   const handleEdit = (c: Category) => {
     setEditingCategory(c)
     setIsAddMode(false)
-    setKeyManuallyEdited(true) // в edit-режиме ключ нельзя менять, transliterate не нужен
+    // ключ (он же ссылка на сайте) едет за названием и при редактировании;
+    // у служебных категорий вроде sale он зафиксирован
+    setKeyManuallyEdited(PROTECTED_KEYS.has(c.key))
     setFormData({
       key: c.key,
       title: c.title,
@@ -224,8 +227,9 @@ function CategoriesPage({
     setFormData((p) => ({
       ...p,
       title: next,
-      // в режиме добавления автогенерируем slug, пока пользователь не правил его руками
-      key: isAddMode && !keyManuallyEdited ? transliterate(next) : p.key,
+      // ссылка на сайте — транслитерация названия, поэтому ключ пересобираем и при
+      // добавлении, и при редактировании, пока пользователь не правил его руками
+      key: keyManuallyEdited ? p.key : transliterate(next),
     }))
   }
 
@@ -292,9 +296,24 @@ function CategoriesPage({
     }
 
     // edit
+    const oldKey = editingCategory?.key || ''
+    if (normalizedKey !== oldKey) {
+      if (categories.some((c) => c.key.toLowerCase() === normalizedKey)) {
+        showToast('Категория с таким ключом уже есть', 'error')
+        return
+      }
+      // ключ — ещё и имя листа с товарами, переименовать его умеет только бэкенд
+      try {
+        await api.renameCategory(oldKey, normalizedKey)
+      } catch (error: any) {
+        showToast(error.message || 'Не удалось изменить ссылку категории', 'error')
+        return
+      }
+    }
+
     const next: Category[] = categories.map((c) =>
-      c.key === editingCategory?.key
-        ? { ...c, title: title.trim(), description: description.trim() || undefined, image, active }
+      c.key === oldKey
+        ? { ...c, key: normalizedKey, title: title.trim(), description: description.trim() || undefined, image, active }
         : c
     )
     await saveCategories(next)
@@ -369,6 +388,16 @@ function CategoriesPage({
     return <div className="loading">Загрузка...</div>
   }
 
+  // у служебных категорий (sale) листа с товарами нет — ключ менять нечему и незачем
+  const keyLocked = !!editingCategory && PROTECTED_KEYS.has(editingCategory.key)
+  const keyChanged = !!editingCategory && !keyLocked && formData.key.trim().toLowerCase() !== editingCategory.key
+  // ключ разъехался с названием: либо категорию переименовывали до того, как ключ стал
+  // ездить за названием, либо его правили руками. Предлагаем выровнять одним кликом
+  const keyFromTitle = transliterate(formData.title)
+  const keySuggestion = !keyLocked && keyFromTitle && keyFromTitle !== formData.key.trim().toLowerCase()
+    ? keyFromTitle
+    : null
+
   return (
     <div className="admin-container">
       <header className="admin-header">
@@ -409,7 +438,7 @@ function CategoriesPage({
       <div className="categories-content">
         <div className="categories-toolbar">
           <p className="categories-hint">
-            Перетащите строку, чтобы изменить порядок отображения на сайте. Ключ — имя листа в Google Таблице с товарами.
+            Перетащите строку, чтобы изменить порядок отображения на сайте. Ключ — ссылка на категорию на сайте и имя листа с товарами в Google Таблице.
           </p>
           <button type="button" className="btn-add" onClick={handleAdd}>+ Добавить категорию</button>
         </div>
@@ -490,16 +519,37 @@ function CategoriesPage({
               />
             </div>
             <div className="form-group">
-              <label>Ключ (имя листа в Google Таблице) *</label>
+              <label>Ключ (ссылка на сайте и имя листа в Google Таблице) *</label>
               <input
                 type="text"
                 value={formData.key}
                 onChange={(e) => handleKeyChange(e.target.value)}
                 placeholder="напр. boho-etno"
-                disabled={!!editingCategory}
+                disabled={keyLocked}
               />
               {isAddMode && <small>Сгенерируется автоматически из названия (можно изменить вручную)</small>}
-              {editingCategory && <small>Ключ нельзя изменить после создания</small>}
+              {keyLocked && <small>Служебная категория — ключ нельзя изменить</small>}
+              {editingCategory && !keyLocked && !keyChanged && (
+                <small>Ссылка на сайте: /category/{formData.key} — меняется вместе с названием. Это же имя листа с товарами в таблице.</small>
+              )}
+              {keyChanged && (
+                <small style={{ color: '#c2410c' }}>
+                  Ссылка изменится: /category/{editingCategory.key} → /category/{formData.key.trim().toLowerCase()}.
+                  Лист «{editingCategory.key}» в таблице будет переименован, а старая ссылка перестанет работать.
+                </small>
+              )}
+              {keySuggestion && (
+                <button
+                  type="button"
+                  className="btn-link-inline"
+                  onClick={() => {
+                    setKeyManuallyEdited(false)
+                    setFormData((p) => ({ ...p, key: keySuggestion }))
+                  }}
+                >
+                  Собрать ключ из названия: {keySuggestion}
+                </button>
+              )}
             </div>
             <div className="form-group">
               <label className="settings-toggle">

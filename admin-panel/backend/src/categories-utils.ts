@@ -200,3 +200,44 @@ export async function deleteCategorySheet(sheetId: string, key: string): Promise
   })
   logger.info({ key }, 'лист товаров категории удалён')
 }
+
+/**
+ * Переименовать лист товаров категории (key = имя листа = slug в URL).
+ * Если листа с прежним именем нет — просто создаём лист под новым ключом:
+ * категория без листа встречается у только что заведённых и у ручных правок таблицы.
+ */
+export async function renameCategorySheet(sheetId: string, fromKey: string, toKey: string): Promise<void> {
+  if (PROTECTED_KEYS.has(fromKey) || PROTECTED_KEYS.has(toKey)) {
+    throw new Error('protected_key')
+  }
+  const auth = getAuthFromEnv()
+  const sheets = google.sheets({ version: 'v4', auth })
+  const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId: sheetId })
+  const all = spreadsheet.data.sheets ?? []
+
+  const target = all.find((s: any) => s.properties?.title === toKey)
+  if (target) {
+    throw new Error('sheet_name_taken')
+  }
+
+  const source = all.find((s: any) => s.properties?.title === fromKey)
+  const sourceSheetId = source?.properties?.sheetId
+  if (sourceSheetId === undefined || sourceSheetId === null) {
+    await ensureProductSheet(auth, sheetId, toKey)
+    logger.warn({ fromKey, toKey }, 'листа категории не было — создан лист под новым ключом')
+    return
+  }
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId: sheetId,
+    requestBody: {
+      requests: [{
+        updateSheetProperties: {
+          properties: { sheetId: sourceSheetId, title: toKey },
+          fields: 'title',
+        }
+      }]
+    }
+  })
+  logger.info({ fromKey, toKey }, 'лист товаров категории переименован')
+}

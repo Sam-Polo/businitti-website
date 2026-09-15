@@ -1658,6 +1658,23 @@ body, button, input, textarea, select {
   line-height: 1.4;
 }
 
+/* подсказка-действие под полем формы (например «собрать ключ из названия») */
+.btn-link-inline {
+  align-self: flex-start;
+  margin-top: 0.35rem;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #c2410c;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.btn-link-inline:hover {
+  color: #9a3412;
+}
+
 /* мультивыбор категорий (чекбоксы в выпадающем списке) */
 .category-multiselect {
   position: relative;
