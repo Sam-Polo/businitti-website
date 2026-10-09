@@ -1,0 +1,124 @@
+/* Cookie-баннер: карточка в левом нижнем углу (справа на страницах категорий
+   плавает кнопка корзины), на мобильных — во всю ширину снизу. */
+.cookie-banner {
+  position: fixed;
+  left: var(--page-padding-x);
+  bottom: 40px;
+  z-index: 90; /* над кнопкой корзины (50), под шапкой и модалками (99+) */
+  width: min(500px, calc(100vw - 2 * var(--page-padding-x)));
+  padding: 28px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background-color: var(--color-bg-white);
+  border-radius: 0 10px 0 10px; /* как у карточек товара */
+  box-shadow: 0 12px 40px rgba(47, 47, 47, 0.14);
+  animation: cookieBannerIn 500ms cubic-bezier(0.22, 1, 0.36, 1) 400ms both;
+}
+
+.cookie-banner.is-closing {
+  animation: cookieBannerOut 250ms ease-in both;
+}
+
+.cookie-banner__title {
+  font-family: var(--font-display);
+  font-size: var(--font-size-card-title);
+  line-height: var(--line-height-tight);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.cookie-banner__text {
+  font-size: var(--font-size-contact);
+  line-height: 20px;
+  color: var(--color-text-primary);
+}
+
+.cookie-banner__text a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.cookie-banner__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+/* Обе кнопки одного размера: отказ не должен быть спрятан или мельче согласия */
+.cookie-banner__btn {
+  flex: 1;
+  height: 48px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--border-radius-sm);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.cookie-banner__btn:hover {
+  background-color: rgba(245, 162, 183, 0.15);
+}
+
+.cookie-banner__btn--accept {
+  background-color: var(--color-accent);
+}
+
+.cookie-banner__btn--accept:hover {
+  background-color: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+@keyframes cookieBannerIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cookieBannerOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .cookie-banner {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    width: auto;
+    padding: 20px;
+    gap: 10px;
+  }
+
+  .cookie-banner__title {
+    font-size: 18px;
+  }
+
+  .cookie-banner__text {
+    font-size: 12px;
+    line-height: 17px;
+  }
+
+  .cookie-banner__actions {
+    gap: 10px;
+  }
+
+  .cookie-banner__btn {
+    height: 44px;
+    font-size: 16px;
+  }
+}

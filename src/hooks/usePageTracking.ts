@@ -3,9 +3,10 @@ import { useLocation, useMatch } from 'react-router-dom'
 import { PRODUCT_ROUTE_PATTERN } from './useProductRoute'
 import { YM_ID, GA_ID } from '../lib/analytics'
 
-// URL, с которым открыли сайт, уже посчитали счётчики в index.html
-// (ym init и gtag config). Его первый показ пропускаем, чтобы не задваивать
+// URL, с которым открыли сайт, считают сами счётчики при подключении
+// (ym init и gtag config в loadAnalytics). Его первый показ пропускаем, чтобы не задваивать
 // стартовую страницу. Повторные заходы на тот же URL уже считаем.
+// Пока нет согласия на cookie, счётчиков нет — хиты отсюда не уходят.
 const initialUrl = typeof window !== 'undefined' ? window.location.pathname + window.location.search : ''
 let initialSkipped = false
 

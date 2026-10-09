@@ -496,6 +496,16 @@ export const CONTENT_SLOTS: ContentSlot[] = [
     defaultValue: 'https://docs.google.com/document/d/1c8xVypvY3bue7uR5wYtYNz-S7g-tpFAXnSdlrwjCi_g/edit?usp=sharing',
     order: 9,
   },
+  {
+    key: 'links.cookies',
+    page: 'links',
+    pageTitle: 'Ссылки',
+    type: 'link',
+    label: 'Политика использования файлов cookie',
+    description: 'Ссылка в cookie-баннере и в футере',
+    defaultValue: 'https://docs.google.com/document/d/1rFQeCT_USJNkRdlSGP-uxVNjXUI6Y-WKCyVXpPKDSs8/edit?usp=sharing',
+    order: 10,
+  },
 ]
 
 export function getSlotByKey(key: string): ContentSlot | undefined {

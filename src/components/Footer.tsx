@@ -68,6 +68,9 @@ export default function Footer() {
           <div className="footer__legal">
             <a href={externalLinks.offer} target="_blank" rel="noopener noreferrer" className="footer__legal-link">Оферта</a>
             <a href={externalLinks.privacy} target="_blank" rel="noopener noreferrer" className="footer__legal-link">Политика обработки персональных данных</a>
+            {externalLinks.cookies && (
+              <a href={externalLinks.cookies} target="_blank" rel="noopener noreferrer" className="footer__legal-link">Политика использования файлов cookie</a>
+            )}
             <p className="footer__legal-text">
               Самозанятая Алябьева Ольга Викторовна<br />
               ИНН: 505002412789

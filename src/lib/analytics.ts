@@ -1,11 +1,12 @@
-// Аналитика: цели Метрики (reachGoal) + e-commerce события для Метрики
-// (dataLayer) и GA4 (gtag). Сами счётчики подключены в index.html.
+// Аналитика: подключение счётчиков (Яндекс Метрика + GA4), цели Метрики (reachGoal)
+// и e-commerce события для Метрики (dataLayer) и GA4 (gtag).
+// Счётчики грузятся только с согласия на аналитические cookie (CookieBanner,
+// src/lib/cookieConsent.ts). Без него window.ym/gtag нет, и все функции ниже молча ничего не делают.
 
 import type { Product } from '../api/products'
 import type { CartItem } from '../contexts/CartContext'
 
 // ─── ID счётчиков ───────────────────────────────────────
-// Должны совпадать с ID в index.html.
 export const YM_ID = 109368038      // номер счётчика Яндекс.Метрики
 export const GA_ID = 'G-TPN1XT7ESK' // ID потока Google Analytics
 
@@ -15,6 +16,78 @@ declare global {
     gtag?: (...args: unknown[]) => void
     dataLayer?: unknown[]
   }
+}
+
+// ─── Подключение счётчиков ──────────────────────────────
+// Точка входа на сайт. Если согласие дали уже после переходов по сайту, первым хитом
+// отправляем её, а не текущую страницу: в её URL рекламные метки (yclid, utm_*),
+// без них Директ не свяжет визит с кликом по объявлению.
+const landingUrl = typeof window !== 'undefined' ? window.location.href : ''
+const landingTitle = typeof document !== 'undefined' ? document.title : ''
+let analyticsLoaded = false
+
+function appendScript(src: string) {
+  const script = document.createElement('script')
+  script.async = true
+  script.src = src
+  document.head.appendChild(script)
+}
+
+function loadMetrika(afterNavigation: boolean) {
+  // Очередь вызовов до загрузки tag.js — как в штатном сниппете счётчика
+  if (!window.ym) {
+    const queue: IArguments[] = []
+    const ym = function () {
+      // eslint-disable-next-line prefer-rest-params -- tag.js разбирает очередь из arguments
+      queue.push(arguments)
+    }
+    window.ym = Object.assign(ym, { a: queue, l: Date.now() })
+  }
+  appendScript('https://mc.yandex.ru/metrika/tag.js')
+  window.dataLayer = window.dataLayer || []
+  window.ym(YM_ID, 'init', {
+    clickmap: true,
+    trackLinks: true,
+    accurateTrackBounce: true,
+    ecommerce: 'dataLayer',
+    defer: afterNavigation, // точку входа и текущую страницу отправим сами
+  })
+  if (afterNavigation) {
+    window.ym(YM_ID, 'hit', landingUrl, { referer: document.referrer, title: landingTitle })
+    window.ym(YM_ID, 'hit', window.location.href, { title: document.title })
+  }
+}
+
+function loadGa(afterNavigation: boolean) {
+  const dataLayer = (window.dataLayer = window.dataLayer || [])
+  if (!window.gtag) {
+    window.gtag = function () {
+      // eslint-disable-next-line prefer-rest-params -- gtag.js принимает команды только как arguments
+      dataLayer.push(arguments)
+    }
+  }
+  window.gtag('js', new Date())
+  if (afterNavigation) {
+    window.gtag('config', GA_ID, { send_page_view: false })
+    window.gtag('event', 'page_view', { page_location: landingUrl, page_referrer: document.referrer, page_title: landingTitle })
+    window.gtag('event', 'page_view', { page_location: window.location.href, page_title: document.title })
+  } else {
+    window.gtag('config', GA_ID)
+  }
+  appendScript(`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`)
+}
+
+/**
+ * Подключает Метрику и GA4. Вызывается только с согласия посетителя: при старте
+ * (main.tsx), если оно уже сохранено, или по «Принять» в cookie-баннере.
+ * Стартовую страницу считают сами счётчики (init/config), дальше — usePageTracking.
+ */
+export function loadAnalytics() {
+  if (analyticsLoaded) return
+  analyticsLoaded = true
+  const afterNavigation = window.location.href !== landingUrl
+  loadMetrika(afterNavigation)
+  loadGa(afterNavigation)
 }
 
 // Товар в формате ecommerce-контейнера Метрики.
@@ -51,7 +124,10 @@ export function ymGoal(goal: string, params?: Record<string, unknown>) {
 
 // Метрика читает пуши с ключом ecommerce из window.dataLayer
 // (параметр ecommerce: "dataLayer" в init счётчика).
+// Без согласия на cookie ничего не копим — иначе Метрика, подключённая позже,
+// получила бы и события, случившиеся до согласия.
 function ymEcommerce(action: 'detail' | 'add' | 'remove' | 'purchase', payload: Record<string, unknown>) {
+  if (typeof window.ym !== 'function') return
   window.dataLayer = window.dataLayer || []
   window.dataLayer.push({ ecommerce: { currencyCode: 'RUB', [action]: payload } })
 }

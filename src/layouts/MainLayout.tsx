@@ -4,6 +4,7 @@ import Header from '../components/Header'
 import Footer from '../components/Footer'
 import ItemCardModal from '../components/ItemCardModal'
 import CartModal from '../components/CartModal'
+import CookieBanner from '../components/CookieBanner'
 import { CartProvider } from '../contexts/CartContext'
 import { useAutoScrollReveal } from '../hooks/useAutoScrollReveal'
 import { PRODUCT_ROUTE_PATTERN } from '../hooks/useProductRoute'
@@ -30,6 +31,7 @@ export default function MainLayout() {
       <Footer />
       <ItemCardModal />
       <CartModal />
+      <CookieBanner />
     </CartProvider>
   )
 }

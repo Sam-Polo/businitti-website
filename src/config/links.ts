@@ -24,6 +24,8 @@ export const externalLinks = {
   // Юридические документы
   offer: 'https://docs.google.com/document/d/1OcVT6PUUYYsxfYnuevi5C-HkD1KTaHlLULyfEryycEw/edit?usp=sharing',
   privacy: 'https://docs.google.com/document/d/1c8xVypvY3bue7uR5wYtYNz-S7g-tpFAXnSdlrwjCi_g/edit?usp=sharing',
+  // Если ссылку очистить (и здесь, и в админке), в футере и cookie-баннере она не выводится
+  cookies: 'https://docs.google.com/document/d/1rFQeCT_USJNkRdlSGP-uxVNjXUI6Y-WKCyVXpPKDSs8/edit?usp=sharing',
 
   // Кнопка в блоке «Контакты» (главная, страница категории, страница «Контакты»).
   // По умолчанию ведёт туда же, куда max — но это отдельный слот, чтобы можно было
@@ -55,6 +57,7 @@ export function useExternalLinks() {
     phoneTel: phoneToTel(phone) || externalLinks.phoneTel,
     offer: content['links.offer'] || externalLinks.offer,
     privacy: content['links.privacy'] || externalLinks.privacy,
+    cookies: content['links.cookies'] || externalLinks.cookies,
     contactsCtaUrl: content['links.cta_contacts_url'] || externalLinks.contactsCtaUrl,
     contactsCtaLabel: content['links.cta_contacts_label'] || externalLinks.contactsCtaLabel,
   }
