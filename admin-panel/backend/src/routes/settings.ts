@@ -12,6 +12,7 @@ import {
   fetchSaleOrder,
 } from '../settings-utils.js'
 import { DELIVERY_PRICES, invalidateDeliveryPricesCache } from '../orders-utils.js'
+import { invalidateOrdersStatusCache } from './public.js'
 import pino from 'pino'
 
 const logger = pino()
@@ -57,6 +58,7 @@ router.put('/orders-status', async (req, res) => {
       ordersClosed,
       closeDate: closeDate || undefined,
     })
+    invalidateOrdersStatusCache()
     return res.json({ success: true })
   } catch (error: any) {
     logger.error({ error: error?.message }, 'ошибка сохранения настроек заказов')

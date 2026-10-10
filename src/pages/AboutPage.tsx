@@ -1,4 +1,4 @@
-import { useSiteContent } from '../contexts/SiteContentContext'
+import { useSiteContent, useSiteImage } from '../contexts/SiteContentContext'
 import { RichText } from '../lib/RichText'
 import { RevealImage } from '../lib/RevealImage'
 import heroDefault from '../assets/img/about-hero__img.jpg'
@@ -15,9 +15,9 @@ const ABOUT_GALLERY_TEXT_DEFAULT =
 const ABOUT_CLOSING_DEFAULT = 'С любовью к вам,\nBUSINITTI'
 
 export default function AboutPage() {
-  const heroImg = useSiteContent('about.hero_image', heroDefault)
-  const gallery1 = useSiteContent('about.gallery_image_1', gallery1Default)
-  const gallery2 = useSiteContent('about.gallery_image_2', gallery2Default)
+  const heroImg = useSiteImage('about.hero_image', heroDefault)
+  const gallery1 = useSiteImage('about.gallery_image_1', gallery1Default)
+  const gallery2 = useSiteImage('about.gallery_image_2', gallery2Default)
   const heroBuddy = useSiteContent('about.hero_buddy_text', ABOUT_HERO_BUDDY_DEFAULT)
   const galleryText = useSiteContent('about.gallery_text', ABOUT_GALLERY_TEXT_DEFAULT)
   const closingText = useSiteContent('about.closing_text', ABOUT_CLOSING_DEFAULT)

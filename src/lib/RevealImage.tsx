@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import './RevealImage.css'
 
 type Props = {
-  src: string
+  /** Пока адреса нет (контент ещё грузится) — рисуется только пустая обёртка нужного размера. */
+  src?: string
   alt?: string
   /** Extra classes for the wrapper — sizing, border-radius, `reveal`, etc. */
   className?: string
@@ -33,15 +34,17 @@ export function RevealImage({ src, alt = '', className, objectPosition, style }:
 
   return (
     <div className={`reveal-image${className ? ' ' + className : ''}`} style={style}>
-      <img
-        ref={imgRef}
-        className={`reveal-image__img${loaded ? ' is-loaded' : ''}`}
-        src={src}
-        alt={alt}
-        loading="lazy"
-        onLoad={() => setLoaded(true)}
-        style={objectPosition ? { objectPosition } : undefined}
-      />
+      {src && (
+        <img
+          ref={imgRef}
+          className={`reveal-image__img${loaded ? ' is-loaded' : ''}`}
+          src={src}
+          alt={alt}
+          loading="lazy"
+          onLoad={() => setLoaded(true)}
+          style={objectPosition ? { objectPosition } : undefined}
+        />
+      )}
     </div>
   )
 }

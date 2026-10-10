@@ -2,6 +2,7 @@ import { google } from 'googleapis'
 import { getAuthFromEnv, getSheetIdByName } from './sheets-utils.js'
 import { logger } from './logger.js'
 import { fetchDeliveryPriceOverrides } from './settings-utils.js'
+import { createSheetCache } from './sheet-cache.js'
 
 export type OrderStatus = 'pending_payment' | 'new' | 'shipped' | 'cancelled' | 'refunded'
 export type DeliveryService = 'cdek' | 'yandex_market'
@@ -14,31 +15,28 @@ export const DELIVERY_PRICES: Record<DeliveryService, number> = {
   yandex_market: Number(process.env.DELIVERY_PRICE_YANDEX_MARKET) || 300,
 }
 
-// кешируем эффективные цены, чтобы не дёргать Sheets на каждый заказ
-let pricesCache: { data: Record<DeliveryService, number>; expiresAt: number } | null = null
-const PRICES_CACHE_TTL_MS = 60_000
-
-export async function getEffectiveDeliveryPrices(): Promise<Record<DeliveryService, number>> {
-  const now = Date.now()
-  if (pricesCache && pricesCache.expiresAt > now) return pricesCache.data
-  const sheetId = process.env.GOOGLE_SHEET_ID
-  if (!sheetId) return DELIVERY_PRICES
-  try {
-    const overrides = await fetchDeliveryPriceOverrides(sheetId)
-    const data: Record<DeliveryService, number> = {
+// кешируем эффективные цены, чтобы не дёргать Sheets на каждый заказ; если Sheets
+// недоступен — последние известные цены, а без них дефолт
+const pricesCache = createSheetCache<Record<DeliveryService, number>>(
+  'delivery_prices',
+  async () => {
+    const overrides = await fetchDeliveryPriceOverrides(process.env.GOOGLE_SHEET_ID as string)
+    return {
       cdek: overrides.cdek ?? DELIVERY_PRICES.cdek,
       yandex_market: overrides.yandex_market ?? DELIVERY_PRICES.yandex_market,
     }
-    pricesCache = { data, expiresAt: now + PRICES_CACHE_TTL_MS }
-    return data
-  } catch (err: any) {
-    logger.warn({ err: err?.message }, 'не удалось загрузить override цен доставки — используем дефолт')
-    return DELIVERY_PRICES
-  }
+  },
+  { ttlMs: 60_000, fallback: () => DELIVERY_PRICES }
+)
+
+// fresh — для заказа: если TTL истёк, дождаться свежих цен, а не брать прошлые
+export async function getEffectiveDeliveryPrices(opts: { fresh?: boolean } = {}): Promise<Record<DeliveryService, number>> {
+  if (!process.env.GOOGLE_SHEET_ID) return DELIVERY_PRICES
+  return pricesCache.get(opts)
 }
 
 export function invalidateDeliveryPricesCache() {
-  pricesCache = null
+  pricesCache.invalidate()
 }
 
 export const DELIVERY_LABELS: Record<DeliveryService, string> = {
@@ -296,7 +294,7 @@ export async function createOrder(
   const { display_id, inv_id } = await nextIds(auth, sheetId)
   const id = `ord_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
   const now = new Date().toISOString()
-  const effectivePrices = await getEffectiveDeliveryPrices()
+  const effectivePrices = await getEffectiveDeliveryPrices({ fresh: true })
   const delivery_rub = effectivePrices[data.delivery_service]
   const items_sum = data.items.reduce((s, it) => s + it.subtotal_rub, 0)
   const total_rub = items_sum + delivery_rub

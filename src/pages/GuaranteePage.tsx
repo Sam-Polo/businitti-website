@@ -1,7 +1,7 @@
 import { Fragment } from 'react'
 import { useExternalLinks } from '../config/links'
 import arrowIcon from '../assets/Line 1.svg'
-import { useSiteContent } from '../contexts/SiteContentContext'
+import { useSiteContent, useSiteImage } from '../contexts/SiteContentContext'
 import { RichText } from '../lib/RichText'
 import { RevealImage } from '../lib/RevealImage'
 import headerImgDefault from '../assets/img/guarantee-header__image.png'
@@ -18,7 +18,7 @@ const exclusions = [
 
 export default function GuaranteePage() {
   const externalLinks = useExternalLinks()
-  const headerImage = useSiteContent('guarantee.header_image', headerImgDefault)
+  const headerImage = useSiteImage('guarantee.header_image', headerImgDefault)
   const returnText = useSiteContent('guarantee.return_text', GUARANTEE_RETURN_DEFAULT)
   return (
     <main className="guarantee-page">

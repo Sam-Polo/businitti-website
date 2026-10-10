@@ -50,6 +50,18 @@ export function useSiteContent(key: string, fallback: string = ''): string {
   return content[key] || fallback
 }
 
+/**
+ * Картинка редактируемого слота. Пока переопределения не загрузились — undefined:
+ * встроенную картинку заранее не показываем, иначе после загрузки она резко
+ * сменилась бы на фото из админки. Встроенная идёт в дело, только если слот
+ * в админке не задан или контент получить не удалось.
+ */
+export function useSiteImage(key: string, fallback: string): string | undefined {
+  const { content, loaded } = useContext(SiteContentContext)
+  if (!loaded) return undefined
+  return content[key] || fallback
+}
+
 /** Доступ к сырой мапе override'ов — для случаев, когда нужно много ключей сразу. */
 export function useSiteContentMap() {
   return useContext(SiteContentContext).content

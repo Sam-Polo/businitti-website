@@ -5,7 +5,7 @@ import arrowIcon from '../assets/Line 1.svg'
 import arrowWhiteIcon from '../assets/img/Line 1 white.svg'
 import heroDefault from '../assets/img/hero__overlay.jpg'
 import contactsDefault from '../assets/img/home-contacts__image.png'
-import { useSiteContent } from '../contexts/SiteContentContext'
+import { useSiteContent, useSiteImage } from '../contexts/SiteContentContext'
 import { RichText } from '../lib/RichText'
 import { RevealImage } from '../lib/RevealImage'
 import './MainPage.css'
@@ -15,8 +15,8 @@ const HOME_CONTACTS_DESC_DEFAULT =
 
 export default function MainPage() {
   const externalLinks = useExternalLinks()
-  const heroImage = useSiteContent('home.hero_image', heroDefault)
-  const contactsImage = useSiteContent('home.contacts_image', contactsDefault)
+  const heroImage = useSiteImage('home.hero_image', heroDefault)
+  const contactsImage = useSiteImage('home.contacts_image', contactsDefault)
   const contactsDesc = useSiteContent('home.contacts_desc', HOME_CONTACTS_DESC_DEFAULT)
 
   const { categories } = useCategories()

@@ -5,7 +5,7 @@ import { fetchProductsByCategory, formatPrice, type Product } from '../api/produ
 import { useCategories } from '../contexts/CategoriesContext'
 import { useCart } from '../contexts/CartContext'
 import { productPath } from '../hooks/useProductRoute'
-import { useSiteContent } from '../contexts/SiteContentContext'
+import { useSiteContent, useSiteImage } from '../contexts/SiteContentContext'
 import { RichText } from '../lib/RichText'
 import { RevealImage } from '../lib/RevealImage'
 import contactsImgDefault from '../assets/img/home-contacts__image.png'
@@ -30,7 +30,7 @@ export default function CategoryPage() {
 
   const { openCart, totalCount } = useCart()
   const externalLinks = useExternalLinks()
-  const contactsImage = useSiteContent('category.contacts_image', contactsImgDefault)
+  const contactsImage = useSiteImage('category.contacts_image', contactsImgDefault)
   const contactsDesc = useSiteContent('home.contacts_desc', HOME_CONTACTS_DESC_DEFAULT)
 
   const { categories } = useCategories()

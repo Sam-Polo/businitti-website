@@ -7,3 +7,4 @@ dist
 !.env.example
 sa.json 
 figma/
+*.md

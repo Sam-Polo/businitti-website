@@ -55,7 +55,7 @@ import promocodeRoutes from './routes/promocodes.js'
 import settingsRoutes from './routes/settings.js'
 import categoriesRoutes from './routes/categories.js'
 import paymentRoutes from './routes/payment.js'
-import publicRoutes from './routes/public.js'
+import publicRoutes, { warmPublicCaches } from './routes/public.js'
 import ordersRoutes from './routes/orders.js'
 import contentRoutes from './routes/content.js'
 import internalRoutes from './routes/internal.js'
@@ -74,5 +74,6 @@ app.use('/api/internal', internalRoutes)
 
 app.listen(PORT, () => {
   logger.info(`Админ-панель бэкенд запущен на порту ${PORT}`)
+  warmPublicCaches()
 })
 

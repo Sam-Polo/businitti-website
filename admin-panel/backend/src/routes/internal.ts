@@ -5,6 +5,7 @@ import {
   saveOrdersSettingsToSheet,
 } from '../settings-utils.js'
 import { logger } from '../logger.js'
+import { invalidateOrdersStatusCache } from './public.js'
 
 const router = express.Router()
 
@@ -119,6 +120,7 @@ router.post('/orders-status', async (req, res) => {
       return res.status(400).json({ error: 'closed must be boolean' })
     }
     await saveOrdersSettingsToSheet(sheetId, { ordersClosed: closed })
+    invalidateOrdersStatusCache()
     return res.json({ success: true })
   } catch (error: any) {
     logger.error({ error: error?.message }, 'internal: ошибка смены статуса заказов')

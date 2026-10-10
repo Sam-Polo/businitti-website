@@ -401,6 +401,25 @@
 }
 
 /* Submit */
+.cart-modal__submit-wrap {
+  align-self: center;
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* подсказка про VPN — намеренно тихая: мелко и приглушённым цветом текста */
+.cart-modal__vpn-note {
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgba(47, 47, 47, 0.45);
+  text-align: center;
+}
+
 .cart-modal__submit {
   align-self: center;
   width: 100%;

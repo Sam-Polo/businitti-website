@@ -1,5 +1,5 @@
 import { Fragment } from 'react'
-import { useSiteContent } from '../contexts/SiteContentContext'
+import { useSiteContent, useSiteImage } from '../contexts/SiteContentContext'
 import { RichText } from '../lib/RichText'
 import { RevealImage } from '../lib/RevealImage'
 import imageDefault from '../assets/img/recommendations-image.png'
@@ -13,7 +13,7 @@ const TIP_DEFAULTS = [
 ]
 
 export default function RecommendationsPage() {
-  const image = useSiteContent('recommendations.image', imageDefault)
+  const image = useSiteImage('recommendations.image', imageDefault)
   const tip1 = useSiteContent('recommendations.tip_1', TIP_DEFAULTS[0])
   const tip2 = useSiteContent('recommendations.tip_2', TIP_DEFAULTS[1])
   const tip3 = useSiteContent('recommendations.tip_3', TIP_DEFAULTS[2])

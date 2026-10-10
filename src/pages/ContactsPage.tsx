@@ -1,5 +1,5 @@
 import { useExternalLinks } from '../config/links'
-import { useSiteContent } from '../contexts/SiteContentContext'
+import { useSiteContent, useSiteImage } from '../contexts/SiteContentContext'
 import { RichText } from '../lib/RichText'
 import { RevealImage } from '../lib/RevealImage'
 import bgImageDefault from '../assets/img/home-contacts__image.png'
@@ -10,7 +10,7 @@ const CONTACTS_DESC_DEFAULT =
 
 export default function ContactsPage() {
   const externalLinks = useExternalLinks()
-  const bgImage = useSiteContent('contacts.bg_image', bgImageDefault)
+  const bgImage = useSiteImage('contacts.bg_image', bgImageDefault)
   const desc = useSiteContent('contacts.desc', CONTACTS_DESC_DEFAULT)
 
   return (

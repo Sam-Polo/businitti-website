@@ -2,7 +2,7 @@ import express from 'express'
 import multer from 'multer'
 import { requireAuth } from '../auth.js'
 import { uploadToS3 } from '../s3.js'
-import { convertHeicToJpeg, detectImageFormat } from '../image-convert.js'
+import { convertHeicToJpeg, detectImageFormat, optimizeOversizedImage } from '../image-convert.js'
 import { logger } from '../logger.js'
 
 const router = express.Router()
@@ -61,9 +61,12 @@ router.post(
 
       // HEIC браузеры (кроме Safari) не показывают — конвертируем в JPEG до заливки;
       // остальным форматам чиним mimetype по сигнатуре, чтобы S3 отдавал верный Content-Type
-      const file = format === 'heif'
+      const converted = format === 'heif'
         ? await convertHeicToJpeg(req.file.buffer, req.file.originalname)
         : { buffer: req.file.buffer, fileName: req.file.originalname, mimeType: `image/${format}` }
+
+      // запредельно тяжёлые фото ужимаем без видимой потери качества, остальные — как есть
+      const file = await optimizeOversizedImage(converted)
 
       const fileUrl = await uploadToS3(file.buffer, file.fileName, file.mimeType)
       res.json({ url: fileUrl })

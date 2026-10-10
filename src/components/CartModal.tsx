@@ -30,6 +30,8 @@ function formatReopenDate(iso: string): string {
 export default function CartModal() {
   const externalLinks = useExternalLinks()
   const cartNotice = useSiteContent('checkout.cart_notice', 'Сборка и отправка заказа осуществляется в течение 2–5 дней')
+  // страницы оплаты банков часто не открываются из-за рубежа — тихая подсказка под кнопкой
+  const vpnNote = useSiteContent('checkout.vpn_note', 'Если страница оплаты не открывается, попробуйте отключить VPN')
   const { isCartOpen, closeCart, items, setQuantity, removeItem, totalPrice, clear } = useCart()
   const { shouldRender, isClosing } = useModalAnimation(isCartOpen)
 
@@ -330,13 +332,16 @@ export default function CartModal() {
               </p>
             </div>
           ) : (
-            <button
-              type="submit"
-              className="cart-modal__submit"
-              disabled={!canSubmit}
-            >
-              {submitting ? 'Создаём заказ…' : 'Оформить заказ'}
-            </button>
+            <div className="cart-modal__submit-wrap">
+              <button
+                type="submit"
+                className="cart-modal__submit"
+                disabled={!canSubmit}
+              >
+                {submitting ? 'Создаём заказ…' : 'Оформить заказ'}
+              </button>
+              {vpnNote && <p className="cart-modal__vpn-note">{vpnNote}</p>}
+            </div>
           )}
         </form>
       </div>

@@ -55,6 +55,8 @@ const ORIG_ABOUT_CLOSING = 'С любовью к вам,\nBUSINITTI'
 
 const ORIG_CART_NOTICE = 'Сборка и отправка заказа осуществляется в течение 2–5 дней'
 
+const ORIG_VPN_NOTE = 'Если страница оплаты не открывается, попробуйте отключить VPN'
+
 const ORIG_PREORDER_NOTE =
   'Товара сейчас нет в наличии — оформите предзаказ, мы изготовим его для вас'
 
@@ -341,6 +343,16 @@ export const CONTENT_SLOTS: ContentSlot[] = [
     description: 'Строка под ценой, когда товара нет в наличии и его можно только заказать',
     defaultValue: ORIG_PREORDER_NOTE,
     order: 2,
+  },
+  {
+    key: 'checkout.vpn_note',
+    page: 'checkout',
+    pageTitle: 'Оформление',
+    type: 'text',
+    label: 'Подсказка про VPN под кнопкой заказа',
+    description: 'Мелкая строка под кнопкой «Оформить заказ»: банковские страницы оплаты часто не открываются с VPN',
+    defaultValue: ORIG_VPN_NOTE,
+    order: 3,
   },
 
   // ===== Письма клиенту =====

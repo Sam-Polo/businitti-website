@@ -42,17 +42,45 @@ function getAuthFromEnv() {
   return new google.auth.JWT(creds.client_email, undefined, creds.private_key, scopes)
 }
 
-// чтение одного листа
-async function fetchSheetRange(
-  auth: any, 
-  sheetId: string, 
-  range: string, 
-  categoryName: string
-): Promise<SheetProduct[]> {
+const PRODUCT_SHEET_COLUMNS = 'A1:K1000'
+
+// чтение листов товаров: одним batchGet вместо запроса на каждый лист (быстрее и меньше
+// расход квоты Sheets). batchGet падает целиком, если хоть одного листа нет, — тогда
+// читаем по одному, как раньше, чтобы битый лист не ронял остальные
+async function readProductSheets(
+  auth: any,
+  sheetId: string,
+  sheetNames: string[]
+): Promise<Map<string, any[][]>> {
   const sheets = google.sheets({ version: 'v4', auth })
-  const res = await sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range })
-  const rows = res.data.values ?? []
-  
+  const out = new Map<string, any[][]>()
+  if (sheetNames.length === 0) return out
+
+  try {
+    const res = await sheets.spreadsheets.values.batchGet({
+      spreadsheetId: sheetId,
+      ranges: sheetNames.map((name) => `${name}!${PRODUCT_SHEET_COLUMNS}`)
+    })
+    const valueRanges = res.data.valueRanges ?? []
+    sheetNames.forEach((name, i) => out.set(name, valueRanges[i]?.values ?? []))
+    return out
+  } catch (e: any) {
+    logger.warn({ error: e?.message }, 'batchGet листов товаров не удался — читаем по одному')
+  }
+
+  for (const name of sheetNames) {
+    try {
+      const res = await sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range: `${name}!${PRODUCT_SHEET_COLUMNS}` })
+      out.set(name, res.data.values ?? [])
+    } catch (e: any) {
+      logger.warn({ sheetName: name, error: e?.message }, 'не удалось прочитать лист')
+    }
+  }
+  return out
+}
+
+// разбор строк одного листа товаров
+function parseProductRows(rows: any[][], categoryName: string): SheetProduct[] {
   if (rows.length === 0) return []
   
   const header = rows[0].map((h: string) => h.trim().toLowerCase())
@@ -115,12 +143,16 @@ async function fetchSheetRange(
   return out
 }
 
-// чтение всех товаров из Google Sheets (листы берутся из categories)
-export async function fetchProductsFromSheet(sheetId: string): Promise<SheetProduct[]> {
+// чтение всех товаров из Google Sheets (листы берутся из categories).
+// categories можно передать уже загруженными (публичный кеш), чтобы не читать их повторно
+export async function fetchProductsFromSheet(
+  sheetId: string,
+  preloadedCategories?: Array<{ key: string }>
+): Promise<SheetProduct[]> {
   const auth = getAuthFromEnv()
   
   const { fetchCategoriesFromSheet, PROTECTED_KEYS } = await import('./categories-utils.js')
-  const categories = await fetchCategoriesFromSheet(sheetId)
+  const categories = preloadedCategories ?? await fetchCategoriesFromSheet(sheetId)
   // protected ключи (например `sale`) — виртуальные категории без собственного листа товаров,
   // их пропускаем при чтении
   const sheetNames = (categories.length > 0
@@ -129,12 +161,14 @@ export async function fetchProductsFromSheet(sheetId: string): Promise<SheetProd
   ).filter((k) => !PROTECTED_KEYS.has(k))
   
   const bySlug = new Map<string, SheetProduct & { __minOrder?: number }>()
+  const sheetKeys = sheetNames.map((name) => name.trim())
+  const rowsBySheet = await readProductSheets(auth, sheetId, sheetKeys)
   
-  for (const sheetName of sheetNames) {
+  for (const sheetKey of sheetKeys) {
+    const rows = rowsBySheet.get(sheetKey)
+    if (!rows) continue
     try {
-      const range = `${sheetName.trim()}!A1:K1000`
-      const products = await fetchSheetRange(auth, sheetId, range, sheetName.trim())
-      const sheetKey = sheetName.trim()
+      const products = parseProductRows(rows, sheetKey)
       for (const p of products) {
         const orderHere = p.orderInCategory?.[sheetKey] ?? 999999
         const existing = bySlug.get(p.slug)
@@ -169,7 +203,7 @@ export async function fetchProductsFromSheet(sheetId: string): Promise<SheetProd
         }
       }
     } catch (e: any) {
-      logger.warn({ sheetName, error: e?.message }, 'не удалось прочитать лист')
+      logger.warn({ sheetName: sheetKey, error: e?.message }, 'не удалось разобрать лист')
     }
   }
   

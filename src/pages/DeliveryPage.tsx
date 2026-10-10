@@ -3,7 +3,7 @@ import yandexIcon from '../assets/yandex-delivery-icon.png'
 import sdekIcon from '../assets/sdek-icon.png'
 import headerImgDefault from '../assets/img/delivery-header__image.jpg'
 import paymentImgDefault from '../assets/img/payment-section__image.png'
-import { useSiteContent } from '../contexts/SiteContentContext'
+import { useSiteContent, useSiteImage } from '../contexts/SiteContentContext'
 import { RichText } from '../lib/RichText'
 import { RevealImage } from '../lib/RevealImage'
 import { fetchDeliveryPrices, type DeliveryPrices } from '../api/orders'
@@ -16,8 +16,8 @@ const DELIVERY_PAYMENT_TEXT_DEFAULT =
   'Все заказы оплачиваются онлайн при оформлении заказа — это быстро и безопасно через систему Robokassa.\n\nПокупателю доступны банковские карты и иные способы оплаты, предусмотренные платежной формой на момент совершения заказа.\n\nПосле успешного проведения платежа кассовый чек направляется на указанные покупателем контактные данные.'
 
 export default function DeliveryPage() {
-  const headerImage = useSiteContent('delivery.header_image', headerImgDefault)
-  const paymentImage = useSiteContent('delivery.payment_image', paymentImgDefault)
+  const headerImage = useSiteImage('delivery.header_image', headerImgDefault)
+  const paymentImage = useSiteImage('delivery.payment_image', paymentImgDefault)
   const headerDesc = useSiteContent('delivery.header_desc', DELIVERY_HEADER_DESC_DEFAULT)
   const paymentText = useSiteContent('delivery.payment_text', DELIVERY_PAYMENT_TEXT_DEFAULT)
 

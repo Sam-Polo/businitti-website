@@ -1,9 +1,28 @@
 import convert from 'heic-convert'
+import sharp from 'sharp'
 import { logger } from './logger.js'
+
+// без кеша libvips: картинки обрабатываются по разу, а кеш держал бы память
+sharp.cache(false)
 
 // качество JPEG при конверсии HEIC: визуально неотличимо от оригинала,
 // но файл заметно легче, чем на дефолтных 0.92
 const JPEG_QUALITY = 0.85
+
+// ужимаем только запредельно тяжёлые файлы (лимит загрузки — 10 МБ); всё, что легче,
+// уходит в S3 как есть, байт в байт
+const OPTIMIZE_THRESHOLD_BYTES = 5 * 1024 * 1024
+
+// длинная сторона после ужатия: с запасом больше любого экрана с увеличением,
+// так что детали украшения не теряются; меньшие фото не масштабируются вовсе
+const MAX_DIMENSION = 4096
+
+// q95 без цветовой субдискретизации (4:4:4) визуально неотличим от оригинала: по замерам
+// на реальных фото сайта (q100, 4 Мп) PSNR ~43 дБ при файле в 3 раза легче
+const OPTIMIZED_JPEG_QUALITY = 95
+
+// если пережатие экономит меньше 20% — оставляем оригинал, рисковать качеством незачем
+const MIN_SAVING_RATIO = 0.8
 
 // декодирование HEIC идёт в WASM и держит в памяти распакованный RGBA
 // (12 Мп ≈ 50 МБ), поэтому число параллельных конверсий ограничено —
@@ -57,11 +76,13 @@ function releaseSlot(): void {
   waiting.shift()?.()
 }
 
+export type ProcessedImage = { buffer: Buffer; fileName: string; mimeType: string }
+
 // HEIC/HEIF → JPEG: браузеры (кроме Safari) HEIC не рисуют, поэтому в S3 кладём уже JPEG
 export async function convertHeicToJpeg(
   buffer: Buffer,
   fileName: string
-): Promise<{ buffer: Buffer; fileName: string; mimeType: string }> {
+): Promise<ProcessedImage> {
   if (running >= MAX_PARALLEL_CONVERSIONS) {
     logger.info({ fileName, running, waiting: waiting.length }, 'конверсия HEIC поставлена в очередь')
   }
@@ -81,6 +102,60 @@ export async function convertHeicToJpeg(
   } catch (error: any) {
     logger.error({ fileName, error: error?.message, ms: Date.now() - startedAt }, 'не удалось сконвертировать HEIC')
     throw new Error('Не удалось обработать HEIC-файл — попробуйте сохранить фото в JPG')
+  } finally {
+    releaseSlot()
+  }
+}
+
+// ужатие запредельно тяжёлых фото (JPEG/PNG/WebP, в т.ч. JPEG после HEIC):
+// длинная сторона ограничивается MAX_DIMENSION, перекодирование в JPEG q95 4:4:4.
+// Фото с реальной прозрачностью остаются PNG (без потерь). Любая ошибка — заливаем оригинал:
+// ужатие — оптимизация, а не условие загрузки
+export async function optimizeOversizedImage(image: ProcessedImage): Promise<ProcessedImage> {
+  if (image.buffer.length <= OPTIMIZE_THRESHOLD_BYTES) return image
+
+  await acquireSlot()
+  const startedAt = Date.now()
+  try {
+    const input = sharp(image.buffer, { failOn: 'none' })
+    const meta = await input.metadata()
+
+    // rotate() без аргументов разворачивает по EXIF: метаданные при перекодировании
+    // отбрасываются, и без этого фото с телефона легло бы на бок.
+    // ICC-профиль сохраняем — иначе у фото в Display P3 поплывут цвета
+    let pipeline = input
+      .rotate()
+      .resize({ width: MAX_DIMENSION, height: MAX_DIMENSION, fit: 'inside', withoutEnlargement: true })
+      .keepIccProfile()
+
+    // альфа-канал бывает и у полностью непрозрачных PNG (экспорт из редакторов) —
+    // такие спокойно уходят в JPEG, PNG оставляем только при реальной прозрачности
+    const keepAlpha = meta.hasAlpha === true && !(await input.stats()).isOpaque
+    pipeline = keepAlpha
+      ? pipeline.png({ compressionLevel: 9 })
+      : pipeline.jpeg({ quality: OPTIMIZED_JPEG_QUALITY, chromaSubsampling: '4:4:4', mozjpeg: true })
+
+    const output = await pipeline.toBuffer({ resolveWithObject: true })
+
+    const logInfo = {
+      fileName: image.fileName,
+      from: { bytes: image.buffer.length, width: meta.width, height: meta.height },
+      to: { bytes: output.data.length, width: output.info.width, height: output.info.height },
+      ms: Date.now() - startedAt
+    }
+
+    if (output.data.length > image.buffer.length * MIN_SAVING_RATIO) {
+      logger.info(logInfo, 'ужатие фото почти ничего не даёт — заливаем оригинал')
+      return image
+    }
+
+    const ext = keepAlpha ? '.png' : '.jpg'
+    const fileName = (image.fileName.replace(/\.[^.]*$/, '') || 'photo') + ext
+    logger.info(logInfo, 'тяжёлое фото ужато')
+    return { buffer: output.data, fileName, mimeType: keepAlpha ? 'image/png' : 'image/jpeg' }
+  } catch (error: any) {
+    logger.warn({ fileName: image.fileName, error: error?.message }, 'не удалось ужать фото — заливаем оригинал')
+    return image
   } finally {
     releaseSlot()
   }

@@ -5,55 +5,77 @@ import { createOrder, getAuth, DELIVERY_LABELS, getEffectiveDeliveryPrices, type
 import { orderLimiter } from '../rate-limit.js'
 import { fetchOverridesMap, type SiteContentMap } from '../site-content-utils.js'
 import { fetchCategoriesFromSheet, type Category } from '../categories-utils.js'
-import { fetchOrdersSettingsFromSheet, fetchSaleOrder } from '../settings-utils.js'
+import { fetchOrdersSettingsFromSheet, fetchSaleOrder, type OrdersSettings } from '../settings-utils.js'
+import { createSheetCache } from '../sheet-cache.js'
 
 const router = express.Router()
 
-// простой in-memory кеш на 60 секунд, чтобы не дёргать Google Sheets каждый запрос
-type CacheEntry = { data: SheetProduct[]; expiresAt: number }
-let cache: CacheEntry | null = null
+// данные сайта кешируются в памяти (stale-while-revalidate, см. sheet-cache.ts):
+// посетитель не ждёт Google Sheets и не получает пустоту, если Sheets подвис или упал
 const CACHE_TTL_MS = 60_000
+// статус приёма заказов меняется из админки/бота со сбросом кеша, TTL — на случай
+// правки прямо в таблице
+const ORDERS_STATUS_TTL_MS = 30_000
 
-// кеш контента (60 сек) — переопределения текстов/фото со стороны админки
-let contentCache: { data: SiteContentMap; expiresAt: number } | null = null
-const CONTENT_CACHE_TTL_MS = 60_000
-
-async function getContentOverridesCached(): Promise<SiteContentMap> {
-  const now = Date.now()
-  if (contentCache && contentCache.expiresAt > now) return contentCache.data
+function requireSheetId(): string {
   const sheetId = process.env.GOOGLE_SHEET_ID
-  if (!sheetId) return {}
-  try {
-    const data = await fetchOverridesMap(sheetId)
-    contentCache = { data, expiresAt: now + CONTENT_CACHE_TTL_MS }
-    return data
-  } catch (err: any) {
-    logger.warn({ err: err?.message }, 'не удалось загрузить переопределения контента — возвращаем пусто')
-    return {}
-  }
+  if (!sheetId) throw new Error('GOOGLE_SHEET_ID not configured')
+  return sheetId
+}
+
+// переопределения текстов/фото со стороны админки
+const contentCache = createSheetCache<SiteContentMap>(
+  'content',
+  () => fetchOverridesMap(requireSheetId()),
+  { ttlMs: CACHE_TTL_MS, fallback: () => ({}) }
+)
+
+// категории — на сайте нужно описание и заголовок
+const categoriesCache = createSheetCache<Category[]>(
+  'categories',
+  () => fetchCategoriesFromSheet(requireSheetId()),
+  { ttlMs: CACHE_TTL_MS, fallback: () => [] }
+)
+
+// товары: список листов берём из кеша категорий, чтобы не читать их из Sheets второй раз
+const productsCache = createSheetCache<SheetProduct[]>(
+  'products',
+  async () => fetchProductsFromSheet(requireSheetId(), await categoriesCache.get()),
+  { ttlMs: CACHE_TTL_MS }
+)
+
+// заданный вручную порядок товаров в sale из листа settings
+const saleOrderCache = createSheetCache<string[]>(
+  'sale_order',
+  () => fetchSaleOrder(requireSheetId()),
+  { ttlMs: CACHE_TTL_MS, fallback: () => [] }
+)
+
+// если Sheets недоступен — приём заказов не блокируем
+const ordersStatusCache = createSheetCache<OrdersSettings>(
+  'orders_status',
+  () => fetchOrdersSettingsFromSheet(requireSheetId()),
+  { ttlMs: ORDERS_STATUS_TTL_MS, fallback: () => ({ ordersClosed: false }) }
+)
+
+// прогрев при старте: после деплоя/рестарта первые посетители не ждут Sheets
+export function warmPublicCaches() {
+  if (!process.env.GOOGLE_SHEET_ID) return
+  contentCache.warm()
+  productsCache.warm() // заодно прогреет категории
+  saleOrderCache.warm()
+  ordersStatusCache.warm()
 }
 
 // принудительный сброс кеша контента (можно дёргать из админских роутов после изменения)
 export function invalidateContentCache() {
-  contentCache = null
-}
-
-async function getProductsCached(): Promise<SheetProduct[]> {
-  const now = Date.now()
-  if (cache && cache.expiresAt > now) return cache.data
-
-  const sheetId = process.env.GOOGLE_SHEET_ID
-  if (!sheetId) throw new Error('GOOGLE_SHEET_ID not configured')
-
-  const products = await fetchProductsFromSheet(sheetId)
-  cache = { data: products, expiresAt: now + CACHE_TTL_MS }
-  return products
+  contentCache.invalidate()
 }
 
 // сброс кеша товаров — нужен после переименования категории: в кеше лежат
 // сохранённые имена листов (p.categories), и до истечения TTL сайт отдавал бы старый ключ
 export function invalidateProductsCache() {
-  cache = null
+  productsCache.invalidate()
 }
 
 // публичный товар (без служебных полей)
@@ -109,59 +131,29 @@ function sortByOrder(category: string) {
   }
 }
 
-// кеш категорий (60 сек) — на сайте нужно описание и заголовок
-let categoriesCache: { data: Category[]; expiresAt: number } | null = null
-async function getCategoriesCached(): Promise<Category[]> {
-  const now = Date.now()
-  if (categoriesCache && categoriesCache.expiresAt > now) return categoriesCache.data
-  const sheetId = process.env.GOOGLE_SHEET_ID
-  if (!sheetId) return []
-  try {
-    const data = await fetchCategoriesFromSheet(sheetId)
-    categoriesCache = { data, expiresAt: now + CACHE_TTL_MS }
-    return data
-  } catch (err: any) {
-    logger.warn({ err: err?.message }, 'не удалось загрузить категории')
-    return []
-  }
-}
-
 export function invalidateCategoriesCache() {
-  categoriesCache = null
-}
-
-// кеш порядка товаров в sale (60 сек) — заданный вручную порядок из листа settings
-let saleOrderCache: { data: string[]; expiresAt: number } | null = null
-async function getSaleOrderCached(): Promise<string[]> {
-  const now = Date.now()
-  if (saleOrderCache && saleOrderCache.expiresAt > now) return saleOrderCache.data
-  const sheetId = process.env.GOOGLE_SHEET_ID
-  if (!sheetId) return []
-  try {
-    const data = await fetchSaleOrder(sheetId)
-    saleOrderCache = { data, expiresAt: now + CACHE_TTL_MS }
-    return data
-  } catch (err: any) {
-    logger.warn({ err: err?.message }, 'не удалось загрузить порядок sale')
-    return []
-  }
+  categoriesCache.invalidate()
 }
 
 export function invalidateSaleOrderCache() {
-  saleOrderCache = null
+  saleOrderCache.invalidate()
+}
+
+export function invalidateOrdersStatusCache() {
+  ordersStatusCache.invalidate()
 }
 
 // GET /api/public/categories — список категорий с заголовками и описанием
 router.get('/categories', async (_req, res) => {
   try {
-    const list = await getCategoriesCached()
+    const list = await categoriesCache.get()
     let visible = list.filter((c) => c.active !== false)
 
     // sale — виртуальная категория. Скрываем её, если сейчас нет товаров со скидкой,
     // чтобы пользователь не попал в пустую категорию.
     if (visible.some((c) => c.key === 'sale')) {
       try {
-        const products = await getProductsCached()
+        const products = await productsCache.get()
         const hasAnyDiscount = products.some((p) => isVisible(p) && hasDiscount(p))
         if (!hasAnyDiscount) {
           visible = visible.filter((c) => c.key !== 'sale')
@@ -189,7 +181,7 @@ router.get('/categories', async (_req, res) => {
 // GET /api/public/content — переопределения текстов/фото (key → value)
 router.get('/content', async (_req, res) => {
   try {
-    const data = await getContentOverridesCached()
+    const data = await contentCache.get()
     res.json({ content: data })
   } catch (error: any) {
     logger.error({ error: error?.message }, 'ошибка загрузки контента')
@@ -208,15 +200,9 @@ router.get('/delivery-prices', async (_req, res) => {
 
 // GET /api/public/orders-status — статус приёма заказов (закрыты ли + дата открытия)
 router.get('/orders-status', async (_req, res) => {
-  const sheetId = process.env.GOOGLE_SHEET_ID
-  if (!sheetId) return res.json({ ordersClosed: false })
-  try {
-    const s = await fetchOrdersSettingsFromSheet(sheetId)
-    res.json({ ordersClosed: s.ordersClosed, reopenDate: s.closeDate || null })
-  } catch (err: any) {
-    logger.warn({ err: err?.message }, 'не удалось прочесть orders-status')
-    res.json({ ordersClosed: false })
-  }
+  if (!process.env.GOOGLE_SHEET_ID) return res.json({ ordersClosed: false })
+  const s = await ordersStatusCache.get()
+  res.json({ ordersClosed: s.ordersClosed, reopenDate: s.closeDate || null })
 })
 
 // % скидки 0..1 — для сортировки в виртуальной категории `sale`
@@ -237,7 +223,7 @@ function hasDiscount(p: SheetProduct): boolean {
 router.get('/products', async (req, res) => {
   try {
     const category = typeof req.query.category === 'string' ? req.query.category.trim() : ''
-    const all = await getProductsCached()
+    const all = await productsCache.get()
     const available = all.filter(isVisible)
 
     if (!category) {
@@ -248,7 +234,7 @@ router.get('/products', async (req, res) => {
     if (category === 'sale') {
       // порядок: сначала расставленные вручную (settings.sale_order), затем остальные
       // по убыванию процента скидки
-      const order = await getSaleOrderCached()
+      const order = await saleOrderCache.get()
       const orderIndex = new Map(order.map((slug, i) => [slug, i]))
       const saleItems = available
         .filter(hasDiscount)
@@ -281,7 +267,7 @@ router.get('/products/:slug', async (req, res) => {
     const slug = String(req.params.slug || '').trim()
     if (!slug) return res.status(400).json({ error: 'slug_required' })
 
-    const all = await getProductsCached()
+    const all = await productsCache.get()
     const product = all.find((p) => p.slug === slug && isVisible(p))
 
     if (!product) return res.status(404).json({ error: 'not_found' })
@@ -297,14 +283,14 @@ router.get('/products/:slug', async (req, res) => {
 router.post('/orders', orderLimiter, async (req, res) => {
   try {
     // блокируем приём заказов, если в админке выставлен флаг
+    // fresh: заказ проверяем по свежему статусу, а не по прошлому из кеша
+    // (если Sheets недоступен — не блокируем, см. fallback кеша)
     const sheetId = process.env.GOOGLE_SHEET_ID
     if (sheetId) {
-      try {
-        const status = await fetchOrdersSettingsFromSheet(sheetId)
-        if (status.ordersClosed) {
-          return res.status(403).json({ error: 'orders_closed', reopenDate: status.closeDate || null })
-        }
-      } catch { /* если Sheets недоступен — не блокируем */ }
+      const status = await ordersStatusCache.get({ fresh: true })
+      if (status.ordersClosed) {
+        return res.status(403).json({ error: 'orders_closed', reopenDate: status.closeDate || null })
+      }
     }
 
     const body = req.body || {}
@@ -331,7 +317,9 @@ router.post('/orders', orderLimiter, async (req, res) => {
     // загружаем актуальные товары
     if (!sheetId) return res.status(500).json({ error: 'GOOGLE_SHEET_ID not configured' })
 
-    const all = await getProductsCached()
+    // цены и остатки — по свежим данным; если Sheets недоступен, по последним известным,
+    // чтобы не терять заказ
+    const all = await productsCache.get({ fresh: true })
 
     // валидация позиций + снапшот цен на сервере (не доверяем клиенту)
     const snapshotItems = []
