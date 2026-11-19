@@ -17,6 +17,9 @@ HTTP-сервер (localhost:TG_BOT_PORT):
 """
 
 import os
+import sys
+import time
+import asyncio
 import logging
 import threading
 from datetime import datetime
@@ -29,7 +32,9 @@ import requests
 import httpx
 from flask import Flask, request, jsonify
 from telegram import BotCommand, Update
+from telegram.error import BadRequest, Conflict, Forbidden, NetworkError
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.request import HTTPXRequest
 
 # ─── конфиг ──────────────────────────────────────────────────────────────────
 
@@ -50,7 +55,56 @@ _socks_proxy = os.environ.get("SOCKS5_PROXY_URL", "").strip()
 PROXY_URL: str = _http_proxy or _socks_proxy  # пустая строка = без прокси
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+# httpx на INFO пишет каждый запрос с полным URL — это токен бота в логах и ~9k строк в сутки
+logging.getLogger("httpx").setLevel(logging.WARNING)
 log = logging.getLogger(__name__)
+
+# ─── watchdog ────────────────────────────────────────────────────────────────
+# Инцидент 10.2026: соединение с прокси повисло (CLOSE-WAIT) и заняло единственный слот
+# пула getUpdates. PTB ретраил PoolTimeout→TimedOut молча (лог на DEBUG), процесс жил за счёт
+# Flask, PM2 видел online — бот 39 дней не принимал команды. Поэтому живость меряем по факту:
+# нет успешного getUpdates дольше WATCHDOG_STALE_SEC → выходим, PM2 поднимает процесс заново.
+
+POLL_TIMEOUT = 10            # long polling: Telegram держит getUpdates до 10 с
+WATCHDOG_STALE_SEC = 180     # норма — успешный getUpdates каждые ~10 с
+WATCHDOG_CHECK_SEC = 15
+HEARTBEAT_SEC = 3600         # раз в час строка в лог, что polling жив
+BLOCKING_CALL_TIMEOUT = 30   # потолок для синхронных HTTP-вызовов из команд
+
+_last_poll_ok = time.monotonic()  # стартовая точка = грейс на запуск
+
+
+class PollingRequest(HTTPXRequest):
+    """HTTPXRequest для getUpdates, отмечающий каждый успешный ответ Telegram."""
+
+    async def do_request(self, *args, **kwargs):
+        code, payload = await super().do_request(*args, **kwargs)
+        if code == 200:
+            global _last_poll_ok
+            _last_poll_ok = time.monotonic()
+        return code, payload
+
+
+def _die(reason: str) -> None:
+    log.critical("watchdog: %s — завершаю процесс, PM2 перезапустит", reason)
+    sys.stderr.flush()
+    os._exit(1)  # не sys.exit: event loop может висеть, нужен выход без graceful shutdown
+
+
+def _watchdog(flask_thread: threading.Thread) -> None:
+    # отдельный поток, а не asyncio-задача: должен сработать и при зависшем event loop
+    last_heartbeat = time.monotonic()
+    while True:
+        time.sleep(WATCHDOG_CHECK_SEC)
+        now = time.monotonic()
+        stale = now - _last_poll_ok
+        if stale > WATCHDOG_STALE_SEC:
+            _die(f"нет успешного getUpdates {stale:.0f} с (прокси/сеть/зависший пул)")
+        if not flask_thread.is_alive():
+            _die("HTTP-сервер уведомлений (flask) остановился")
+        if now - last_heartbeat >= HEARTBEAT_SEC:
+            last_heartbeat = now
+            log.info("heartbeat: polling жив, последний getUpdates %.0f с назад", stale)
 
 DELIVERY_LABELS = {"cdek": "СДЭК", "yandex_market": "Яндекс Маркет"}
 STATUS_LABELS = {
@@ -93,6 +147,12 @@ def internal_post(path: str, data: dict) -> dict:
     )
     resp.raise_for_status()
     return resp.json()
+
+
+async def run_blocking(fn, *args):
+    """Синхронный вызов (requests) — в отдельном потоке и с потолком по времени,
+    чтобы медленный бэкенд/сайт не морозил event loop, а с ним polling и остальные команды."""
+    return await asyncio.wait_for(asyncio.to_thread(fn, *args), BLOCKING_CALL_TIMEOUT)
 
 
 def fmt_date(iso: str) -> str:
@@ -215,7 +275,7 @@ async def cmd_new(update: Update, _ctx: ContextTypes.DEFAULT_TYPE) -> None:
         await update.message.reply_text(ACCESS_DENIED)
         return
     try:
-        orders = internal_get("/orders/new")
+        orders = await run_blocking(internal_get, "/orders/new")
         if not orders:
             await update.message.reply_text("✅ Новых заказов нет.")
             return
@@ -233,7 +293,7 @@ async def cmd_orders(update: Update, _ctx: ContextTypes.DEFAULT_TYPE) -> None:
         await update.message.reply_text(ACCESS_DENIED)
         return
     try:
-        orders = internal_get("/orders?limit=5")
+        orders = await run_blocking(internal_get, "/orders?limit=5")
         if not orders:
             await update.message.reply_text("Заказов пока нет.")
             return
@@ -263,7 +323,15 @@ async def cmd_status(update: Update, _ctx: ContextTypes.DEFAULT_TYPE) -> None:
     if not is_admin(update.effective_user.id):
         await update.message.reply_text(ACCESS_DENIED)
         return
+    try:
+        lines = await run_blocking(collect_status)
+    except Exception as e:
+        log.error("cmd_status error: %r", e)
+        lines = ["❌ Не удалось проверить статус (таймаут)"]
+    await update.message.reply_text("\n".join(lines), parse_mode="HTML")
 
+
+def collect_status() -> list[str]:
     lines = ["<b>Статус систем:</b>\n"]
 
     # проверяем сайт
@@ -288,7 +356,21 @@ async def cmd_status(update: Update, _ctx: ContextTypes.DEFAULT_TYPE) -> None:
     except Exception as e:
         lines.append(f"⚙️ Бэкенд: ❌ {e}")
 
-    await update.message.reply_text("\n".join(lines), parse_mode="HTML")
+    return lines
+
+
+async def on_error(_update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Глобальный обработчик: сетевые сбои — одной строкой, прочее — с трейсбэком.
+    Без него PTB на каждый сбой пишет «No error handlers are registered» и полный трейсбэк."""
+    err = context.error
+    if isinstance(err, Conflict):
+        log.error("telegram conflict — запущен второй экземпляр бота с этим токеном? %s", err)
+    elif isinstance(err, Forbidden):
+        log.warning("telegram forbidden (бот заблокирован пользователем?): %s", err)
+    elif isinstance(err, NetworkError) and not isinstance(err, BadRequest):
+        log.warning("telegram network error: %r", err)
+    else:
+        log.error("unhandled error", exc_info=err)
 
 
 # ─── Flask HTTP-сервер ────────────────────────────────────────────────────────
@@ -364,11 +446,18 @@ def main() -> None:
     flask_thread.start()
     log.info("HTTP server started on 127.0.0.1:%d", TG_BOT_PORT)
 
+    threading.Thread(target=_watchdog, args=(flask_thread,), daemon=True, name="watchdog").start()
+
     # Telegram-бот
-    builder = ApplicationBuilder().token(BOT_TOKEN)
+    builder = ApplicationBuilder().token(BOT_TOKEN).connect_timeout(10)
     if PROXY_URL:
-        log.info("using proxy: %s", PROXY_URL)
-        builder = builder.proxy(PROXY_URL).get_updates_proxy(PROXY_URL)
+        log.info("using proxy: %s", PROXY_URL.split("@")[-1])  # без логина/пароля
+        builder = builder.proxy(PROXY_URL)
+    builder = builder.get_updates_request(PollingRequest(
+        connection_pool_size=1,
+        connect_timeout=10,
+        proxy=PROXY_URL or None,
+    ))
     app = builder.build()
     app.add_handler(CommandHandler("start", cmd_start))
     app.add_handler(CommandHandler("help", cmd_help))
@@ -376,20 +465,27 @@ def main() -> None:
     app.add_handler(CommandHandler("orders", cmd_orders))
     app.add_handler(CommandHandler("status", cmd_status))
     app.add_handler(CommandHandler("test_notif", cmd_test_notif))
+    app.add_error_handler(on_error)
 
     async def register_commands(app):  # type: ignore[override]
-        await app.bot.set_my_commands([
-            BotCommand("help", "Справка по командам"),
-            BotCommand("new", "Новые заказы"),
-            BotCommand("orders", "Последние 5 заказов"),
-            BotCommand("status", "Статус сайта"),
-            BotCommand("test_notif", "Тестовое уведомление о заказе"),
-        ])
-        log.info("bot commands registered")
+        # не критично: при сбое меню команд останется прежним, а бот должен стартовать
+        try:
+            await app.bot.set_my_commands([
+                BotCommand("help", "Справка по командам"),
+                BotCommand("new", "Новые заказы"),
+                BotCommand("orders", "Последние 5 заказов"),
+                BotCommand("status", "Статус сайта"),
+                BotCommand("test_notif", "Тестовое уведомление о заказе"),
+            ])
+            log.info("bot commands registered")
+        except Exception as e:
+            log.warning("set_my_commands failed: %r", e)
 
     app.post_init = register_commands
     log.info("starting polling")
-    app.run_polling(allowed_updates=["message"])
+    # bootstrap_retries=-1: при недоступном прокси не падать на старте (было: краш-луп PM2
+    # в 10.2026, 426k рестартов и 5.6 ГБ логов), а ретраить с бэкоффом; зависание ловит watchdog
+    app.run_polling(allowed_updates=["message"], timeout=POLL_TIMEOUT, bootstrap_retries=-1)
 
 
 if __name__ == "__main__":

@@ -45,5 +45,5 @@ jobs:
             venv/bin/pip install -r requirements.txt --quiet
             pm2 describe businitti-bot > /dev/null 2>&1 \
               && pm2 restart businitti-bot --update-env \
-              || pm2 start bot.py --name businitti-bot --interpreter venv/bin/python3
+              || pm2 start bot.py --name businitti-bot --interpreter venv/bin/python3 --exp-backoff-restart-delay=1000
             pm2 save
